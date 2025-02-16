@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import os
 import uuid
-from user_input import get_user_input
+from data.user_input import get_user_input
 from model_loader import model_exercise, model_food
 from login import login
 
