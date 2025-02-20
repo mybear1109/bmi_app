@@ -6,22 +6,23 @@ import warnings
 
 warnings.filterwarnings('ignore')  # 경고 메시지 무시
 
+import os
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+import torch
+
 HF_API_KEY = os.getenv("HF_API_KEY")
 
 def load_gemma_model(model_name):
     """모델을 로드하는 함수"""
     try:
-        # 모델과 토크나이저를 로드하고, 디스크 오프로드 사용
         tokenizer = AutoTokenizer.from_pretrained(model_name, token=HF_API_KEY)
         model = AutoModelForCausalLM.from_pretrained(
-            model_name, 
+            model_name,
             token=HF_API_KEY,
-            device_map="auto",  # 모델을 자동으로 CPU/GPU에 배치
-            low_cpu_mem_usage=True,
-            offload_folder="./offload",  # 모델을 디스크에 오프로드
-            offload_state_dict=True
+            device_map="cpu",  # 강제로 CPU에서 로드
+            low_cpu_mem_usage=True
         )
-        pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)  # GPU가 가능하면 0, 아니면 CPU
+        pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)  # device 0으로 설정 (GPU 사용 시)
         print(f"✅ {model_name} 모델 로드 성공")
         return pipe
     except Exception as e:
