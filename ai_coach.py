@@ -83,6 +83,7 @@ def display_ai_coach_page():
     with col2:
         restricted_exercises = st.text_input("🏋️ 제한해야 할 운동 (쉼표 구분)", "", key="restricted_exercises")
         restricted_exercises = [exercise.strip() for exercise in restricted_exercises.split(',') if exercise.strip()]  # 공백 제거
+    print(f"  🚨 제한해야 할 운동")
 
     # 추천 버튼 UI 개선
     col1, col2 = st.columns(2)
@@ -99,6 +100,8 @@ def display_ai_coach_page():
                 st.dataframe(pd.DataFrame(diet_plan), use_container_width=True)
             else:
                 st.error("🚨 식단 추천을 생성하는 데 문제가 발생했습니다.")
+            print(f"  🚨 식단 추천을 생성하는 데 문제가 발생했습니다.")
+
 
     # 운동 추천 버튼
     with col2:
@@ -112,3 +115,4 @@ def display_ai_coach_page():
                 st.dataframe(pd.DataFrame(exercise_plan), use_container_width=True)
             else:
                 st.error("🚨 운동 추천을 생성하는 데 문제가 발생했습니다.")
+                print(f"  🚨 운동 추천을 생성하는 데 문제가 발생했습니다.")
