@@ -1,107 +1,98 @@
 import streamlit as st
 import pandas as pd
+import torch
+import json
 import os
-from kogpt2_recommender import load_kogpt2_model, get_recommendations, parse_recommendation_to_table
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from user_data_utils import load_user_data, save_user_data
+from gemma2_recommender import load_gemma_model, get_gemma_recommendation 
+from transformers import pipeline # type: ignore # ✅ 올바른 모듈 import
 
-# ✅ 상수 정의
-PREDICTION_FILE = "data/predictions.csv"
+# ✅ 데이터 파일 경로 설정
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # 현재 파일의 절대 경로
+PREDICTION_FILE = os.path.join(BASE_DIR, "data", "predictions.csv")
 
-# ✅ 사용자 데이터 로드 함수
-def load_user_data(user_id):
-    if user_id and os.path.exists(PREDICTION_FILE):
-        df = pd.read_csv(PREDICTION_FILE)
-        user_data = df[df['user_id'] == user_id]
-        return user_data.iloc[-1].to_dict() if not user_data.empty else {}
-    return {}
+# ✅ Hugging Face API Key 설정 (secrets.toml에서 가져오기)
+HF_API_KEY = os.getenv("HF_API_KEY")  # Streamlit Secrets을 사용할 경우 `st.secrets["HF_API_KEY"]`
 
-# ✅ 사용자 정보 표 출력 함수
-def display_user_info_table(user_info):
-    df_info = pd.DataFrame(list(user_info.items()), columns=["항목", "정보"])
-    st.table(df_info)
-
-# ✅ 추천 결과 표시 함수
-def display_recommendation_table(title, text, filter_items=None, plan_type=None):
-    df = parse_recommendation_to_table(text)
-    st.subheader(title)
-    if df is not None and not df.empty:
-        if filter_items and plan_type:
-            df = filter_recommendation(df, filter_items, plan_type)
-        st.table(df)
-    else:
-        st.write(text)
-
-# ✅ 추천 결과 필터링 함수
-def filter_recommendation(df, filter_items, plan_type):
-    if plan_type == "운동":
-        return df[~df.apply(lambda row: any(item.lower() in row.to_string().lower() for item in filter_items), axis=1)]
-    elif plan_type == "식단":
-        return filter_allergy_ingredients(df, filter_items)
-    return df
-
-# ✅ 식단에서 알러지 음식 제거
-def filter_allergy_ingredients(df, excluded_foods):
-    allergy_mapping = {
-        '계란': ['계란', '계란노른자', '계란흰자', '달걀', '노른자', '흰자'],
-        '생선': ['생선', '연어', '참치', '광어'],
-        '우유': ['우유', '요구르트', '치즈'],
-        '콩': ['콩', '두부', '콩나물'],
-        '밀가루': ['밀가루', '빵', '면'],
-        '아몬드': ['아몬드', '호두', '땅콩'],
-        '닭고기': ['닭고기', '닭가슴살', '닭날개'],
-        '소고기': ['소고기', '소불고기', '소양지'],
-        '돼지고기': ['돼지고기', '삼겹살', '목살'],
-        '새우': ['새우', '게', '랍스터'],
-    }
-    
-    excluded_items = set()
-    for food in excluded_foods:
-        food = food.strip().lower()
-        excluded_items.update(allergy_mapping.get(food, [food]))
-
-    return df[~df.apply(lambda row: any(item in row.to_string().lower() for item in excluded_items), axis=1)]
+# 모델 로드 시도
+def load_gemma_model(model_name):
+    """모델을 로드하는 함수"""
+    try:
+        pipe = pipeline(
+            "text-generation",
+            model=model_name,
+            model_kwargs={"torch_dtype": torch.bfloat16, "use_auth_token": HF_API_KEY},  # API Key 인증 추가
+            device="mps",  # Mac에서 MPS 사용
+        )
+        print(f"✅ {model_name} 모델 로드 성공")
+        return pipe
+    except Exception as e:
+        print(f"🚨 {model_name} 모델 로드 실패: {e}")
+        return None
 
 # ✅ AI 건강 코치 페이지
 def display_ai_coach_page():
-    st.header("🏋️‍♂️ AI 건강 코치 페이지")
+    """📌 AI 건강 코치 메인 페이지"""
+    st.header("🏋️‍♂️ AI 건강 코치")
 
-    tokenizer, model = load_kogpt2_model()
-    if tokenizer is None or model is None:
-        st.error("🚨 모델 로딩 실패로 AI 건강 코치를 사용할 수 없습니다.")
-        return
-  
+    # ✅ 사용자 데이터 불러오기 (기본값: `{}`)
     user_data = st.session_state.get("user_data", {})
-    user_id = user_data.get("user_id")
-    existing_user_data = load_user_data(user_id)
 
+    if isinstance(user_data, str):
+        try:
+            user_data = json.loads(user_data)  # 문자열을 JSON 형태로 변환
+        except json.JSONDecodeError:
+            user_data = {}  # 변환 실패 시 기본값 설정
+
+    # ✅ 사용자 ID 가져오기 (기본값: "게스트")
+    user_id = user_data.get("user_id", "게스트")
+
+    # ✅ 사용자 건강 정보 변환
     user_info = {
-        "키": existing_user_data.get("키", user_data.get("키", 170)),
-        "현재 체중 (kg)": existing_user_data.get("체중", user_data.get("현재 체중 (kg)", 70)),
-        "목표 체중 (kg)": existing_user_data.get("목표 체중", user_data.get("목표 체중 (kg)", 65)),
-        "나이": existing_user_data.get("나이", user_data.get("나이", 25)),
-        "성별": existing_user_data.get("성별", user_data.get("성별", "남성")),
-        "활동 수준": existing_user_data.get("활동 수준", user_data.get("활동 수준", "중간활동")),
-        "BMI": existing_user_data.get("BMI", "미측정"),
-        "체지방률": existing_user_data.get("체지방률", "미측정"),
+        key: user_data.get(key, "미측정") for key in [
+            "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)", "혈압 차이",
+            "총콜레스테롤", "고혈당 위험", "간 지표", "성별", "연령대", "비만 위험 지수", "흡연상태", "음주여부"
+        ]
     }
 
-    with st.expander("📌 사용자 정보 보기", expanded=True):
-        display_user_info_table(user_info)
+    # ✅ 사용자 입력 (제한 음식 및 운동)
+    st.subheader("⚙️ 개인화 설정")
 
     col1, col2 = st.columns(2)
     with col1:
-        excluded_foods = st.text_input("🍴 알러지 또는 못 먹는 음식 입력 (쉼표 구분)", "").split(',')
+        excluded_foods = st.text_input("🍴 알러지 또는 못 먹는 음식 입력 (쉼표 구분)", "", key="excluded_foods")
+        excluded_foods = [food.strip() for food in excluded_foods.split(',') if food.strip()]  # ✅ 공백 제거
     with col2:
-        restricted_exercises = st.text_input("🏋️ 제한해야 할 운동 (쉼표 구분)", "").split(',')
+        restricted_exercises = st.text_input("🏋️ 제한해야 할 운동 (쉼표 구분)", "", key="restricted_exercises")
+        restricted_exercises = [exercise.strip() for exercise in restricted_exercises.split(',') if exercise.strip()]  # ✅ 공백 제거
 
-    if st.button("🏋️ 운동 계획 추천"):
-        workout_plan_text = get_recommendations("운동", user_info, tokenizer, model)
-        display_recommendation_table("🏋️ 운동 계획", workout_plan_text, restricted_exercises, "운동")
+    # ✅ 추천 버튼 UI 개선
+    col1, col2 = st.columns(2)
 
-    if st.button("🥗 식단 계획 추천"):
-        diet_plan_text = get_recommendations("식단", user_info, tokenizer, model)
-        display_recommendation_table("🥗 식단 계획", diet_plan_text, excluded_foods, "식단")
+    # ✅ 식단 추천 버튼
+    with col1:
+        if st.button("🥗 식단 계획 추천", key="diet_button"):
+            with st.spinner("AI가 식단을 추천하는 중...⏳"):
+                diet_plan = get_gemma_recommendation("식단", user_info, excluded_foods)
 
-    if st.button("🤖 AI 건강 상담"):
-        consultation_text = get_recommendations("건강 상담", user_info, tokenizer, model)
-        display_recommendation_table("🤖 AI 건강 상담", consultation_text)
+            if diet_plan:
+                st.success("✅ 맞춤형 식단 추천이 완료되었습니다!")
+                st.subheader("🥗 7일 맞춤형 식단 계획")
+                st.dataframe(pd.DataFrame(diet_plan), use_container_width=True)
+            else:
+                st.error("🚨 식단 추천을 생성하는 데 문제가 발생했습니다.")
+
+    # ✅ 운동 추천 버튼
+    with col2:
+        if st.button("🏋️ 운동 계획 추천", key="workout_button"):
+            with st.spinner("AI가 운동 계획을 추천하는 중...⏳"):
+                exercise_plan = get_gemma_recommendation("운동", user_info)
+
+            if exercise_plan:
+                st.success("✅ 맞춤형 운동 추천이 완료되었습니다!")
+                st.subheader("🏋️ 7일 맞춤형 운동 계획")
+                st.dataframe(pd.DataFrame(exercise_plan), use_container_width=True)
+            else:
+                st.error("🚨 운동 추천을 생성하는 데 문제가 발생했습니다.")
 
