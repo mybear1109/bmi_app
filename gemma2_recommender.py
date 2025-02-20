@@ -37,7 +37,8 @@ def generate_text(model, tokenizer, prompt, max_tokens=256):
         input_ids=inputs["input_ids"], 
         max_new_tokens=max_tokens,
         do_sample=True, 
-        temperature=0.7
+        temperature=1.3,
+        pad_token_id=tokenizer.eos_token_id
     )
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
 print(f"  변환 완료!!")  
