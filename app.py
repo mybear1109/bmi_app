@@ -1,8 +1,7 @@
 import streamlit as st
+
 # ✅ 페이지 설정
 st.set_page_config(page_title="건강 관리 앱", page_icon="🏥", layout="wide")
-
-
 import json
 import os
 from sidebar import get_selected_menu
@@ -14,6 +13,7 @@ from user_input import get_user_input
 from user_data_utils import save_user_data, load_user_data
 from model_manager import model_exercise, model_food  
 from login import display_auth_page, check_login_status, logout
+
 
 
 # ✅ 세션 초기화
@@ -87,7 +87,7 @@ def app():
         if user_data:
             st.session_state["user_data"] = json.dumps(user_data)
             save_user_data(user_id, user_data)
-            st.success("✅ 사용자 정보가 저장되었습니다!")
+        
       
 
     elif menu_option == "예측하기":
