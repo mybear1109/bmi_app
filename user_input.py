@@ -186,9 +186,11 @@ def get_user_input(existing_data, user_id):
 
     # 데이터 저장 버튼
     if st.button("✅ 저장하기"):
-        save_user_data(user_id, user_data)  # 기존 데이터 덮어쓰기
-        
-        return user_data
-    st.success("✅ 사용자 정보가 저장되었습니다!")  # 한 번만 출력
+        if "data_saved" not in st.session_state:  # 상태가 없으면 저장
+            save_user_data(user_id, user_data)  # 기존 데이터 덮어쓰기
+            st.session_state.data_saved = True  # 데이터가 저장되었음을 표시
+            st.success("✅ 사용자 정보가 저장되었습니다!")
+        else:
+            st.info("✅ 이미 저장된 데이터입니다.")  # 이미 저장된 경우 알림 표시
 
-    return None
+    return user_data
