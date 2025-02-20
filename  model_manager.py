@@ -6,6 +6,7 @@ import dill
 import streamlit as st
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
+
 # ✅ 모델 저장 경로
 MODEL_EXERCISE_PATH = "models/model_exercise.pth"
 MODEL_FOOD_PATH = "models/model_food.pth"
