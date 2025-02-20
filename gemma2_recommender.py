@@ -30,7 +30,8 @@ def load_gemma_model(model_name):
 def generate_text(model, tokenizer, prompt, max_tokens=256):
     """모델을 사용해 텍스트 생성"""
     inputs = tokenizer(prompt, return_tensors="pt")
-    inputs = {key: value.to(model.device) for key, value in inputs.items()}  # GPU/CPU 호환
+    inputs = {key: value.to(model.device) for key, value in inputs.items()}
+    print(f"  소환완료 !!")  # GPU/CPU 호환
 
     outputs = model.generate(
         input_ids=inputs["input_ids"], 
@@ -39,6 +40,7 @@ def generate_text(model, tokenizer, prompt, max_tokens=256):
         temperature=0.7
     )
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
+print(f"  변환 완료!!")  
 
 def parse_json_response(response_text):
     """모델 응답을 JSON 형식으로 변환"""
@@ -60,10 +62,13 @@ def parse_json_response(response_text):
             st.error("🚨 모델 응답이 예상되는 JSON 형식이 아닙니다.")
             st.write(response_text)  # 예상하지 못한 형식일 경우 원시 응답 출력
             return [{"메시지": "🚨 JSON 데이터 변환 실패, 모델 응답을 확인하세요."}]
+      
+
     except Exception as e:
         st.error(f"🚨 응답 처리 중 예외 발생: {e}")
         return [{"메시지": "🚨 응답 처리 오류"}]
-
+print(f"  🚨 응답 처리 오류")
+  
 def get_gemma_recommendation(category, user_info, excluded_foods=[]):
     """Google Gemma 모델을 이용한 맞춤형 운동 & 식단 추천"""
     user_info_text = json.dumps(user_info, ensure_ascii=False) if isinstance(user_info, dict) else str(user_info)
@@ -105,7 +110,8 @@ def get_gemma_recommendation(category, user_info, excluded_foods=[]):
     model, tokenizer = load_gemma_model("google/gemma-2-9b-it")
     if not model:
         return [{"메시지": "🚨 모델 로딩 실패"}]
-
+    print(f"  🚨 모델 로딩 실패")
+    
     # 예측 수행
     response_text = generate_text(model, tokenizer, prompt)
     
