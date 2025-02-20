@@ -80,7 +80,7 @@ def get_gemma_recommendation(category, user_info, excluded_foods=[]):
         prompt += "사용자의 건강 상태를 고려한 7일 식단을 JSON 형식으로 제공해 주세요."
         if excluded_foods:
             prompt += f"\n🚨 **다음 음식은 제외해주세요: {', '.join(excluded_foods)}**"
-
+    print(f"  🚨 다음 음식은 제외해주세요")
     system_content = (
         "당신은 전문적인 AI 피트니스 코치이며, 개인 맞춤형 건강 관리 전문가입니다. "
         "사용자의 건강 정보를 기반으로 최적의 운동 및 식단 계획을 작성해 주세요. "
@@ -111,7 +111,7 @@ def get_gemma_recommendation(category, user_info, excluded_foods=[]):
     if not model:
         return [{"메시지": "🚨 모델 로딩 실패"}]
     print(f"  🚨 모델 로딩 실패")
-    
+
     # 예측 수행
     response_text = generate_text(model, tokenizer, prompt)
     
