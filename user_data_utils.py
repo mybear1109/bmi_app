@@ -23,28 +23,7 @@ def load_user_data(user_id):
         st.error(f"🚨 사용자 데이터 로드 중 오류 발생: {e}")
         return None
 
-def save_user_data(user_id, data):
-    """📌 사용자 데이터 저장"""
-    try:
-        os.makedirs(os.path.dirname(USER_DATA_FILE), exist_ok=True)
-        
-        # 기존 데이터 로드 (없으면 빈 딕셔너리)
-        existing_data = {}
-        try:
-            if os.path.exists(USER_DATA_FILE):
-                with open(USER_DATA_FILE, 'r', encoding='utf-8') as f:
-                    existing_data = json.load(f)
-        except json.JSONDecodeError:
-            st.warning(f"⚠️ 사용자 데이터 파일({USER_DATA_FILE})이 손상되어 초기화합니다.")
 
-        # 새 데이터 추가 또는 업데이트
-        existing_data[str(user_id)] = data
-
-        # 수정된 데이터를 파일에 저장
-        with open(USER_DATA_FILE, 'w', encoding='utf-8') as f:
-            json.dump(existing_data, f, indent=4, ensure_ascii=False)
-        
-  
     except IOError as e:
         st.error(f"❌ 사용자 정보 저장 중 오류 발생: {e}")
     except Exception as e:
