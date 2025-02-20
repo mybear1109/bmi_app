@@ -117,3 +117,4 @@ def get_gemma_recommendation(category, user_info, excluded_foods=[]):
     
     # 응답 처리
     return parse_json_response(response_text)
+print(f"  🚨 응답 처리 완료")
