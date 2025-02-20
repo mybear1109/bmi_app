@@ -3,24 +3,66 @@ import re
 import hashlib
 from user_data_utils import load_user_data, save_user_data
 
+
+
 # ✅ 스타일 적용
 st.markdown("""
 <style>
-.big-font {
-    font-size:30px !important;
-    color: #1E90FF;
-}
-.success-font {
-    color: #32CD32;
-    font-size: 16px;
-}
-.error-font {
-    color: #FF4500;
-    font-size: 16px;
-}
+    .stApp {
+        background-color: #f0f4f8;
+    }
+    .big-font {
+        font-size: 36px !important;
+        color: #1E90FF;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    .success-font {
+        color: #28a745;
+        font-size: 18px;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        text-align: center;
+        margin: 10px 0;
+    }
+    .error-font {
+        color: #dc3545;
+        font-size: 18px;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        text-align: center;
+        margin: 10px 0;
+    }
+    .stTextInput > div > div > input {
+        background-color: #ffffff;
+        color: #495057;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        padding: 10px;
+        font-size: 16px;
+    }
+    .stButton > button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    .stButton > button:hover {
+        background-color: #0056b3;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
 </style>
 """, unsafe_allow_html=True)
-
 
 # ✅ 비밀번호 해싱 함수 (보안 강화)
 def hash_password(password):
@@ -50,6 +92,8 @@ def login():
     nickname = st.text_input("사용자 닉네임", key="login_nickname")
     password = st.text_input("비밀번호", type="password", key="login_password")
 
+    if st.button("로그인", key="login_button"):
+        hashed_password = hash_password(password)
     if st.button("로그인", key="login_button"):
         hashed_password = hash_password(password)
 
@@ -138,7 +182,7 @@ def signup():
             else:
                 hashed_password = hash_password(new_password)
                 user_data[new_username] = {"password": hashed_password}
-                save_user_data(user_data)  # ✅ 전체 사용자 데이터 저장
+                save_user_data(user_data)
                 st.markdown('<p class="success-font">✅ 회원가입이 완료되었습니다. 이제 로그인할 수 있습니다.</p>', unsafe_allow_html=True)
                 st.session_state["show_signup"] = False
                 st.rerun()
