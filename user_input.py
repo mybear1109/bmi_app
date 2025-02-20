@@ -187,7 +187,8 @@ def get_user_input(existing_data, user_id):
     # 데이터 저장 버튼
     if st.button("✅ 저장하기"):
         save_user_data(user_id, user_data)  # 기존 데이터 덮어쓰기
-        st.success("✅ 사용자 정보가 저장되었습니다!")  # 한 번만 출력
+        
         return user_data
+    st.success("✅ 사용자 정보가 저장되었습니다!")  # 한 번만 출력
 
     return None
