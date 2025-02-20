@@ -104,6 +104,7 @@ def get_user_input(existing_data, user_id):
         with col3:
             activity_level = st.selectbox("활동 수준", ["저활동", "중간활동", "고활동"], 
                                           index=["저활동", "중간활동", "고활동"].index(existing_data.get("활동 수준", "중간활동")))
+
     # ✅ 자동 계산된 지표 추가
     bmi = round(weight / ((height / 100) ** 2), 2) if height > 0 else 0.0
     total_cholesterol = ldl + hdl + triglyceride
@@ -183,13 +184,10 @@ def get_user_input(existing_data, user_id):
     html_table = df_selected.to_html(index=False, classes='dataframe')
     st.markdown(html_table, unsafe_allow_html=True)
 
-# 데이터 저장 버튼
-    def save_user_data_button(user_id, user_data):
-        """📌 사용자 정보를 저장하는 함수"""
-        if st.button("✅ 저장하기"):
-            # 사용자 데이터를 저장
-            save_user_data(user_id, user_data)  # 기존 데이터 덮어쓰기
-            st.success("✅ 사용자 정보가 저장되었습니다!")  # 메시지 한 번만 표시
-            return user_data
+    # 데이터 저장 버튼
+    if st.button("✅ 저장하기"):
+        save_user_data(user_id, user_data)  # 기존 데이터 덮어쓰기
+        st.success("✅ 사용자 정보가 저장되었습니다!")  # 한 번만 출력
+        return user_data
 
-        return None  # 버튼 클릭 안 했을 때는 None 반환
+    return None
