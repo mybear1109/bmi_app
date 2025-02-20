@@ -1,11 +1,7 @@
-import os
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import torch
 import json
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
-import warnings
-import streamlit as st
-
-warnings.filterwarnings('ignore')  # 경고 메시지 무시
+import os
 
 # 환경 변수에서 Hugging Face API 키 가져오기
 HF_API_KEY = os.getenv("HF_API_KEY")
@@ -21,27 +17,26 @@ def load_gemma_model(model_name):
             torch_dtype=torch.bfloat16,  # 16비트 정밀도 사용
             low_cpu_mem_usage=True  # 메모리 절약을 위한 설정
         )
+        pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)
         print(f"✅ {model_name} 모델 로드 성공")
-        return model, tokenizer
+        return pipe
     except Exception as e:
         print(f"🚨 {model_name} 모델 로드 실패: {e}")
-        return None, None
+        return None
 
 def generate_text(model, tokenizer, prompt, max_tokens=256):
     """모델을 사용해 텍스트 생성"""
     inputs = tokenizer(prompt, return_tensors="pt")
-    inputs = {key: value.to(model.device) for key, value in inputs.items()}
-    print(f"  소환완료 !!")  # GPU/CPU 호환
+    inputs = {key: value.to(model.device) for key, value in inputs.items()}  # GPU/CPU 호환
 
     outputs = model.generate(
         input_ids=inputs["input_ids"], 
         max_new_tokens=max_tokens,
         do_sample=True, 
         temperature=1.3,
-        pad_token_id=tokenizer.eos_token_id
+        pad_token_id=tokenizer.eos_token_id  # pad_token_id 설정 (eos_token과 동일)
     )
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
-print(f"  변환 완료!!")  
 
 def parse_json_response(response_text):
     """모델 응답을 JSON 형식으로 변환"""
@@ -68,8 +63,7 @@ def parse_json_response(response_text):
     except Exception as e:
         st.error(f"🚨 응답 처리 중 예외 발생: {e}")
         return [{"메시지": "🚨 응답 처리 오류"}]
-print(f"  🚨 응답 처리 오류")
-  
+
 def get_gemma_recommendation(category, user_info, excluded_foods=[]):
     """Google Gemma 모델을 이용한 맞춤형 운동 & 식단 추천"""
     user_info_text = json.dumps(user_info, ensure_ascii=False) if isinstance(user_info, dict) else str(user_info)
@@ -81,7 +75,7 @@ def get_gemma_recommendation(category, user_info, excluded_foods=[]):
         prompt += "사용자의 건강 상태를 고려한 7일 식단을 JSON 형식으로 제공해 주세요."
         if excluded_foods:
             prompt += f"\n🚨 **다음 음식은 제외해주세요: {', '.join(excluded_foods)}**"
-    print(f"  🚨 다음 음식은 제외해주세요")
+
     system_content = (
         "당신은 전문적인 AI 피트니스 코치이며, 개인 맞춤형 건강 관리 전문가입니다. "
         "사용자의 건강 정보를 기반으로 최적의 운동 및 식단 계획을 작성해 주세요. "
@@ -108,14 +102,12 @@ def get_gemma_recommendation(category, user_info, excluded_foods=[]):
     prompt = system_content + prompt
 
     # 모델 로드
-    model, tokenizer = load_gemma_model("google/gemma-2-9b-it")
-    if not model:
+    pipe = load_gemma_model("google/gemma-2-9b-it")
+    if not pipe:
         return [{"메시지": "🚨 모델 로딩 실패"}]
-    print(f"  🚨 모델 로딩 실패")
 
     # 예측 수행
-    response_text = generate_text(model, tokenizer, prompt)
+    response_text = generate_text(pipe.model, pipe.tokenizer, prompt)
     
     # 응답 처리
     return parse_json_response(response_text)
-print(f"  🚨 응답 처리 완료")
