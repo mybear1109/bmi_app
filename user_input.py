@@ -188,7 +188,7 @@ def get_user_input(existing_data, user_id):
     if st.button("✅ 저장하기"):
         if "data_saved" not in st.session_state:  # 상태가 없으면 저장
             save_user_data(user_id, user_data)  # 기존 데이터 덮어쓰기
-            st.session_state.data_saved = True  # 데이터가 저장되었음을 표시
+            
         
      
 
