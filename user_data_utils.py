@@ -36,7 +36,7 @@ def save_user_data(user_id, data):
         # 수정된 데이터를 파일에 저장
         with open(USER_DATA_FILE, 'w', encoding='utf-8') as f:
             json.dump(existing_data, f, indent=4, ensure_ascii=False)
-        st.success("✅ 사용자 정보가 저장되었습니다!")
+    
   
     except IOError as e:
         st.error(f"❌ 사용자 정보 저장 중 오류 발생: {e}")

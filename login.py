@@ -84,13 +84,15 @@ def display_auth_page():
 def login():
     st.markdown('<p class="big-font">🔐 로그인</p>', unsafe_allow_html=True)
 
-    user_data = load_user_data()  # ✅ 전체 사용자 데이터 로드
+    # ✅ 기존 사용자 데이터 로드
+    user_data = load_user_data() or {}  # 기본값으로 빈 딕셔너리 처리
     nickname = st.text_input("사용자 닉네임", key="login_nickname")
     password = st.text_input("비밀번호", type="password", key="login_password")
 
     if st.button("로그인", key="login_button"):
         hashed_password = hash_password(password)
 
+        # 로그인 검증
         if nickname in user_data and user_data[nickname]["password"] == hashed_password:
             st.markdown(f'<p class="success-font">🎉 환영합니다, {nickname}님!</p>', unsafe_allow_html=True)
             st.session_state["logged_in"] = True
@@ -150,7 +152,7 @@ def is_valid_password(password):
 def signup():
     st.markdown('<p class="big-font">🆕 회원가입</p>', unsafe_allow_html=True)
     
-    user_data = load_user_data()  # ✅ 전체 사용자 데이터 로드
+    user_data = load_user_data() or {}  # ✅ 기존 사용자 데이터 로드 (기본값 빈 딕셔너리)
 
     new_username = st.text_input("사용자 이름 (한글 7자 이내 또는 영문+숫자 10자 이내)")
     new_password = st.text_input("새 비밀번호 (영문+숫자+특수문자, 4자 이상)", type="password")
