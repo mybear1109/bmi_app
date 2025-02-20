@@ -11,7 +11,7 @@ from visualization import display_visualization_page
 from ai_coach import display_ai_coach_page
 from user_input import get_user_input
 from user_data_utils import save_user_data, load_user_data
-from model_utils import model_exercise, model_food  
+from model_manager import model_exercise, model_food  
 from login import display_auth_page, check_login_status, logout
 
 
