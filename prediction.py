@@ -3,7 +3,7 @@ import time
 import torch
 import pandas as pd
 import os
-from model_manager import model_exercise, model_food  # 모델 로딩 확인
+from model_utils import model_exercise, model_food  # 모델 로딩 확인
 from user_data_utils import load_user_data, save_user_data
 
 # 예측 결과 저장 파일 경로
