@@ -3,8 +3,6 @@ import re
 import hashlib
 from user_data_utils import load_user_data, save_user_data
 
-
-
 # ✅ 스타일 적용
 st.markdown("""
 <style>
@@ -69,7 +67,6 @@ def hash_password(password):
     """📌 비밀번호를 해싱하여 저장"""
     return hashlib.sha256(password.encode()).hexdigest()
 
-
 # ✅ 로그인 상태 확인 함수
 def check_login_status():
     """📌 사용자의 로그인 상태 확인"""
@@ -77,12 +74,11 @@ def check_login_status():
 
 # ✅ 로그인 페이지 표시 함수 (🚀 `display_auth_page` 함수 추가)
 def display_auth_page():
+    """📌 로그인 및 회원가입 페이지 표시"""
     if st.session_state.get("show_signup", False):
         signup()
     else:
         login()
-
-
 
 # ✅ 로그인 기능
 def login():
@@ -94,8 +90,6 @@ def login():
 
     if st.button("로그인", key="login_button"):
         hashed_password = hash_password(password)
-    if st.button("로그인", key="login_button"):
-        hashed_password = hash_password(password)
 
         if nickname in user_data and user_data[nickname]["password"] == hashed_password:
             st.markdown(f'<p class="success-font">🎉 환영합니다, {nickname}님!</p>', unsafe_allow_html=True)
@@ -104,7 +98,7 @@ def login():
             st.session_state["user_info"] = user_data[nickname]
             st.session_state["show_signup"] = False
             st.session_state["show_auth"] = False
-            st.rerun()
+            st.experimental_rerun()  # 로그인 성공 후 새로 고침
         else:
             st.markdown('<p class="error-font">🚨 사용자 닉네임 또는 비밀번호가 올바르지 않습니다.</p>', unsafe_allow_html=True)
 
@@ -112,11 +106,10 @@ def login():
     with col1:
         if st.button("🆕 회원가입", key="signup_button"):
             st.session_state["show_signup"] = True
-            st.rerun()
+            st.experimental_rerun()  # 회원가입 페이지로 이동 후 새로 고침
     with col2:
         if st.button("🚀 게스트로 입장", key="guest_button"):
             guest_login()
-
 
 # ✅ 게스트 로그인 기능
 def guest_login():
@@ -125,8 +118,7 @@ def guest_login():
     st.session_state["nickname"] = "게스트"
     st.session_state["user_info"] = {"is_guest": True}
     st.session_state["show_auth"] = False
-    st.rerun()
-
+    st.experimental_rerun()  # 게스트 로그인 후 새로 고침
 
 # ✅ 로그아웃 기능
 def logout():
@@ -137,14 +129,12 @@ def logout():
     st.session_state["show_signup"] = False
     st.session_state["show_auth"] = False
     st.markdown('<p class="success-font">✅ 로그아웃되었습니다.</p>', unsafe_allow_html=True)
-    st.rerun()
-
+    st.experimental_rerun()  # 로그아웃 후 새로 고침
 
 # ✅ 사용자명 검증 함수
 def is_valid_username(username):
     """📌 한글(7자 이내) 또는 영문+숫자(10자 이내) 검증"""
     return bool(re.match(r'^[가-힣]{1,7}$', username) or re.match(r'^[a-zA-Z0-9]{1,10}$', username))
-
 
 # ✅ 비밀번호 검증 함수
 def is_valid_password(password):
@@ -155,7 +145,6 @@ def is_valid_password(password):
         re.search(r'\d', password) and
         re.search(r'[!@#$%^&*(),.?":{}|<>]', password)
     )
-
 
 # ✅ 회원가입 기능
 def signup():
@@ -185,18 +174,9 @@ def signup():
                 save_user_data(user_data)
                 st.markdown('<p class="success-font">✅ 회원가입이 완료되었습니다. 이제 로그인할 수 있습니다.</p>', unsafe_allow_html=True)
                 st.session_state["show_signup"] = False
-                st.rerun()
+                st.experimental_rerun()
 
     with col2:
         if st.button("⬅️ 로그인으로 돌아가기"):
             st.session_state["show_signup"] = False
-            st.rerun()
-
-
-# ✅ 로그인/회원가입 페이지 실행 함수
-def display_auth_page():
-    """📌 로그인 및 회원가입 페이지 표시"""
-    if st.session_state.get("show_signup", False):
-        signup()
-    else:
-        login()
+            st.experimental_rerun()  # 로그인 페이지로 돌아가기 후 새로 고침
