@@ -43,17 +43,22 @@ def generate_text(model, tokenizer, prompt, max_tokens=256):
 def parse_json_response(response_text):
     """모델 응답을 JSON 형식으로 변환"""
     try:
+        # JSON 형식을 수동으로 처리 (예: 응답의 앞뒤 공백이나 구분자 제거)
         json_start = response_text.find("[{")
         json_end = response_text.rfind("}]")
+        
         if json_start != -1 and json_end != -1:
+            # 응답 텍스트에서 JSON 부분을 추출
             json_output = response_text[json_start:json_end + 2]
             try:
-                return json.loads(json_output)  # JSON 변환
+                return json.loads(json_output)  # JSON 변환 시도
             except json.JSONDecodeError:
                 st.error("🚨 JSON 변환 오류 발생, 모델 응답을 확인하세요.")
+                st.write(response_text)  # 오류 발생 시 원시 응답 텍스트 출력
                 return [{"메시지": "🚨 JSON 변환 오류"}]
         else:
             st.error("🚨 모델 응답이 예상되는 JSON 형식이 아닙니다.")
+            st.write(response_text)  # 예상하지 못한 형식일 경우 원시 응답 출력
             return [{"메시지": "🚨 JSON 데이터 변환 실패, 모델 응답을 확인하세요."}]
     except Exception as e:
         st.error(f"🚨 응답 처리 중 예외 발생: {e}")
@@ -61,11 +66,9 @@ def parse_json_response(response_text):
 
 def get_gemma_recommendation(category, user_info, excluded_foods=[]):
     """Google Gemma 모델을 이용한 맞춤형 운동 & 식단 추천"""
-    # 사용자 정보 텍스트로 변환
     user_info_text = json.dumps(user_info, ensure_ascii=False) if isinstance(user_info, dict) else str(user_info)
     prompt = f"사용자 건강 상태: {user_info_text}\n"
 
-    # 카테고리별 프롬프트 추가
     if category == "운동":
         prompt += "사용자의 건강 상태와 목표에 맞는 7일 운동 계획을 JSON 형식으로 제공해 주세요."
     elif category == "식단":
@@ -73,7 +76,6 @@ def get_gemma_recommendation(category, user_info, excluded_foods=[]):
         if excluded_foods:
             prompt += f"\n🚨 **다음 음식은 제외해주세요: {', '.join(excluded_foods)}**"
 
-    # 시스템 명령어 추가
     system_content = (
         "당신은 전문적인 AI 피트니스 코치이며, 개인 맞춤형 건강 관리 전문가입니다. "
         "사용자의 건강 정보를 기반으로 최적의 운동 및 식단 계획을 작성해 주세요. "
@@ -107,4 +109,5 @@ def get_gemma_recommendation(category, user_info, excluded_foods=[]):
     # 예측 수행
     response_text = generate_text(model, tokenizer, prompt)
     
+    # 응답 처리
     return parse_json_response(response_text)
