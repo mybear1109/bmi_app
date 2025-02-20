@@ -80,7 +80,7 @@ def get_gemma_recommendation(category, user_info, excluded_foods=[]):
     if not pipe:
         return [{"메시지": "🚨 모델 로딩 실패"}]
 
-    outputs = pipe(prompt, max_length=512, num_return_sequences=1)
+    outputs = pipe(prompt, max_new_tokens=512, num_return_sequences=1)
     response_text = outputs[0]['generated_text']
     
     return parse_json_response(response_text)
