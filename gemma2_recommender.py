@@ -6,18 +6,20 @@ import json
 
 HF_API_KEY = os.getenv("HF_API_KEY")
 
-@st.cache_resource
 def load_gemma_model(model_name):
     """모델을 로드하는 함수"""
-    try:
-        tokenizer = AutoTokenizer.from_pretrained(model_name, token=HF_API_KEY)
-        model = AutoModelForCausalLM.from_pretrained(model_name, token=HF_API_KEY, device_map="auto", low_cpu_mem_usage=True)
-        pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)  # device 0으로 설정 (GPU 사용 시)
-        print(f"✅ {model_name} 모델 로드 성공")
-        return pipe
-    except Exception as e:
-        print(f"🚨 {model_name} 모델 로드 실패: {e}")
-        return None
+    if "gemma_model" not in st.session_state:  # 이미 모델이 세션에 저장되어 있지 않으면
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(model_name, token=HF_API_KEY)
+            model = AutoModelForCausalLM.from_pretrained(model_name, token=HF_API_KEY, device_map="auto", low_cpu_mem_usage=True)
+            pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)  # device 0으로 설정 (GPU 사용 시)
+            st.session_state.gemma_model = pipe  # 모델을 세션에 저장
+            print(f"✅ {model_name} 모델 로드 성공")
+        except Exception as e:
+            print(f"🚨 {model_name} 모델 로드 실패: {e}")
+            st.session_state.gemma_model = None  # 로드 실패 시 None 저장
+
+    return st.session_state.get("gemma_model", None)
 
 def parse_json_response(response_text):
     """모델 응답을 JSON 형식으로 변환"""
