@@ -1,5 +1,6 @@
 
-# 💖 AI 기반 개인 맞춤형 건강 관리 웹 애플리케이션: "당신의 오늘은 안녕하십니까?" 💖
+# 💖 AI 기반 개인 맞춤형 건강 관리 웹 애플리케이션: 
+ # "당신의 오늘은 안녕하십니까?" 💖
 
 ### 🖥️ [홈페이지 바로가기](https://lizardsapp-gbr4mdxzrsw7ngzbkhk4pc.streamlit.app/)
 
@@ -16,7 +17,7 @@
 
 **"당신의 오늘은 안녕하십니까?"**
 는 바쁜 현대인들이 자신의 감정과 건강을 챙기도록 돕는 AI 기반 웹 애플리케이션입니다. **개인 맞춤형 운동 계획**과 **식단 추천**을 통해 사용자의 웰빙을 증진시키는 것을 목표로 합니다. 
-**본 프로젝트는 개인적으로 진행**되었으며, **Gemini Pro (Gemma-2) 모델**을 활용하여 사용자에게 최적화된 건강 관리 솔루션을 제공합니다.
+**본 프로젝트는 개인적으로 진행**되었으며, **<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 을 활용하여 사용자에게 최적화된 건강 관리 솔루션을 제공합니다.
 
 <br>
 
@@ -46,9 +47,9 @@
 
 *   **📝 건강 데이터 입력**: 사용자 친화적 인터페이스를 통해 기본 정보, 신체 측정, 혈압/혈당/콜레스테롤, 생활 습관 등 건강 정보를 간편하게 입력합니다.
 *   **🧠 AI 기반 예측**: 입력된 데이터를 기반으로 운동 필요성과 식단 개선 필요성을 정확하게 예측합니다.
-*   **🍏 맞춤형 운동/식단 추천**: Gemini Pro 모델을 활용하여 개인의 건강 상태와 목표에 최적화된 운동 계획과 식단 정보를 제공합니다.
-    *   **✨ Gemma-2 모델로 전환**: 기존 SKT KoGPT2 모델의 json 변환 문제 및 부정확한 답변 생성 문제를 해결하고, Gemma-2 모델로 전환하여 추천 시스템의 정확도와 신뢰성을 향상시켰습니다.
-    *   **🏆 Gemini Pro 모델 활용**: 운동 계획 및 식단 추천 함수는 Gemini Pro 모델을 사용하여 텍스트 기반 추천을 생성하고, 생성된 텍스트를 파싱하여 DataFrame 형식으로 제공합니다.
+*   **🍏 맞춤형 운동/식단 추천**: **<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 모델을 활용하여 개인의 건강 상태와 목표에 최적화된 운동 계획과 식단 정보를 제공합니다.
+    *   **✨ Gemma-2 모델로 전환**: 기존 SKT KoGPT2 모델의 json 변환 문제 및 부정확한 답변 생성 문제를 해결하고, **<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 로 전환하여 추천 시스템의 정확도와 신뢰성을 향상시켰습니다.
+    *   **🏆 Gemini Pro 모델 활용**: 운동 계획 및 식단 추천 함수는 **<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 을 사용하여 텍스트 기반 추천을 생성하고, 생성된 텍스트를 파싱하여 DataFrame 형식으로 제공합니다.
 *   **📊 데이터 시각화**: 사용자의 건강 데이터를 다양한 그래프와 차트로 시각화하여 건강 상태 변화를 직관적으로 파악할 수 있습니다.
 *   **🔑 사용자 계정 관리**: 회원가입 및 로그인 기능을 통해 개인별 건강 데이터를 안전하게 관리합니다.
 <br>
@@ -185,6 +186,8 @@
     <tr>
         <td>
 
+<br>
+
 def fill_missing_values(df_food):<br>
 df['칼로리'] = df['칼로리'].fillna(df['칼로리'].median())<br>
 df['지방'] = df['지방'].fillna(df['지방'].median())<br>
@@ -199,6 +202,8 @@ df['콜레스테롤'] = df['콜레스테롤'].fillna(df['콜레스테롤'].media
 df['나트륨'] = df['나트륨'].fillna(df['나트륨'].median())<br>
 df['수분'] = df['수분'].fillna(df['수분'].mean())<br>
 return df_food
+
+<br>
 
 </td>
     </tr>
@@ -217,12 +222,33 @@ return df_food
 
 3.  **사용자 입력 데이터**:
 
-<table> <tr> <th>** 코드 **</th> </tr> <tr> <td>
-def handle_missing_values(df):)<br>
-# 텍스트 데이터 처리 ("🔍 예측을 실행하세요" -> "미실행"))<br>
+<table> <tr> <th>** 코     드 **</th> </tr> <tr> <td>
+
+<br>
+    
+def handle_missing_values(df):<br>
+
+<br>
+    
+</td> </tr> </table>
+<br>
+<br>  
+
+
+# 텍스트 데이터 처리 ("🔍 예측을 실행하세요" -> "미실행"))
+
+<br>
+<table> <tr> <th>** 코     드 **</th> </tr> <tr> <td>
+
+
+<br>
+    
 text_cols = ['운동 가능성', '식단 개선 필요성'])<br>
 for col in text_cols:)<br>
 df[col] = df[col].replace(['🔍 예측을 실행하세요'], '미실행'))<br>
+
+<br>
+    
 </td> </tr> </table>
 <br>
 <br>  
@@ -230,11 +256,17 @@ df[col] = df[col].replace(['🔍 예측을 실행하세요'], '미실행'))<br>
  
 #### 수치형 데이터 처리 ("미입력" -> NaN -> 중앙값 대체)
 
-<table> <tr> <th>** 코드 **</th> </tr> <tr> <td>
+<table> <tr> <th>** 코     드 **</th> </tr> <tr> <td>
+
+<br>
+
 numeric_cols = ['연령대', '현재 체중', '목표 체중', '연령대코드(5세단위)', '허리둘레 (cm)']<br>
 for col in numeric_cols:<br>
     df[col] = pd.to_numeric(df[col], errors='coerce')<br>
     df[col] = df[col].fillna(df[col].median())<br>
+
+<br>
+    
 </td> </tr> </table>
 
 <br>
@@ -254,7 +286,11 @@ for col in numeric_cols:<br>
 
 <br>
 
-<table> <tr> <th>** 코드 **</th> </tr> <tr> <td>
+<table> <tr> <th>** 코 드 **</th> </tr> <tr> <td>
+
+
+<br>
+    
 feature_columns = [<br>
 "BMI", # 비만 지수 (높을수록 비만 위험 증가)<br>
 "허리둘레", # 복부 비만 지표 (높을수록 건강 위험 증가)<br>
@@ -270,6 +306,9 @@ feature_columns = [<br>
 "흡연상태", # 흡연 여부 (흡연자는 건강 위험 증가)<br>
 "음주여부" # 음주 여부 (과음 시 건강 위험 증가)<br>
 ]
+
+<br>
+    
 </td> </tr> </table>
 
 <br>
@@ -305,6 +344,9 @@ feature_columns = [<br>
  <br> 
       
 <table> <tr> <th>** 코드 **</th> </tr> <tr> <td>
+
+<br>
+    
 class FoodPredictionModel(nn.Module):<br>
 def init(self, input_dim):<br>
 super(FoodPredictionModel, self).init()<br>
@@ -319,6 +361,8 @@ def forward(self, x):<br>
     x = self.softmax(self.layer3(x))<br>
     return x<br>
 
+<br>
+    
 </td> </tr> </table>
 
 <br>
@@ -326,7 +370,7 @@ def forward(self, x):<br>
 
 
 3.  **Gemini Pro (Gemma-2) 모델**
-    *   Hugging Face Transformers 라이브러리를 사용하여 Gemini Pro 모델을 통합
+    *   Hugging Face Transformers 라이브러리를 사용하여**<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 을 통합
     *   사용자 맞춤형 운동 계획 및 식단 추천 생성
   
 <br>
@@ -346,9 +390,9 @@ def forward(self, x):<br>
 <br>
 
 *   **Gemma-2 모델**을 활용한 텍스트 생성 기반 추천 시스템
-    *   **SKT KoGPT2 모델의 한계 극복**: KoGPT2 모델의 json 변환 문제로 인해 Gemma-2 모델로 변경하여 추천 시스템 구축 문제를 해결했습니다.
+    *   **SKT KoGPT2 모델의 한계 극복**: KoGPT2 모델의 json 변환 문제로 인해**<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 로 변경하여 추천 시스템 구축 문제를 해결했습니다.
 
-*   **💪 사용자 정보 기반 추천**: 사용자 입력 데이터를 기반으로 Gemma-2 모델이 최적의 추천 제공
+*   **💪 사용자 정보 기반 추천**: 사용자 입력 데이터를 기반으로 **<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 이 최적의 추천 제공
 *   **🔮 핵심 기술**:Hugging Face Transformers, 텍스트 생성 모델
 *   **주요 기능**: 운동 계획 및 식단 계획 DataFrame 생성
 
@@ -407,7 +451,7 @@ Name: count, dtype: int64
 
 <br>
 
-본 프로젝트는 다음과 같은 데이터 흐름을 가지고 있으며, Gemini Pro 모델을 활용하여 사용자에게 맞춤형 추천을 제공합니다.
+본 프로젝트는 다음과 같은 데이터 흐름을 가지고 있으며,**<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 을 활용하여 사용자에게 맞춤형 추천을 제공합니다.
 
 <br>
 
@@ -427,7 +471,7 @@ Name: count, dtype: int64
 <br>
 
 3.  **💡 Gemini Pro 모델 추론**:
-* Hugging Face Transformers 라이브러리를 사용하여 Gemini Pro 모델을 로드하고 추론을 수행합니다.
+* Hugging Face Transformers 라이브러리를 사용하여**<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 을 로드하고 추론을 수행합니다.
 
 <br>
 
@@ -469,14 +513,18 @@ Name: count, dtype: int64
 
 <table> <tr> <th> 스트림릿(Streamlit) 설치 시 라이브러리 간의 호환성은 매우 중요한 주요 이유: </th> </tr> <tr> <td>
 
+<br>
 
-원활한 통합: 데이터 과학 라이브러리와 쉽게 결합 가능12.
+📲 원활한 통합: 데이터 과학 라이브러리와 쉽게 결합 가능.
 
-기능 확장: 다양한 기능을 추가할 수 있음2.
+✈️ 기능 확장: 다양한 기능을 추가할 수 있음.
 
-개발 효율성: 기존 라이브러리 활용으로 시간 절약1.
+🏭 개발 효율성: 기존 라이브러리 활용으로 시간 절약.
 
-시각화 향상: 데이터 표현이 효과적임
+🎆 시각화 향상: 데이터 표현이 효과적임
+
+<br>
+
 </td> </tr> </table>
 
 <br>
@@ -484,7 +532,7 @@ Name: count, dtype: int64
 
 
 2.  **🔑 API 키 설정**
-    *   `.streamlit/secrets.toml` 파일에 Gemini Pro API 키를 저장
+    *   `.streamlit/secrets.toml` 파일에 **<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** API 키를 저장
 
         ```
         HF_API_KEY = "YOUR_API_KEY"
