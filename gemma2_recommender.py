@@ -166,11 +166,26 @@ def get_gemma_recommendation(category, user_info, allergies=[], excluded_foods=[
     
     return generate_text_via_api(prompt)
 
-def display_formatted_data(display_formatted_data):
-    """포맷된 데이터를 표시"""
+def clean_and_format_data(all_excluded_foods):
     # 불필요한 마크다운 구문 제거
+    cleaned_data = re.sub(r'[*#\-_|]', '', all_excluded_foods)
     
-    return display_formatted_data
+    # 여러 줄의 공백을 하나의 줄바꿈으로 대체
+    cleaned_data = re.sub(r'\n\s*\n', '\n', cleaned_data)
+    
+    # 콜론 뒤의 공백 제거
+    cleaned_data = re.sub(r':\s+', ': ', cleaned_data)
+    
+    return cleaned_data.strip()
+
+def display_formatted_data(all_excluded_foods):
+    cleaned_data = clean_and_format_data(all_excluded_foods)
+    
+    # 데이터를 줄 단위로 분할
+    lines = cleaned_data.split('\n')
+    
+    # 데이터프레임 생성
+    all_excluded_foods = pd.DataFrame(lines, columns=['내용'])
 
 
     
