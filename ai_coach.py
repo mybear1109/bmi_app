@@ -57,7 +57,7 @@ def generate_recommendation(user_info, goal, excluded_foods=None):
         exercise_plan = get_gemma_recommendation("운동", user_info)
         diet_plan = get_gemma_recommendation("식단", user_info, excluded_foods)
 
-    st.success("✅ 맞춤형 식단 추천 & 맞춤형 운동 추천이 완료되었습니다!")
+    st.success("✅ 맞춤형 식단 & 운동 추천이 완료되었습니다!")
     st.table(diet_plan)
 
 

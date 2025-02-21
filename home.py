@@ -78,6 +78,7 @@ def display_home_page():
             color: #555;
             line-height: 1.6;
         }
+        
 
         /* 추가 정보 섹션 스타일 */
         .additional-info {
@@ -133,8 +134,8 @@ def display_home_page():
     st.markdown(
         """
         <div class='main-title-container'>
-            <h1 class='main-title'>💪 AI 피트니스 코치</h1>
-            <p class='subtitle'>개인 맞춤형 건강 관리 솔루션</p>
+            <h1 class='main-title'>💖 "당신의 오늘은 안녕하십니까?" 💖</h1>
+            <h4 p class='subtitle'> AI 피트니스 코치 : 개인 맞춤형 건강 관리 솔루션 😎</p>
         </div>
         """,
         unsafe_allow_html=True
@@ -164,7 +165,8 @@ def display_home_page():
         """,
         unsafe_allow_html=True
     )
-
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가  # 간격 추가
     # 추가 정보
     st.header("🏵️ 왜 AI 피트니스 코치를 선택해야 할까요?")
     st.markdown(
@@ -175,7 +177,7 @@ def display_home_page():
                 <li class='additional-item'>📊<strong>데이터 기반</strong> 건강 분석으로 정확한 건강 상태 파악</li>
                 <li class='additional-item'>🤖 <strong>AI 추천</strong>으로 개인에게 최적화된 맞춤 계획 제공</li>
                 <li class='additional-item'>🚀 <strong>언제 어디서나</strong> 접근 가능한 편리한 모바일 서비스</li>
-                <li class='additional-item'>👨‍⚕️ 전문가 수준의 조언을 AI를 통해 실시간으로 제공</li>
+                <li class='additional-item'>👨‍⚕️ 전문가 수준의 조언을 AI를 통해 <strong>실시간으로 제공</strong></li>
                 <li class='additional-item'>📈 지속적인 <strong>데이터 업데이트</strong>로 최신 건강 트렌드 반영</li>
             </ul>
         </div>
