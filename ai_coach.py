@@ -95,26 +95,6 @@ def generate_recommendation(user_info, goal, excluded_foods):
         
     st.success("✅ 맞춤형 식단 & 운동 추천이 완료되었습니다!")
 
-def clean_and_format_data(all_excluded_foods):
-    # 불필요한 마크다운 구문 제거
-    cleaned_data = re.sub(r'[*#\-_|]', '', all_excluded_foods)
-    
-    # 여러 줄의 공백을 하나의 줄바꿈으로 대체
-    cleaned_data = re.sub(r'\n\s*\n', '\n', cleaned_data)
-    
-    # 콜론 뒤의 공백 제거
-    cleaned_data = re.sub(r':\s+', ': ', cleaned_data)
-    
-    return cleaned_data.strip()
-
-def display_formatted_data(all_excluded_foods):
-    cleaned_data = clean_and_format_data(all_excluded_foods)
-    
-    # 데이터를 줄 단위로 분할
-    lines = cleaned_data.split('\n')
-    
-    # 데이터프레임 생성
-    all_excluded_foods = pd.DataFrame(lines, columns=['내용'])
         
 
      # 스타일이 적용된 테이블로 표시
