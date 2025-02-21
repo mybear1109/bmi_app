@@ -220,3 +220,17 @@ def handle_ai_response(response):
         return response
     else:
         return None
+def display_formatted_data(response):
+    """응답 데이터를 적절한 형태로 변환하여 표시"""
+    parsed_data = handle_ai_response(response)
+
+    if isinstance(parsed_data, pd.DataFrame):
+        # Markdown 테이블 변환 성공 시 DataFrame 출력
+        st.dataframe(parsed_data, use_container_width=True)
+    elif isinstance(parsed_data, list):
+        # JSON 변환 성공 시 리스트 데이터 출력
+        df = pd.DataFrame(parsed_data)
+        st.dataframe(df, use_container_width=True)
+    else:
+        # 일반 텍스트일 경우 출력
+        st.markdown(f"```\n{parsed_data}\n```")    
