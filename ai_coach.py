@@ -97,9 +97,9 @@ def generate_recommendation(user_info, goal, excluded_foods):
     st.table(all_excluded_foods)
 
         
-def clean_and_format_data(data):
+def clean_and_format_data(all_excluded_foods):
     # 불필요한 마크다운 구문 제거
-    cleaned_data = re.sub(r'[*#\-_|]', '', data)
+    cleaned_data = re.sub(r'[*#\-_|]', '', all_excluded_foods)
     
     # 여러 줄의 공백을 하나의 줄바꿈으로 대체
     cleaned_data = re.sub(r'\n\s*\n', '\n', cleaned_data)
@@ -109,8 +109,8 @@ def clean_and_format_data(data):
     
     return cleaned_data.strip()
 
-def display_formatted_data(data):
-    cleaned_data = clean_and_format_data(data)
+def display_formatted_data(all_excluded_foods):
+    cleaned_data = clean_and_format_data(all_excluded_foods)
     
     # 데이터를 줄 단위로 분할
     lines = cleaned_data.split('\n')
