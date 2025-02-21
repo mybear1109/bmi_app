@@ -2,6 +2,10 @@
 # 💖 "당신의 오늘은 안녕하십니까?" 
 <br>
 
+### [🖥️ HOME PAGE](https://lizardsapp-gbr4mdxzrsw7ngzbkhk4pc.streamlit.app/)
+
+---
+<br>
 
 ## 💪 AI 기반 개인 맞춤형 건강 관리 웹 애플리케이션 🍎
 <br>
@@ -9,17 +13,14 @@
 
 
 ### 🌟 프로젝트 배경
-현대 사회에서 많은 사람들이 바쁜 일상 속에서 자신의 감정과 웰빙을 돌보는 것을 소홀히 하고 있습니다. 이에 우리는 "당신의 오늘은 안녕하십니까?"라는 주제로 프로젝트를 시작하게 되었습니다.
+현대 사회에서 많은 사람들이 바쁜 일상 속에서 자신의 감정과 건강을 돌보는 것을 소홀히 하고 있습니다. 이에  **"당신의 오늘은 안녕하십니까?"** 라는 주제로 프로젝트를 시작하게 되었습니다.
 <br>
 <br>
 
 ###  🎯 프로젝트 목적
 **자기 인식 증진**: 사용자들이 매일 자신의 감정 상태를 체크하고 기록하도록 돕습니다.
-
 **정신 건강 증진**: 간단한 명상, 긍정적 확언 등의 일일 활동을 제안합니다.
-
 **사회적 연결**: 비슷한 감정을 겪는 사람들과의 익명 소통 기회를 제공합니다.
-
 **데이터 기반 인사이트**: 개인 및 사회적 차원의 정서 트렌드를 분석합니다.
 <br>
 <br>
@@ -44,35 +45,36 @@
 ---
 
 <br>
-<br>  
 
 ### 📌 프로젝트 개요
 <br>
 
 본 프로젝트는 개인의 건강 데이터를 기반으로 **AI 모델**이 맞춤형 운동 계획과 식단 추천을 제공하는 **Streamlit 웹 애플리케이션**입니다. 
+
 **국민건강보험공단 건강검진정보 데이터셋**을 활용하여 사용자의 건강 상태를 정확하게 분석하고, **Gemini Pro (Gemma-2)** 모델을 통해 개인에게 최적화된 솔루션을 제공합니다.
 <br>
 
 
 #### 🌟 주요 기능
+<br>
 
-*   📝 **건강 데이터 입력**: 사용자 친화적인 인터페이스를 통해 기본 정보, 신체 측정, 혈압/혈당/콜레스테롤, 생활 습관 등 건강 정보를 입력합니다.
-*   🧠 **AI 기반 예측**: 입력된 데이터를 기반으로 **운동 필요성**과 **식단 개선 필요성**을 예측합니다.
-*   🍏 **맞춤형 운동/식단 추천**: Gemini Pro 모델을 활용하여 개인의 건강 상태와 목표에 맞는 운동 계획과 식단 정보를 제공합니다.
-*   🎯 **기존 모델의 한계 극복**: 기존 SKT KoGPT2 모델의 json 변환 문제 및 엉뚱한 답변 생성 문제를 해결하고,
-*  ✨  **Gemma-2 모델**로 전환하여 추천 시스템의 정확도와 신뢰성을 향상시켰습니다.
-*  🏆  운동 계획 및 식단 추천 함수는 **Gemma-2 모델**을 사용하여 텍스트 기반 추천을 생성하고, 생성된 텍스트를 파싱하여 DataFrame 형식으로 제공합니다          
-*   📊 **데이터 시각화**: 사용자의 건강 데이터를 다양한 그래프와 차트로 시각화하여 건강 상태 변화를 직관적으로 파악할 수 있습니다.
-*   🔑 **사용자 계정 관리**: 회원가입 및 로그인 기능을 통해 개인별 건강 데이터를 안전하게 관리합니다.
+- 📝 **건강 데이터 입력**: 사용자 친화적 인터페이스를 통해 기본 정보, 신체 측정, 혈압/혈당/콜레스테롤, 생활 습관 등 건강 정보를 간편하게 입력합니다.
+- 🧠 **AI 기반 예측**: 입력된 데이터를 기반으로 **운동 필요성**과 **식단 개선 필요성**을 정확하게 예측합니다.
+- 🍏 **맞춤형 운동/식단 추천**: Gemini Pro 모델을 활용하여 개인의 건강 상태와 목표에 최적화된 운동 계획과 식단 정보를 제공합니다.
+  - 🎯 **기존 모델의 한계 극복**: 기존 SKT KoGPT2 모델의 json 변환 문제 및 부정확한 답변 생성 문제를 해결하고, **✨ Gemma-2 모델**로 전환하여 추천 시스템의 정확도와 신뢰성을 향상시켰습니다.
+  - 🏆 **Gemini Pro 모델 활용**: 운동 계획 및 식단 추천 함수는 **Gemma-2 모델**을 사용하여 텍스트 기반 추천을 생성하고, 생성된 텍스트를 파싱하여 DataFrame 형식으로 제공합니다.
+- 📊 **데이터 시각화**: 사용자의 건강 데이터를 다양한 그래프와 차트로 시각화하여 건강 상태 변화를 직관적으로 파악할 수 있습니다.
+- 🔑 **사용자 계정 관리**: 회원가입 및 로그인 기능을 통해 개인별 건강 데이터를 안전하게 관리합니다.
+
 <br>
 <br>  
 
 ---
 
 <br>
-<br>  
 
-#### 🛠️ 기술 스택
+
+### 🛠️ 기술 스택
 
 *   💻 **Python**: 웹 애플리케이션 개발의 핵심 언어
 *   **Streamlit**: 사용자 친화적인 인터페이스를 위한 웹 프레임워크
@@ -85,12 +87,18 @@
 *   📈 **Plotly**: 인터랙티브한 데이터 시각화
 *   ☁️ **AWS Lambda**: 서버리스 환경 구축 (배포 후 변경 예정)
 *   🐳 **Docker**: 컨테이너 기반 개발 환경 구성
+
+
+<img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white">
+<img src="https://img.shields.io/badge/amazonaws-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white">
+<img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">
+<img src="https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white">
+
 <br>
 <br>  
 
 ---
 
-<br>
 <br>  
 
 
@@ -133,7 +141,6 @@
 
 ---
 
-<br>
 <br>  
 
 
@@ -162,8 +169,6 @@
 ---
 
 <br>
-<br>  
-
 
 ##### ⚙️ 주요 전처리 과정
 <br>  
@@ -216,10 +221,10 @@ df[col] = df[col].replace(['🔍 예측을 실행하세요'], '미실행'))<br>
 ##### 수치형 데이터 처리 ("미입력" -> NaN -> 중앙값 대체)
 
 <table> <tr> <th>** 코드 **</th> </tr> <tr> <td>
-numeric_cols = ['연령대', '현재 체중', '목표 체중', '연령대코드(5세단위)', '허리둘레 (cm)']
-for col in numeric_cols:
-    df[col] = pd.to_numeric(df[col], errors='coerce')
-    df[col] = df[col].fillna(df[col].median())
+numeric_cols = ['연령대', '현재 체중', '목표 체중', '연령대코드(5세단위)', '허리둘레 (cm)']<br>
+for col in numeric_cols:<br>
+    df[col] = pd.to_numeric(df[col], errors='coerce')<br>
+    df[col] = df[col].fillna(df[col].median())<br>
 </td> </tr> </table>
 
 <br>
@@ -236,29 +241,29 @@ for col in numeric_cols:
 ---
 
 <br>
-<br>  
 
 ##### 🎯 데이터 전처리에 사용된 주요 컬럼
 
 <table> <tr> <th>** 코드 **</th> </tr> <tr> <td>
-feature_columns = [
-"BMI", # 비만 지수 (높을수록 비만 위험 증가)
-"허리둘레", # 복부 비만 지표 (높을수록 건강 위험 증가)
-"수축기혈압(최고 혈압)", # 고혈압 위험 평가
-"이완기혈압(최저 혈압)", # 고혈압 위험 평가
-"혈압 차이", # 수축기 - 이완기 혈압 차이 (높을수록 심혈관 질환 위험)
-"총콜레스테롤", # LDL + HDL + 트리글리세라이드 (심혈관 건강)
-"고혈당 위험", # 식전혈당(공복혈당)이 높은 경우 당뇨병 위험 증가
-"간 지표", # (ALT, AST, 감마지티피) 간 건강 상태 반영
-"성별", # 남성 / 여성 차이 반영 (운동 및 식단에 영향)
-"연령대", # 연령대 (고령자 위험 증가)
-"비만 위험 지수", # 허리둘레 / BMI (비만 위험 증가)
-"흡연상태", # 흡연 여부 (흡연자는 건강 위험 증가)
-"음주여부" # 음주 여부 (과음 시 건강 위험 증가)
+feature_columns = [<br>
+"BMI", # 비만 지수 (높을수록 비만 위험 증가)<br>
+"허리둘레", # 복부 비만 지표 (높을수록 건강 위험 증가)<br>
+"수축기혈압(최고 혈압)", # 고혈압 위험 평가<br>
+"이완기혈압(최저 혈압)", # 고혈압 위험 평가<br>
+"혈압 차이", # 수축기 - 이완기 혈압 차이 (높을수록 심혈관 질환 위험)<br>
+"총콜레스테롤", # LDL + HDL + 트리글리세라이드 (심혈관 건강)<br>
+"고혈당 위험", # 식전혈당(공복혈당)이 높은 경우 당뇨병 위험 증가<br>
+"간 지표", # (ALT, AST, 감마지티피) 간 건강 상태 반영<br>
+"성별", # 남성 / 여성 차이 반영 (운동 및 식단에 영향)<br>
+"연령대", # 연령대 (고령자 위험 증가)<br>
+"비만 위험 지수", # 허리둘레 / BMI (비만 위험 증가)<br>
+"흡연상태", # 흡연 여부 (흡연자는 건강 위험 증가)<br>
+"음주여부" # 음주 여부 (과음 시 건강 위험 증가)<br>
 ]
 </td> </tr> </table>
 
-*   **🔑 컬럼 확장 이유**: 모델 학습 효율성을 높이기 위해 초기 7개에서 13개로 컬럼 수를 늘렸습니다. 입력 폼에 추가된 컬럼 정보 (식전혈당, 콜레스테롤 수치, 흡연/음주 여부 등)를 활용하여 예측 모델의 정확도를 향상시키고자 했습니다.
+*   **🔑 컬럼 확장 이유**: 모델 학습 효율성을 높이기 위해 초기 7개에서 13개로 컬럼 수를 늘렸습니다.
+*   입력 폼에 추가된 컬럼 정보 (식전혈당, 콜레스테롤 수치, 흡연/음주 여부 등)를 활용하여 예측 모델의 정확도를 향상시키고자 했습니다.
 
 <br>
 <br>  
@@ -266,7 +271,6 @@ feature_columns = [
 ---
 
 <br>
-<br>  
 
 
 #### 🧠 모델 개발 및 학습
@@ -287,19 +291,19 @@ feature_columns = [
   
       
 <table> <tr> <th>** 코드 **</th> </tr> <tr> <td>
-class FoodPredictionModel(nn.Module):
-def init(self, input_dim):
-super(FoodPredictionModel, self).init()
-self.layer1 = nn.Linear(input_dim, 64)
-self.layer2 = nn.Linear(64, 32)
-self.layer3 = nn.Linear(32, 2) # 이진 분류 (섭취 여부: 0 or 1)
-self.relu = nn.ReLU()
-self.softmax = nn.Softmax(dim=1)
-def forward(self, x):
-    x = self.relu(self.layer1(x))
-    x = self.relu(self.layer2(x))
-    x = self.softmax(self.layer3(x))
-    return x
+class FoodPredictionModel(nn.Module):<br>
+def init(self, input_dim):<br>
+super(FoodPredictionModel, self).init()<br>
+self.layer1 = nn.Linear(input_dim, 64)<br>
+self.layer2 = nn.Linear(64, 32)<br>
+self.layer3 = nn.Linear(32, 2) # 이진 분류 (섭취 여부: 0 or 1)<br>
+self.relu = nn.ReLU()<br>
+self.softmax = nn.Softmax(dim=1)<br>
+def forward(self, x):<br>
+    x = self.relu(self.layer1(x))<br>
+    x = self.relu(self.layer2(x))<br>
+    x = self.softmax(self.layer3(x))<br>
+    return x<br>
 
 </td> </tr> </table>
 
@@ -321,8 +325,7 @@ def forward(self, x):
 
 ---
 
-<br>
-<br>  
+<br> 
 
 #### 🤖 AI 추천 시스템
 
@@ -388,7 +391,6 @@ Name: count, dtype: int64
 ---
 
 <br>
-<br>  
 
 
 #### 🚀 실행 방법
@@ -411,7 +413,6 @@ Name: count, dtype: int64
 ---
 
 <br>
-<br>  
 
 #### 🔎 데이터 흐름 및 프롬프트 전달 경로
 
@@ -459,7 +460,14 @@ Name: count, dtype: int64
 <br>
 <br>  
 
-#### 📚 참고 자료
+## 📚 자료 출처 
+
+
+
+
+
+
+
 
 1.  **국민건강보험공단 건강검진정보 데이터셋**:
 
@@ -472,17 +480,18 @@ Name: count, dtype: int64
     *   보건의료 빅데이터 활용
 4.  **Kaggle Food Nutrition Dataset**:
 
-    *   음식별 영양 정보 데이터 ([https://www.kaggle.com/datasets/utsavdey1410/food-nutrition-dataset](https://www.kaggle.com/datasets/utsavdey1410/food-nutrition-dataset))
+    *   ([음식별 영양 정보 데이터](https://www.kaggle.com/datasets/utsavdey1410/food-nutrition-dataset))
 5.  **데이터허브 건강검진결과 API**:
 
     *   [https://dataapi.co.kr/dLab](https://dataapi.co.kr/dLab)
+  
+ <img src="https://img.shields.io/badge/Kaggle-20BEFF?style=for-the-badge&logo=Kaggle&logoColor=white" />   
 <br>
 <br>  
 
 ---
 
 <br>
-<br>  
 
 
 
