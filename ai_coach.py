@@ -118,6 +118,8 @@ def display_formatted_data(all_excluded_foods):
     # 데이터프레임 생성
     all_excluded_foods = pd.DataFrame(lines, columns=['내용'])
     
+    st.table(all_excluded_foods)
+
     # 스타일이 적용된 테이블로 표시
     st.markdown("""
     <style>
@@ -136,7 +138,7 @@ def display_formatted_data(all_excluded_foods):
     </style>
     """, unsafe_allow_html=True)
     
-    st.table(all_excluded_foods)
+    
 
 
 
