@@ -1,60 +1,53 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
-import torch
-import os
+import requests
 import json
+import os
 
-HF_API_KEY = os.getenv("HF_API_KEY")
+# Hugging Face API Key 설정
+HF_API_KEY = os.getenv("HF_API_KEY")  # 환경변수에서 API Key를 가져옵니다.
 
-def load_gemma_model(model_name):
-    """모델을 로드하는 함수"""
+def generate_text_via_api(prompt, model_name="google/gemma-2-9b-it", max_tokens=256):
+    """Hugging Face API를 사용하여 텍스트 생성"""
+    # Hugging Face API 호출 URL
+    url = f"https://api-inference.huggingface.co/models/{model_name}"
+    
+    # 헤더에 API 키 추가
+    headers = {
+        "Authorization": f"Bearer {HF_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    # 요청에 포함할 데이터 (프롬프트 및 기타 설정)
+    payload = {
+        "inputs": prompt,
+        "parameters": {
+            "max_new_tokens": max_tokens,
+            "temperature": 1.3,  # 응답 다양성을 위해 온도 설정
+        }
+    }
+    
+    # API 요청을 통해 결과 가져오기
     try:
-        pipe = pipeline(
-            "text-generation",
-            model=model_name,
-            model_kwargs={"torch_dtype": torch.bfloat16, "use_auth_token": HF_API_KEY},  # API Key 인증 추가
-            device="mps",  # Mac에서 MPS 사용
-        )
-        print(f"✅ {model_name} 모델 로드 성공")
-        return pipe
-    except Exception as e:
-        print(f"🚨 {model_name} 모델 로드 실패: {e}")
-        return None
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()  # 요청이 실패하면 예외 발생
 
-def generate_text(model, tokenizer, prompt, max_tokens=256):
-    """모델을 사용해 텍스트 생성"""
-    inputs = tokenizer(prompt, return_tensors="pt")
-    inputs = {key: value.to(model.device) for key, value in inputs.items()}  # GPU/CPU 호환
+        # 응답 텍스트 반환
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"🚨 API 호출 오류: {e}")
+        return {"메시지": "🚨 API 호출 오류 발생"}
 
-    outputs = model.generate(
-        input_ids=inputs["input_ids"], 
-        max_new_tokens=max_tokens,
-        do_sample=True, 
-        temperature=1.3,
-        pad_token_id=tokenizer.eos_token_id
-    )
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-def parse_json_response(response_text):
+def parse_json_response(response_json):
     """모델 응답을 JSON 형식으로 변환"""
     try:
-        # JSON 형식을 수동으로 처리 (예: 응답의 앞뒤 공백이나 구분자 제거)
-        json_start = response_text.find("[{")
-        json_end = response_text.rfind("}]")
-        
-        if json_start != -1 and json_end != -1:
-            # 응답 텍스트에서 JSON 부분을 추출
-            json_output = response_text[json_start:json_end + 2]
-            try:
-                return json.loads(json_output)  # JSON 변환 시도
-            except json.JSONDecodeError:
-                print("🚨 JSON 변환 오류 발생, 모델 응답을 확인하세요.")
-                return [{"메시지": "🚨 JSON 변환 오류"}]
+        # 응답에서 생성된 텍스트를 추출합니다.
+        if 'generated_text' in response_json:
+            return json.loads(response_json['generated_text'])
         else:
-            print("🚨 모델 응답이 예상되는 JSON 형식이 아닙니다.")
-            return [{"메시지": "🚨 JSON 데이터 변환 실패, 모델 응답을 확인하세요."}]
-    except Exception as e:
-        print(f"🚨 응답 처리 중 예외 발생: {e}")
-        return [{"메시지": "🚨 응답 처리 오류"}]
+            print("🚨 예상치 못한 응답 형식입니다.")
+            return {"메시지": "🚨 JSON 데이터 변환 실패, 모델 응답을 확인하세요."}
+    except json.JSONDecodeError:
+        print("🚨 JSON 변환 오류 발생, 모델 응답을 확인하세요.")
+        return {"메시지": "🚨 JSON 변환 오류"}
 
 def get_gemma_recommendation(category, user_info, excluded_foods=[]):
     """Google Gemma 모델을 이용한 맞춤형 운동 & 식단 추천"""
@@ -93,12 +86,8 @@ def get_gemma_recommendation(category, user_info, excluded_foods=[]):
 
     prompt = system_content + prompt
 
-    # 모델 로드
-    model, tokenizer = load_gemma_model("google/gemma-2-9b-it")
-    if not model:
-        return [{"메시지": "🚨 모델 로딩 실패"}]
+    # Hugging Face API를 통해 텍스트 생성
+    response_json = generate_text_via_api(prompt)
 
-    # 예측 수행
-    response_text = generate_text(model, tokenizer, prompt)
-    
-    return parse_json_response(response_text)
+    # 응답 파싱
+    return parse_json_response(response_json)
