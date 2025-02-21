@@ -2,7 +2,7 @@
 # 💖 AI 기반 개인 맞춤형 건강 관리 웹 애플리케이션: 
  # "당신의 오늘은 안녕하십니까?" 💖
 
-### 🖥️ [홈페이지 바로가기](https://lizardsapp-gbr4mdxzrsw7ngzbkhk4pc.streamlit.app/)
+### 🖥️ [홈페이지 바로가기](https://bmiapp-tbdkbqkznjtv5gwaxqskzp.streamlit.app/)
 
 
 <br>
