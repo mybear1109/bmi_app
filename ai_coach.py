@@ -86,7 +86,7 @@ def get_user_inputs():
     return goal, excluded_foods, restricted_exercises
 
 # ✅ 운동 및 식단 추천 생성 (하나의 버튼에서 실행)
-def generate_recommendation(user_info, goal, excluded_foods=None):
+def generate_recommendation(user_info, goal, excluded_foods):
     with st.spinner("AI가 운동 및 식단 계획을 추천하는 중...⏳"):
         # ✅ 운동 및 식단 추천을 동시에 요청
         exercise_plan = get_gemma_recommendation("운동", user_info)

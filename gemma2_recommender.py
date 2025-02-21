@@ -161,7 +161,9 @@ def get_gemma_recommendation(category, user_info, allergies=[], excluded_foods=[
         
         if all_excluded_foods:
             prompt += f"\n🚨 **다음 음식은 제외해주세요: {', '.join(all_excluded_foods)}**"
-
+    else:
+        return {"메시지": "🚨 올바른 카테고리를 입력하세요: '운동' 또는 '식단'"}
+    
     return generate_text_via_api(prompt)
 
 
