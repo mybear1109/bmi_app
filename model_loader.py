@@ -1,4 +1,6 @@
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 import os
 import streamlit as st
 from model import ExercisePredictionModel, FoodPredictionModel
