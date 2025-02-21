@@ -33,6 +33,24 @@ def parse_text_based_response(content):
             result.append({"요일": 요일, "내용": 내용})
     return result if result else None
 
+# ✅ 운동 및 식단 계획을 텍스트 형식으로 정리하는 함수
+def format_plan_to_text(plan_data, category="운동"):
+    """📌 운동 또는 식단 계획을 보기 좋게 정리하여 텍스트 형식으로 출력"""
+    formatted_text = f"### ✅ {category} 계획\n\n"
+
+    for day in plan_data:
+        formatted_text += f"**📅 {day.get('날짜', '요일 정보 없음')}**\n"
+        if category == "운동":
+            formatted_text += f"- 🏋️ 운동 내용: {day.get('운동 내용', '정보 없음')}\n"
+            formatted_text += f"- ⏳ 운동 시간: {day.get('운동 시간', '정보 없음')}\n"
+            formatted_text += f"- 🔥 칼로리 소모량: {day.get('칼로리 소모량', '정보 없음')} kcal\n\n"
+        elif category == "식단":
+            formatted_text += f"- 🍽 아침: {day.get('아침', '정보 없음')}\n"
+            formatted_text += f"- 🍱 점심: {day.get('점심', '정보 없음')}\n"
+            formatted_text += f"- 🍛 저녁: {day.get('저녁', '정보 없음')}\n\n"
+
+    return formatted_text
+
 # ✅ JSON 형식의 응답을 파싱
 
 def parse_response(response, category):
@@ -61,23 +79,7 @@ def parse_response(response, category):
     else:
         return None
     
-# ✅ 운동 및 식단 계획을 텍스트 형식으로 정리하는 함수
-def format_plan_to_text(plan_data, category="운동"):
-    """📌 운동 또는 식단 계획을 보기 좋게 정리하여 텍스트 형식으로 출력"""
-    formatted_text = f"### ✅ {category} 계획\n\n"
 
-    for day in plan_data:
-        formatted_text += f"**📅 {day.get('날짜', '요일 정보 없음')}**\n"
-        if category == "운동":
-            formatted_text += f"- 🏋️ 운동 내용: {day.get('운동 내용', '정보 없음')}\n"
-            formatted_text += f"- ⏳ 운동 시간: {day.get('운동 시간', '정보 없음')}\n"
-            formatted_text += f"- 🔥 칼로리 소모량: {day.get('칼로리 소모량', '정보 없음')} kcal\n\n"
-        elif category == "식단":
-            formatted_text += f"- 🍽 아침: {day.get('아침', '정보 없음')}\n"
-            formatted_text += f"- 🍱 점심: {day.get('점심', '정보 없음')}\n"
-            formatted_text += f"- 🍛 저녁: {day.get('저녁', '정보 없음')}\n\n"
-
-    return formatted_text
 
 # ✅ AI 건강 코치 페이지
 def display_ai_coach_page():
