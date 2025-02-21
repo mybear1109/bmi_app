@@ -64,14 +64,14 @@ def generate_recommendation(user_info, goal, excluded_foods=None):
     st.table(all_excluded_foods)
 
 
-def parse_text_to_dict(response_text):
+def parse_json_response(json_text):
     """📌 응답 텍스트를 JSON 구조의 딕셔너리로 변환"""
-    structured_data = {"운동": [], "식단": []}
+    all_excluded_foods = {"운동": [], "식단": []}
     current_section = None
     current_day = None
 
     # 줄 단위로 텍스트 파싱
-    for line in response_text.split("\n"):
+    for line in json_text.split("\n"):
         line = line.strip()
 
         # 📌 운동 및 식단 섹션 감지
@@ -83,17 +83,17 @@ def parse_text_to_dict(response_text):
         # 📌 운동 데이터 처리
         elif current_section == "운동" and re.match(r"\* \*\*.*:\*\*", line):
             current_day, content = re.findall(r"\*\*\s?(.*?):\*\*", line)[0], line.split(":")[1].strip()
-            structured_data["운동"].append({"요일": current_day, "운동 내용": content})
+            all_excluded_foods["운동"].append({"요일": current_day, "운동 내용": content})
 
         # 📌 식단 데이터 처리
         elif current_section == "식단" and re.match(r"\* \*\*.*:\*\*", line):
             meal_type, meal_content = re.findall(r"\*\*\s?(.*?):\*\*", line)[0], line.split(":")[1].strip()
-            if len(structured_data["식단"]) == 0 or structured_data["식단"][-1]["요일"] != current_day:
-                structured_data["식단"].append({"요일": current_day, meal_type: meal_content})
+            if len(all_excluded_foods["식단"]) == 0 or all_excluded_foods["식단"][-1]["요일"] != current_day:
+                all_excluded_foods["식단"].append({"요일": current_day, meal_type: meal_content})
             else:
-                structured_data["식단"][-1][meal_type] = meal_content
+                all_excluded_foods["식단"][-1][meal_type] = meal_content
 
-    return structured_data
+    return all_excluded_foods
 
 
 
