@@ -294,6 +294,7 @@ def display_prediction_page():
                 unsafe_allow_html=True
             )
             
+            
             # 예측 결과 저장
             save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food)
         else:

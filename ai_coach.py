@@ -119,16 +119,20 @@ def parse_response(response, category):
         return None
     
 def format_plan_to_text(response, category="운동"):
-    """운동 또는 식단 계획을 보기 좋게 정리하여 텍스트 형식으로 출력"""
+    """📌 운동 또는 식단 계획을 보기 좋게 정리하여 텍스트 형식으로 출력"""
+    parsed_data = parse_text_based_response(response)  # 📌 JSON 변환
+    plan_data = parsed_data.get(category, [])
+
     formatted_text = f"### ✅ {category} 계획\n\n"
-    for day in response:
-        formatted_text += f"**📅 {day.get('날짜')}**\n"
+    
+    for item in plan_data:
+        formatted_text += f"**📅 {item.get('요일', '정보 없음')}**\n"
+
         if category == "운동":
-            formatted_text += f"- 🏋️ 운동 내용: {day.get('운동 내용', '정보')}\n"
-            formatted_text += f"- ⏳ 운동 시간: {day.get('운동 시간', '정보')}\n"
-            formatted_text += f"- 🔥 칼로리 소모량: {day.get('칼로리 소모량', '정보')} kcal\n\n"
+            formatted_text += f"- 🏋️ 운동 내용: {item.get('운동 내용', '정보 없음')}\n"
         elif category == "식단":
-            formatted_text += f"- 🍽 아침: {day.get('아침', '정보')}\n"
-            formatted_text += f"- 🍱 점심: {day.get('점심', '정보')}\n"
-            formatted_text += f"- 🍛 저녁: {day.get('저녁', '정보')}\n\n"
+            formatted_text += f"- 🍽 아침: {item.get('아침', '정보 없음')}\n"
+            formatted_text += f"- 🍱 점심: {item.get('점심', '정보 없음')}\n"
+            formatted_text += f"- 🍛 저녁: {item.get('저녁', '정보 없음')}\n\n"
+
     return formatted_text
