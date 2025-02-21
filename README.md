@@ -1,108 +1,85 @@
 
-# 💖 "당신의 오늘은 안녕하십니까?" 
-<br>
+# 💖 AI 기반 개인 맞춤형 건강 관리 웹 애플리케이션: "당신의 오늘은 안녕하십니까?" 💖
 
-### [🖥️ HOME PAGE](https://lizardsapp-gbr4mdxzrsw7ngzbkhk4pc.streamlit.app/)
+### 🖥️ [홈페이지 바로가기](https://lizardsapp-gbr4mdxzrsw7ngzbkhk4pc.streamlit.app/)
+
+
+<br>
+<br>
 
 ---
 <br>
 
-## 💪 AI 기반 개인 맞춤형 건강 관리 웹 애플리케이션 🍎
+### 🌟 프로젝트 개요
+
+<br>
+
+**"당신의 오늘은 안녕하십니까?"**는 바쁜 현대인들이 자신의 감정과 건강을 챙기도록 돕는 AI 기반 웹 애플리케이션입니다. **개인 맞춤형 운동 계획**과 **식단 추천**을 통해 사용자의 웰빙을 증진시키는 것을 목표로 합니다. **본 프로젝트는 개인적으로 진행**되었으며, **Gemini Pro (Gemma-2) 모델**을 활용하여 사용자에게 최적화된 건강 관리 솔루션을 제공합니다.
+
+<br>
+
+### 💡 프로젝트 배경
+
+<br>
+
+현대 사회에서 많은 사람들이 바쁜 일상 속에서 자신의 감정과 건강을 돌보는 것을 소홀히 합니다. 이에 **AI 기술**을 활용하여 개인의 건강 상태를 정확히 분석하고, 맞춤형 솔루션을 제공하고자 본 프로젝트를 시작하게 되었습니다.
+
 <br>
 <br>
 
+### 🎯 프로젝트 목표
 
-### 🌟 프로젝트 배경
-현대 사회에서 많은 사람들이 바쁜 일상 속에서 자신의 감정과 건강을 돌보는 것을 소홀히 하고 있습니다. 이에  **"당신의 오늘은 안녕하십니까?"** 라는 주제로 프로젝트를 시작하게 되었습니다.
-<br>
 <br>
 
-###  🎯 프로젝트 목적
-**자기 인식 증진**: 사용자들이 매일 자신의 감정 상태를 체크하고 기록하도록 돕습니다.
-**정신 건강 증진**: 간단한 명상, 긍정적 확언 등의 일일 활동을 제안합니다.
-**사회적 연결**: 비슷한 감정을 겪는 사람들과의 익명 소통 기회를 제공합니다.
-**데이터 기반 인사이트**: 개인 및 사회적 차원의 정서 트렌드를 분석합니다.
-<br>
-<br>
+*   **맞춤형 건강 관리**: AI 모델을 기반으로 개인의 건강 상태에 맞는 운동 계획 및 식단 추천
+*   **사용자 편의성**: Streamlit을 활용한 직관적이고 사용하기 쉬운 인터페이스 제공
+*   **데이터 기반 인사이트**: 개인의 건강 데이터를 분석하여 장기적인 건강 관리 지원
+*   **지속적인 개선**: 사용자 피드백을 반영하여 서비스 개선
 
-### 💡 왜 이 프로젝트인가?
-
-**정신 건강의 중요성 부각**: WHO에 따르면 전 세계적으로 우울증, 불안 등 정신 건강 문제가 증가하고 있습니다.
-
-**기술을 통한 접근성**: 스마트폰 앱을 통해 누구나 쉽게 자신의 정신 건강을 관리할 수 있습니다.
-
-**데이터 활용**: 축적된 데이터는 개인 맞춤형 조언과 사회적 정신 건강 정책 수립에 활용될 수 있습니다.
-
-**공동체 의식 함양**: 서로의 안녕을 묻고 관심을 갖는 문화를 만들어갑니다.
-
-**이 프로젝트를 통해 우리는 개인의 일상적 웰빙을 증진시키고, 나아가 더 건강하고 행복한 사회를 만드는 데 기여하고자 합니다.**
-<br>
-
-**✨ 핵심 목표**: 기존 KoGPT2 모델의 한계를 극복하고, 딥러닝 기반으로 더욱 정확하고 개인화된 건강 관리 솔루션을 제공하는 것입니다.
-<br>
 <br>  
 
----
+### ⚙️ 주요 기능
 
 <br>
 
-### 📌 프로젝트 개요
-<br>
-
-본 프로젝트는 개인의 건강 데이터를 기반으로 **AI 모델**이 맞춤형 운동 계획과 식단 추천을 제공하는 **Streamlit 웹 애플리케이션**입니다. 
-
-**국민건강보험공단 건강검진정보 데이터셋**을 활용하여 사용자의 건강 상태를 정확하게 분석하고, **Gemini Pro (Gemma-2)** 모델을 통해 개인에게 최적화된 솔루션을 제공합니다.
-<br>
-
-
-#### 🌟 주요 기능
-<br>
-
-- 📝 **건강 데이터 입력**: 사용자 친화적 인터페이스를 통해 기본 정보, 신체 측정, 혈압/혈당/콜레스테롤, 생활 습관 등 건강 정보를 간편하게 입력합니다.
-- 🧠 **AI 기반 예측**: 입력된 데이터를 기반으로 **운동 필요성**과 **식단 개선 필요성**을 정확하게 예측합니다.
-- 🍏 **맞춤형 운동/식단 추천**: Gemini Pro 모델을 활용하여 개인의 건강 상태와 목표에 최적화된 운동 계획과 식단 정보를 제공합니다.
-  - 🎯 **기존 모델의 한계 극복**: 기존 SKT KoGPT2 모델의 json 변환 문제 및 부정확한 답변 생성 문제를 해결하고, **✨ Gemma-2 모델**로 전환하여 추천 시스템의 정확도와 신뢰성을 향상시켰습니다.
-  - 🏆 **Gemini Pro 모델 활용**: 운동 계획 및 식단 추천 함수는 **Gemma-2 모델**을 사용하여 텍스트 기반 추천을 생성하고, 생성된 텍스트를 파싱하여 DataFrame 형식으로 제공합니다.
-- 📊 **데이터 시각화**: 사용자의 건강 데이터를 다양한 그래프와 차트로 시각화하여 건강 상태 변화를 직관적으로 파악할 수 있습니다.
-- 🔑 **사용자 계정 관리**: 회원가입 및 로그인 기능을 통해 개인별 건강 데이터를 안전하게 관리합니다.
-
-<br>
-<br>  
+*   **📝 건강 데이터 입력**: 사용자 친화적 인터페이스를 통해 기본 정보, 신체 측정, 혈압/혈당/콜레스테롤, 생활 습관 등 건강 정보를 간편하게 입력합니다.
+*   **🧠 AI 기반 예측**: 입력된 데이터를 기반으로 운동 필요성과 식단 개선 필요성을 정확하게 예측합니다.
+*   **🍏 맞춤형 운동/식단 추천**: Gemini Pro 모델을 활용하여 개인의 건강 상태와 목표에 최적화된 운동 계획과 식단 정보를 제공합니다.
+    *   **✨ Gemma-2 모델로 전환**: 기존 SKT KoGPT2 모델의 json 변환 문제 및 부정확한 답변 생성 문제를 해결하고, Gemma-2 모델로 전환하여 추천 시스템의 정확도와 신뢰성을 향상시켰습니다.
+    *   **🏆 Gemini Pro 모델 활용**: 운동 계획 및 식단 추천 함수는 Gemini Pro 모델을 사용하여 텍스트 기반 추천을 생성하고, 생성된 텍스트를 파싱하여 DataFrame 형식으로 제공합니다.
+*   **📊 데이터 시각화**: 사용자의 건강 데이터를 다양한 그래프와 차트로 시각화하여 건강 상태 변화를 직관적으로 파악할 수 있습니다.
+*   **🔑 사용자 계정 관리**: 회원가입 및 로그인 기능을 통해 개인별 건강 데이터를 안전하게 관리합니다.
 
 ---
-
-<br>
-
 
 ### 🛠️ 기술 스택
 
-*   💻 **Python**: 웹 애플리케이션 개발의 핵심 언어
-*   **Streamlit**: 사용자 친화적인 인터페이스를 위한 웹 프레임워크
-*   🐼 **Pandas**: 데이터 분석 및 조작
-*   **🔢 NumPy**: 수치 계산
-*   🔬 **Scikit-learn**: 머신러닝 모델 개발 및 평가
-*   **🔥 PyTorch**: 딥러닝 모델 구현
-*   🌳 **XGBoost**: 앙상블 모델 학습
-*   **🤗 Hugging Face Transformers**: Gemini Pro (Gemma-2) 모델 활용
-*   📈 **Plotly**: 인터랙티브한 데이터 시각화
-*   ☁️ **AWS Lambda**: 서버리스 환경 구축 (배포 후 변경 예정)
-*   🐳 **Docker**: 컨테이너 기반 개발 환경 구성
+<br>
 
+*   <img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white"> : 웹 애플리케이션 개발의 핵심 언어
+*   <img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white"> : 사용자 친화적인 인터페이스를 위한 웹 프레임워크
+*   <img src="https://img.shields.io/badge/streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white"> : 데이터 분석 및 조작
+*   <img src="https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas&logoColor=white"> : 수치 계산
+*   <img src="https://img.shields.io/badge/numpy-013243?style=for-the-badge&logo=numpy&logoColor=white"> : 머신러닝 모델 개발 및 평가
+*   <img src="https://img.shields.io/badge/pytorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white"> : 딥러닝 모델 구현
+*  <img src="https://img.shields.io/badge/huggingface-FFD21F?style=for-the-badge&logo=huggingface&logoColor=black"> : 앙상블 모델 학습
+*   <img src="https://img.shields.io/badge/plotly-3F4F75?style=for-the-badge&logo=plotly&logoColor=white"> : Gemini Pro (Gemma-2) 모델 활용
+*   <img src="https://img.shields.io/badge/amazonaws-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white"> : 인터랙티브한 데이터 시각화
+*   <img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white"> : 서버리스 환경 구축 (배포 후 변경 예정)
+*   <img src="https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white"> : 컨테이너 기반 개발 환경 구성
 
-<img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white">
-<img src="https://img.shields.io/badge/amazonaws-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white">
-<img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">
-<img src="https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white">
 
 <br>
-<br>  
+<br>
 
 ---
+<br>
 
-<br>  
+
 
 
 #### 🗂️ 주요 파일 및 디렉토리 구조
+
 <br>
 <br>
 
@@ -148,21 +125,21 @@
 <br>
 <br>
 
-##### 📜 주요 데이터 소스
+#### 📜 주요 데이터 소스
 <br>
 <br>
 
 1.  **국민건강보험공단 건강검진정보**:
-    *   100만 명의 건강검진 데이터 ([공공데이터포털](https://www.data.go.kr/data/15007122/fileData.do#tab-layer-file) 에서 다운로드)
+    *   100만 명의 건강검진 데이터 
     *   기본정보(시도코드, 성별, 연령대 등)와 검진내역(신장, 체중, 혈압, 혈당, 총콜레스테롤, 혈색소 등)으로 구성
 2.  **공공데이터포털 API 활용**:
     *   REST API를 통해 검진기관별 정보 수집
 3.  **건강보험심사평가원 Open API 서비스**:
     *   보건의료 빅데이터 활용
 4.  **Kaggle Food Nutrition Dataset**:
-    *   음식별 영양 정보 데이터 ([https://www.kaggle.com/datasets/utsavdey1410/food-nutrition-dataset](https://www.kaggle.com/datasets/utsavdey1410/food-nutrition-dataset))
+    *   음식별 영양 정보 데이터 
 5.  **데이터허브 건강검진결과 API**:
-    *   [https://dataapi.co.kr/dLab](https://dataapi.co.kr/dLab)
+  
 <br>
 <br>  
 
@@ -170,7 +147,7 @@
 
 <br>
 
-##### ⚙️ 주요 전처리 과정
+#### ⚙️ 주요 전처리 과정
 <br>  
 
 1. **국민건강보험공단 건강검진 데이터**:
@@ -184,7 +161,13 @@
    *  음식 데이터에 대한 결측치 처리
   
      
-<table> <tr> <th>** 코드 **</th> </tr> <tr> <td>
+<table>
+    <tr>
+        <th>** 코드 **</th>
+    </tr>
+    <tr>
+        <td>
+
 def fill_missing_values(df_food):<br>
 df['칼로리'] = df['칼로리'].fillna(df['칼로리'].median())<br>
 df['지방'] = df['지방'].fillna(df['지방'].median())<br>
@@ -199,8 +182,13 @@ df['콜레스테롤'] = df['콜레스테롤'].fillna(df['콜레스테롤'].media
 df['나트륨'] = df['나트륨'].fillna(df['나트륨'].median())<br>
 df['수분'] = df['수분'].fillna(df['수분'].mean())<br>
 return df_food
-</td> </tr> </table>
 
+</td>
+    </tr>
+</table>
+
+
+<br>
 
 *   **✔️처리 방식**: 수치형 컬럼은 중앙값, '식이섬유'는 0으로 대체하여 데이터 손실 최소화
 <br>
@@ -217,6 +205,7 @@ df[col] = df[col].replace(['🔍 예측을 실행하세요'], '미실행'))<br>
 </td> </tr> </table>
 <br>
 <br>  
+
  
 ##### 수치형 데이터 처리 ("미입력" -> NaN -> 중앙값 대체)
 
@@ -242,7 +231,7 @@ for col in numeric_cols:<br>
 
 <br>
 
-##### 🎯 데이터 전처리에 사용된 주요 컬럼
+#### 🎯 데이터 전처리에 사용된 주요 컬럼
 
 <table> <tr> <th>** 코드 **</th> </tr> <tr> <td>
 feature_columns = [<br>
@@ -262,6 +251,8 @@ feature_columns = [<br>
 ]
 </td> </tr> </table>
 
+<br>
+
 *   **🔑 컬럼 확장 이유**: 모델 학습 효율성을 높이기 위해 초기 7개에서 13개로 컬럼 수를 늘렸습니다.
 *   입력 폼에 추가된 컬럼 정보 (식전혈당, 콜레스테롤 수치, 흡연/음주 여부 등)를 활용하여 예측 모델의 정확도를 향상시키고자 했습니다.
 
@@ -272,6 +263,8 @@ feature_columns = [<br>
 
 <br>
 
+
+---
 
 #### 🧠 모델 개발 및 학습
 
@@ -285,10 +278,8 @@ feature_columns = [<br>
 2.  **딥러닝 모델 (PyTorch)**
     *   PyTorch를 사용하여 딥러닝 모델을 구현하고 학습했습니다.
     *   **신경망 구조**: 다층 퍼셉트론(MLP) 또는 순환 신경망(RNN)을 사용하여 모델을 설계했습니다.
-    *   **활성화 함수**: ReLU, Sigmoid, Tanh 등의 활성화 함수를 사용하여 비선형성을 추가했습니다.
+    *   **활성화 함수**: ReLU, Sigmoid, Tanh 등의 활성화 함수를 사용하여 모델을 설계했습니다.
     *   **손실 함수**: 이진 교차 엔트로피(Binary Cross Entropy) 손실 함수를 사용하여 모델을 학습했습니다.
-    *   **최적화 알고리즘**: Adam 또는 SGD 등의 최적화 알고리즘을 사용하여 모델 파라미터를 업데이트했습니다.
-  
       
 <table> <tr> <th>** 코드 **</th> </tr> <tr> <td>
 class FoodPredictionModel(nn.Module):<br>
@@ -327,25 +318,24 @@ def forward(self, x):<br>
 
 <br> 
 
-#### 🤖 AI 추천 시스템
+### 🤖 AI 추천 시스템
 
 *   **Gemma-2 모델**을 활용한 텍스트 생성 기반 추천 시스템
     *   **SKT KoGPT2 모델의 한계 극복**: KoGPT2 모델의 json 변환 문제로 인해 Gemma-2 모델로 변경하여 추천 시스템 구축 문제를 해결했습니다.
+
 *   **💪 사용자 정보 기반 추천**: 사용자 입력 데이터를 기반으로 Gemma-2 모델이 최적의 추천 제공
-*   **🔮 핵심 기술**:
-Hugging Face Transformers, 텍스트 생성 모델
+*   **🔮 핵심 기술**:Hugging Face Transformers, 텍스트 생성 모델
 *   **주요 기능**: 운동 계획 및 식단 계획 DataFrame 생성
 
-*   **주요 문제점**: KoGPT2 모델의 json 변환 문제
-*   **해결**: Gemma-2 모델로 전환
-*   7개 에서 13개로 feature_columns 확장
 <br>
-<br>  
+<br> 
+  
+---
 
-#### 🎯 모델 성능 평가 결과
+### 🎯 모델 성능 평가 결과
 
 *   🏋️‍♂️ **운동 여부 예측 평가**
-    * 정확도: 0.9578
+* 정확도: 0.9578
 
 |  | precision | recall | f1-score | support |
 |:---|:---|:---|:---|:---|
@@ -383,38 +373,7 @@ Name: count, dtype: int64
 <br>
 <br>  
 
-#### ✅핵심사항
-*   **✅ 지속적 개선**: 모델 성능을 높이기 위해 지속적으로 파라미터 튜닝 및 데이터 전처리를 진행할 예정입니다.
-<br>
-<br>  
-
----
-
-<br>
-
-
-#### 🚀 실행 방법
-
-1.  **⚙️ 환경 설정**
-    *   Python 3.10 이상 설치
-    *   필요한 패키지 설치: `pip install -r requirements.txt`
-2.  **🔑 API 키 설정**
-    *   `.streamlit/secrets.toml` 파일에 Gemini Pro API 키를 저장
-    *   ⚠️ `.streamlit/secrets.toml` 파일은 **절대** 버전 관리 시스템에 포함되지 않도록 주의하세요.
-
-        ```
-        HF_API_KEY = "YOUR_API_KEY"
-        ```
-3.  **🏃‍♀️ 애플리케이션 실행**
-    *   터미널에서 `streamlit run app.py` 명령어 실행
-<br>
-<br>  
-
----
-
-<br>
-
-#### 🔎 데이터 흐름 및 프롬프트 전달 경로
+### 💡 데이터 흐름 및 프롬프트 전달 경로
 
 본 프로젝트는 다음과 같은 데이터 흐름을 가지고 있으며, Gemini Pro 모델을 활용하여 사용자에게 맞춤형 추천을 제공합니다.
 
@@ -423,40 +382,55 @@ Name: count, dtype: int64
 *   `user_input.py`를 통해 사용자가 건강 정보를 입력합니다.
 *   입력된 데이터는 `user_data_utils.py`를 통해 JSON 파일로 저장됩니다.
 2.  **🧠 모델 입력 데이터 생성**:
-*  모델 성능 향상을 위해 지속적으로 feature engineering 진행
+* 모델 성능 향상을 위해 지속적으로 feature engineering 진행
         ✅ 핵심 feature_columns:
 "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)", "혈압 차이",
 "총콜레스테롤", "고혈당 위험", "간 지표", "성별", "연령대", "비만 위험 지수", "흡연상태", "음주여부"
 3.  **💡 Gemini Pro 모델 추론**:
 * Hugging Face Transformers 라이브러리를 사용하여 Gemini Pro 모델을 로드하고 추론을 수행합니다.
-4.  **✔️ 추천 결과 파싱 및 표시**:
-*  생성된 텍스트를 파싱하여 운동 계획 및 식단 계획 DataFrame을 생성합니다.
-*  `ai_coach.py`에서 생성된 DataFrame을 테이블 형태로 사용자에게 표시합니다.
-<br>
-<br>  
 
-#### 🤖 AI 모델 사용 강조
+4.  **✔️ 추천 결과 파싱 및 표시**:
+* 생성된 텍스트를 파싱하여 운동 계획 및 식단 계획 DataFrame을 생성합니다.
+* `ai_coach.py`에서 생성된 DataFrame을 테이블 형태로 사용자에게 표시합니다.
+
+### 🤖 AI 모델 사용 강조
 
 *   **🧠모델**: Gemini Pro 모델
         * ✅기능:사용자 맞춤형 운동 계획 및 식단 추천 제공
 *   **⚙️ 프롬프트 최적화**: 사용자에게 더욱 정확하고 유용한 추천을 제공
 *   **KoGPT2 -> Gemma Pro 모델 전환**:
         *✨기존 KoGPT2 모델의 한계점을 극복
-<br>
-<br>  
- 
-#### ✨ 기대 효과
+
+### 🚀 실행 방법
+
+1.  **⚙️ 환경 설정**
+    *   Python 3.10 이상 설치
+    *   필요한 패키지 설치: `pip install -r requirements.txt`
+2.  **🔑 API 키 설정**
+    *   `.streamlit/secrets.toml` 파일에 Gemini Pro API 키를 저장
+
+        ```
+        HF_API_KEY = "YOUR_API_KEY"
+        ```
+
+    *   ⚠️ `.streamlit/secrets.toml` 파일은 **절대** 버전 관리 시스템에 포함되지 않도록 주의하세요.
+3.  **🏃‍♀️ 애플리케이션 실행**
+    *   터미널에서 `streamlit run app.py` 명령어 실행
+
+### ✨ 기대 효과
 
 *   💪 개인 맞춤형 건강 관리 솔루션 제공
 *   🍎 사용자의 건강 개선 및 유지에 기여
 *   🚀 AI 기술을 활용한 건강 관리 서비스의 가능성 제시
-<br>
-<br>  
 
 #### ⚠️ 중요 사항
+*   **저작권**: 본 프로젝트는 오픈 소스 라이선스를 준수하며, 상업적 이용 시 반드시 라이선스를 확인해야 합니다.
+*   **책임**: 본 프로젝트는 건강 관련 정보를 제공하지만, 전문적인 의료 조언을 대체할 수 없습니다. 건강 문제는 반드시 전문가와 상담하십시오.
 
-*   **⚖️ 라이선스**: 본 프로젝트는 오픈 소스 라이선스를 준수하며, 상업적 이용 시 반드시 확인해야 합니다.
-*   **⚕️ 책임**: 본 프로젝트는 건강 관련 정보를 제공하지만, 전문적인 의료 조언을 대체할 수 없습니다. 건강 문제는 반드시 전문가와 상담하십시오.
+### 📝 마치며
+* 이 프로젝트는 AI 기술을 활용하여 개인 맞춤형 건강 관리 솔루션을 제공하고자 하는 큰 잠재력을 가지고 있으며, 개인의 삶에 긍정적인 영향을 미칠 수 있습니다.
+* 지속적인 연구 개발을 통해 사용자들의 건강한 삶에 기여하는 서비스를 만들어나가겠습니다.
+
 <br>
 <br>  
 
