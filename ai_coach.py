@@ -59,16 +59,17 @@ def generate_recommendation(user_info, goal, excluded_foods=None):
         exercise_plan = get_gemma_recommendation("운동", user_info)
         diet_plan = get_gemma_recommendation("식단", user_info, excluded_foods)
         all_excluded_foods = exercise_plan, diet_plan
-        
-    st.success("✅ 맞춤형 식단 & 운동 추천이 완료되었습니다!")
-    st.table(all_excluded_foods)
-
 
 def parse_json_response(json_text):
     """📌 응답 텍스트를 JSON 구조의 딕셔너리로 변환"""
     all_excluded_foods = {"운동": [], "식단": []}
     current_section = None
     current_day = None
+
+        
+    st.success("✅ 맞춤형 식단 & 운동 추천이 완료되었습니다!")
+    st.table(all_excluded_foods)
+
 
     # 줄 단위로 텍스트 파싱
     for line in json_text.split("\n"):
