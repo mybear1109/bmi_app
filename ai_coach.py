@@ -94,12 +94,8 @@ def generate_recommendation(user_info, goal, excluded_foods):
         all_excluded_foods = exercise_plan, diet_plan
         
     st.success("✅ 맞춤형 식단 & 운동 추천이 완료되었습니다!")
-    st.table(all_excluded_foods)
 
-        
 
-    
-    
 
     # 스타일이 적용된 테이블로 표시
     st.markdown("""
@@ -119,7 +115,7 @@ def generate_recommendation(user_info, goal, excluded_foods):
     </style>
     """, unsafe_allow_html=True)
     
-    
+    st.table(all_excluded_foods)   
 
 
 
