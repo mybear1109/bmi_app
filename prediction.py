@@ -194,16 +194,16 @@ def display_prediction_page():
         # 설명이 필요한 컬럼에 대한 설명을 담은 딕셔너리
         column_descriptions = {
             "user_id": "사용자 ID",
-            "성별": "성별 (남성 또는 여성)",
+            "성별": "성별 ",
             "연령대": "연령대",
             "허리둘레": "허리둘레 (cm)",
             "BMI": "체질량지수 (kg/m^2)",
-            "총콜레스테롤": "총 콜레스테롤 수치 (mg/dL)",
-            "혈압 차이": "수축기 혈압과 이완기 혈압의 차이 (mmHg)",
+            "총콜레스테롤": "총 콜레스테롤 (mg/dL)",
+            "혈압 차이": "최고혈압과 최저혈압의 차이 (mmHg)",
             "식전혈당(공복혈당)": "식사 전 혈당 수치 (mg/dL)",
-            "간 지표": "간 건강 지표",
-            "비만 위험 지수": "비만 위험을 나타내는 지수",
-            "활동 수준": "일상적인 활동 수준 (저활동, 중간활동, 고활동)"
+            "간 지표": "간건강 지표",
+            "비만 위험 지수": "비만위험 나타내는지수",
+            "일상적인 활동 수준": " 저활동, 중간활동, 고활동"
         }
 
         # 사용자 정보를 DataFrame으로 변환
@@ -213,70 +213,50 @@ def display_prediction_page():
         html_table = user_info_df.to_html(index=False, classes=['dataframe'], escape=False)
 
         # CSS 스타일 추가
-        st.markdown(
-        """
-        <style>
-        /* 전체 페이지 스타일 */
-        body {
-            font-family: 'Arial', sans-serif;
-            color: #333;
-            line-height: 1.5;
-        }
-
-        /* 큰 폰트 스타일 */
-        .big-font {
-            font-size: 28px !important;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-
-        /* 버튼 스타일 */
-        .stButton>button {
-            background-color: #4F8BF9;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .stButton>button:hover {
-            background-color: #3a7bd5;
-        }
-
-        /* 사용자 정보 카드 스타일 */
-        .user-info {
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        /* 건강 점수 스타일 */
-        .health-score {
-            font-size: 24px;
-            font-weight: bold;
-            color: #28a745;
-            margin: 10px 0;
-        }
-
-        /* 추천 사항 스타일 */
-        .recommendation {
-            background-color: #e9f2ff;
-            border-left: 4px solid #4F8BF9;
-            padding: 10px 15px;
-            margin-top: 10px;
-            font-size: 16px;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+            # 스타일링을 위한 CSS
+        st.markdown("""
+            <style>
+                .dataframe {
+                    border-collapse: separate;
+                    border-spacing: 0;
+                    width: 100%;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    font-size: 0.9em;
+                    box-shadow: 0 2px 15px rgba(64,64,64,.1);
+                    border-radius: 12px;
+                    overflow: hidden;
+                }
+                .dataframe thead tr {
+                    background-color: #170B3B;
+                    color: #ffffff;
+                    text-align: left;
+                }
+                .dataframe th, .dataframe td {
+                    padding: 12px 15px;
+                }
+                .dataframe th {
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    font-size: 0.85em;
+                    letter-spacing: 0.5px;
+                }
+                .dataframe tbody tr {
+                    transition: background-color 0.3s ease;
+                }
+                .dataframe tbody tr:hover {
+                    background-color: rgba(52, 152, 219, 0.1);
+                }
+                .dataframe tbody tr:nth-of-type(even) {
+                    background-color: #f8f9fa;
+                }
+                .dataframe tbody td {
+                    border-bottom: 1px solid #e9ecef;
+                }
+                .dataframe tbody tr:last-of-type td {
+                    border-bottom: none;
+                }
+            </style>
+            """, unsafe_allow_html=True)
 
 
         # HTML 테이블 표시
