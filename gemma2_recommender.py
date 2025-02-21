@@ -91,7 +91,7 @@ def parse_json_response(response_json):
         except json.JSONDecodeError as e:
             print(f"json_text 형식입니다. 응답 내용: {json_text}")
             print(f"오류 위치: {e}")
-            return {"메시지": "🚨 JSON 변환 오류"}
+            return {"메시지":  " 🚨 json_text 로  변환 되었습니다."}
 
     except KeyError as e:
         print(f"🚨 응답에서 필수 항목을 찾을 수 없음: {e}")
