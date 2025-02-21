@@ -59,6 +59,61 @@ def generate_recommendation(user_info, goal, excluded_foods=None):
 
     st.success("✅ 맞춤형 식단 & 운동 추천이 완료되었습니다!")
     st.table(diet_plan)
+    
 
+# ✅ Markdown 테이블을 DataFrame으로 변환 (빈 열 자동 제거)
+def parse_markdown_table(content):
+    """Markdown 형식의 표를 DataFrame으로 변환 (빈 열 자동 제거)"""
+    lines = content.strip().split("\n")
 
-  
+    # ✅ 테이블 헤더 감지
+    headers = [h.strip() for h in lines[0].split("|")[1:-1]]
+    data = [row.split("|")[1:-1] for row in lines[2:]]
+
+    # ✅ 빈 열 자동 제거
+    filtered_data = [row for row in data if len(row) == len(headers)]
+    if not filtered_data:
+        return None
+
+    df = pd.DataFrame(filtered_data, columns=headers)
+    return df.to_dict(orient="records")
+
+# ✅ 일반 텍스트를 리스트로 변환
+def parse_text_based_response(content):
+    """일반 텍스트에서 요일별 운동 및 식단 정보를 리스트로 변환"""
+    lines = content.split("\n")
+    result = []
+    for line in lines:
+        match = re.match(r"(\w+):\s*(.+)", line)
+        if match:
+            요일, 내용 = match.groups()
+            result.append({"요일": 요일, "내용": 내용})
+    return result if result else None
+
+# ✅ JSON 형식의 응답을 파싱
+
+def parse_response(response, category):
+    """AI 응답이 JSON, Markdown, 일반 텍스트 등 다양한 형식일 경우 자동 변환"""
+    if isinstance(response, dict) and "메시지" in response:
+        response = response["메시지"]
+
+    if isinstance(response, str):
+        # ✅ JSON 변환 시도
+        try:
+            parsed_response = json.loads(response)
+            if isinstance(parsed_response, list):
+                return parsed_response
+        except json.JSONDecodeError:
+            pass  # JSON 변환 실패 시 계속 진행
+
+        # ✅ Markdown 테이블 변환 시도
+        if "|" in response:
+            return parse_markdown_table(response)
+
+        # ✅ 일반 텍스트 변환 시도
+        return parse_text_based_response(response)
+
+    elif isinstance(response, list):
+        return response
+    else:
+        return None
