@@ -196,3 +196,27 @@ def parse_markdown_table(text):
     
     return df
     
+def handle_ai_response(response):
+    """AI 응답을 JSON 또는 Markdown 테이블로 변환"""
+    if isinstance(response, dict) and "메시지" in response:
+        response_text = response["메시지"]
+        
+        # JSON 변환 시도
+        try:
+            parsed_response = json.loads(response_text)
+            if isinstance(parsed_response, list):
+                return parsed_response
+        except json.JSONDecodeError:
+            pass  # JSON 변환 실패 시 계속 진행
+
+        # Markdown 테이블 변환 시도
+        if "|" in response_text:
+            return parse_markdown_table(response_text)
+
+        # 일반 텍스트 반환
+        return response_text
+
+    elif isinstance(response, list):
+        return response
+    else:
+        return None
