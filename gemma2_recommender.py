@@ -166,5 +166,11 @@ def get_gemma_recommendation(category, user_info, allergies=[], excluded_foods=[
     
     return generate_text_via_api(prompt)
 
+def display_formatted_data(display_formatted_data):
+    """포맷된 데이터를 표시"""
+    # 불필요한 마크다운 구문 제거
+    
+    return display_formatted_data
+
 
     
