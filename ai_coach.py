@@ -4,39 +4,6 @@ import pandas as pd
 from gemma2_recommender import get_gemma_recommendation
 import re
 
-def parse_text_to_dict(response_text):
-    """📌 응답 텍스트를 JSON 구조의 딕셔너리로 변환"""
-    structured_data = {"운동": [], "식단": []}
-    current_section = None
-    current_day = None
-
-    # 줄 단위로 텍스트 파싱
-    for line in response_text.split("\n"):
-        line = line.strip()
-
-        # 📌 운동 및 식단 섹션 감지
-        if "**운동 추천:**" in line:
-            current_section = "운동"
-        elif "**식단 추천:**" in line:
-            current_section = "식단"
-
-        # 📌 운동 데이터 처리
-        elif current_section == "운동" and re.match(r"\* \*\*.*:\*\*", line):
-            current_day, content = re.findall(r"\*\*\s?(.*?):\*\*", line)[0], line.split(":")[1].strip()
-            structured_data["운동"].append({"요일": current_day, "운동 내용": content})
-
-        # 📌 식단 데이터 처리
-        elif current_section == "식단" and re.match(r"\* \*\*.*:\*\*", line):
-            meal_type, meal_content = re.findall(r"\*\*\s?(.*?):\*\*", line)[0], line.split(":")[1].strip()
-            if len(structured_data["식단"]) == 0 or structured_data["식단"][-1]["요일"] != current_day:
-                structured_data["식단"].append({"요일": current_day, meal_type: meal_content})
-            else:
-                structured_data["식단"][-1][meal_type] = meal_content
-
-    return structured_data
-
-
-
 
 # ✅ AI 건강 코치 페이지
 def display_ai_coach_page():
@@ -95,6 +62,39 @@ def generate_recommendation(user_info, goal, excluded_foods=None):
         
     st.success("✅ 맞춤형 식단 & 운동 추천이 완료되었습니다!")
     st.table(all_excluded_foods)
+
+
+def parse_text_to_dict(response_text):
+    """📌 응답 텍스트를 JSON 구조의 딕셔너리로 변환"""
+    structured_data = {"운동": [], "식단": []}
+    current_section = None
+    current_day = None
+
+    # 줄 단위로 텍스트 파싱
+    for line in response_text.split("\n"):
+        line = line.strip()
+
+        # 📌 운동 및 식단 섹션 감지
+        if "**운동 추천:**" in line:
+            current_section = "운동"
+        elif "**식단 추천:**" in line:
+            current_section = "식단"
+
+        # 📌 운동 데이터 처리
+        elif current_section == "운동" and re.match(r"\* \*\*.*:\*\*", line):
+            current_day, content = re.findall(r"\*\*\s?(.*?):\*\*", line)[0], line.split(":")[1].strip()
+            structured_data["운동"].append({"요일": current_day, "운동 내용": content})
+
+        # 📌 식단 데이터 처리
+        elif current_section == "식단" and re.match(r"\* \*\*.*:\*\*", line):
+            meal_type, meal_content = re.findall(r"\*\*\s?(.*?):\*\*", line)[0], line.split(":")[1].strip()
+            if len(structured_data["식단"]) == 0 or structured_data["식단"][-1]["요일"] != current_day:
+                structured_data["식단"].append({"요일": current_day, meal_type: meal_content})
+            else:
+                structured_data["식단"][-1][meal_type] = meal_content
+
+    return structured_data
+
 
 
 
