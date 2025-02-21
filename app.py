@@ -6,7 +6,7 @@ import json
 import os
 from sidebar import get_selected_menu
 from home import display_home_page
-from prediction import display_prediction_page  # ✅ 여기에서 import 문을 최상단으로 이동
+from prediction import display_prediction_page
 from visualization import display_visualization_page
 from ai_coach import display_ai_coach_page
 from user_input import get_user_input
