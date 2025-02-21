@@ -1,15 +1,26 @@
-# ✅ Streamlit 및 데이터 처리 라이브러리
+# ✅ Streamlit 최신 버전
 streamlit==1.30.0
+
+# ✅ 데이터 분석 라이브러리 (최신 안정 버전 유지)
 pandas==2.0.3
-numpy==1.24.2
+numpy==1.23.3
 scikit-learn==1.3.0
 
-# ✅ Hugging Face 및 기타 필수 라이브러리
-transformers==4.36.2
-dill==0.3.5.1
+# ✅ PyTorch (CPU 버전)
+torch==2.0.1
+torchvision==0.15.2
+torchaudio==2.0.1
+
+# ✅ Hugging Face 라이브러리 (최신 버전 유지)
+transformers==4.36.2  # 최신 버전으로 업데이트
+dill==0.3.5.1  # 객체 직렬화 라이브러리
+
+# ✅ 시각화 관련 라이브러리
 matplotlib==3.7.1
 seaborn==0.12.2
 altair==5.1.2
 plotly==5.17.0
+
+# ✅ Streamlit 플러그인 및 유틸리티
 streamlit-option-menu==0.3.2
 requests==2.31.0
