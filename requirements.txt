@@ -1,18 +1,23 @@
-streamlit==1.15.0
-pandas==1.5.3
-torch==2.5.1
-transformers==4.25.1
-plotly==5.7.0
-dill==0.3.5.1
-streamlit-option-menu==0.3.0
-scikit-learn==1.0.2
-numpy==1.23.3
-altair==4.2.0
-streamlit==1.16.0
-torch==1.13.1  # 모델을 로딩하기 위해 필요한 PyTorch 버전
-transformers==4.25.1  # Hugging Face의 transformers 라이브러리
-pandas==1.4.2  # 데이터 처리 라이브러리
-scikit-learn==1.0.2  # 예측 모델을 위한 라이브러리 (필요시)
+# Streamlit 및 관련 라이브러리
+streamlit==1.16.0  # Streamlit 애플리케이션을 위한 라이브러리
+
+# 데이터 처리 및 분석 라이브러리
+pandas==1.5.3  # 데이터 처리 라이브러리
+numpy==1.23.3  # 수학적 계산을 위한 라이브러리
+scikit-learn==1.0.2  # 머신러닝 모델을 위한 라이브러리
+
+# PyTorch 및 모델 관련 라이브러리
+torch==1.13.1  # 모델 로딩을 위한 PyTorch 버전
+transformers==4.25.1  # Hugging Face의 모델 및 토크나이저
+dill==0.3.5.1  # 객체 직렬화를 위한 라이브러리
+
+# 시각화 관련 라이브러리
 matplotlib==3.5.2  # 데이터 시각화를 위한 라이브러리
-seaborn==0.11.2  # 데이터 시각화
-requests==2.27.1  # API 요청을 위한 라이브러리
+seaborn==0.11.2  # 데이터 시각화 (옵션)
+altair==4.2.0  # 또 다른 시각화 라이브러리
+plotly==5.7.0  # 인터랙티브 시각화 라이브러리
+
+# 추가적인 유틸리티 및 플러그인
+streamlit-option-menu==0.3.0  # Streamlit 옵션 메뉴 구성
+requests==2.27.1  # HTTP 요청을 위한 라이브러리
+
