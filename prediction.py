@@ -213,36 +213,71 @@ def display_prediction_page():
         html_table = user_info_df.to_html(index=False, classes=['dataframe'], escape=False)
 
         # CSS 스타일 추가
-        st.markdown("""
+        st.markdown(
+        """
         <style>
-        .dataframe {
-            border-collapse: collapse;
+        /* 전체 페이지 스타일 */
+        body {
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        /* 큰 폰트 스타일 */
+        .big-font {
+            font-size: 28px !important;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        /* 버튼 스타일 */
+        .stButton>button {
+            background-color: #4F8BF9;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .stButton>button:hover {
+            background-color: #3a7bd5;
+        }
+
+        /* 사용자 정보 카드 스타일 */
+        .user-info {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* 건강 점수 스타일 */
+        .health-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
             margin: 10px 0;
-            font-size: 0.9em;
-            font-family: sans-serif;
-            min-width: 400px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
         }
-        .dataframe thead tr {
-            background-color: #009879;
-            color: #ffffff;
-            text-align: left;
-        }
-        .dataframe th,
-        .dataframe td {
-            padding: 12px 15px;
-        }
-        .dataframe tbody tr {
-            border-bottom: 1px solid #dddddd;
-        }
-        .dataframe tbody tr:nth-of-type(even) {
-            background-color: #f3f3f3;
-        }
-        .dataframe tbody tr:last-of-type {
-            border-bottom: 2px solid #009879;
+
+        /* 추천 사항 스타일 */
+        .recommendation {
+            background-color: #e9f2ff;
+            border-left: 4px solid #4F8BF9;
+            padding: 10px 15px;
+            margin-top: 10px;
+            font-size: 16px;
         }
         </style>
-        """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
+
 
         # HTML 테이블 표시
         st.markdown(html_table, unsafe_allow_html=True)
