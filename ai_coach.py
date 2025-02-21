@@ -2,6 +2,7 @@ import json
 import streamlit as st
 import pandas as pd
 from gemma2_recommender import get_gemma_recommendation
+import re
 
 # ✅ AI 건강 코치 페이지
 def display_ai_coach_page():
