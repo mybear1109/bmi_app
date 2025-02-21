@@ -67,8 +67,7 @@
 *   <img src="https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas&logoColor=white"> : 수치 계산
 *   <img src="https://img.shields.io/badge/numpy-013243?style=for-the-badge&logo=numpy&logoColor=white"> : 머신러닝 모델 개발 및 평가
 *   <img src="https://img.shields.io/badge/pytorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white"> : 딥러닝 모델 구현
-*  <img src="https://img.shields.io/badge/huggingface-FFD21F?style=for-the-badge&logo=huggingface&logoColor=black"> : 앙상블 모델 학습
-*   <img src="https://img.shields.io/badge/plotly-3F4F75?style=for-the-badge&logo=plotly&logoColor=white"> : Gemini Pro (Gemma-2) 모델 활용
+*  <img src="https://img.shields.io/badge/huggingface-FFD21F?style=for-the-badge&logo=huggingface&logoColor=black"> : Gemini Pro (Gemma-2) 모델 활용
 *   <img src="https://img.shields.io/badge/amazonaws-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white"> : 인터랙티브한 데이터 시각화
 *   <img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white"> : 서버리스 환경 구축 (배포 후 변경 예정)
 *   <img src="https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white"> : 컨테이너 기반 개발 환경 구성
