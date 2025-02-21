@@ -4,35 +4,35 @@ import pandas as pd
 from gemma2_recommender import get_gemma_recommendation
 import re
 
-# ✅ Markdown 테이블을 DataFrame으로 변환 (빈 열 자동 제거)
-def parse_markdown_table(content):
-    """Markdown 형식의 표를 DataFrame으로 변환 (빈 열 자동 제거)"""
-    lines = content.strip().split("\n")
+def parse_text_to_dict(response_text):
+    """📌 응답 텍스트를 JSON 구조의 딕셔너리로 변환"""
+    structured_data = {"운동": [], "식단": []}
+    current_section = None
 
-    # ✅ 테이블 헤더 감지
-    headers = [h.strip() for h in lines[0].split("|")[1:-1]]
-    data = [row.split("|")[1:-1] for row in lines[2:]]
+    # 줄 단위로 텍스트 파싱
+    for line in response_text.split("\n"):
+        line = line.strip()
 
-    # ✅ 빈 열 자동 제거
-    filtered_data = [row for row in data if len(row) == len(headers)]
-    if not filtered_data:
-        return None
-
-    df = pd.DataFrame(filtered_data, columns=headers)
-    return df.to_dict(orient="records")
-
-# ✅ 일반 텍스트를 리스트로 변환
-def parse_text_based_response(content):
-    """일반 텍스트에서 요일별 운동 및 식단 정보를 리스트로 변환"""
-    lines = content.split("\n")
-    result = []
-    for line in lines:
-        match = re.match(r"(\w+):\s*(.+)", line)
-        if match:
-            요일, 내용 = match.groups()
-            result.append({"요일": 요일, "내용": 내용})
-    return result if result else None
-
+        # 📌 운동 및 식단 섹션 감지
+        if "**1. 운동 추천:**" in line:
+            current_section = "운동"
+        elif "**2. 식단 추천:**" in line:
+            current_section = "식단"
+        
+        # 📌 운동 데이터 처리
+        elif current_section == "운동" and re.match(r"\* \*\*.*:\*\*", line):
+            day, content = re.findall(r"\*\*\s?(.*?):\*\*", line)[0], line.split(":")[1].strip()
+            structured_data["운동"].append({"요일": day, "운동 내용": content})
+        
+        # 📌 식단 데이터 처리
+        elif current_section == "식단" and re.match(r"\* \*\*.*:\*\*", line):
+            meal_type, meal_content = re.findall(r"\*\*\s?(.*?):\*\*", line)[0], line.split(":")[1].strip()
+            if len(structured_data["식단"]) == 0 or structured_data["식단"][-1]["요일"] != day:
+                structured_data["식단"].append({"요일": day, meal_type: meal_content})
+            else:
+                structured_data["식단"][-1][meal_type] = meal_content
+    
+    return structured_data
 # ✅ 운동 및 식단 계획을 텍스트 형식으로 정리하는 함수
 def format_plan_to_text(plan_data, category="운동"):
     """📌 운동 또는 식단 계획을 보기 좋게 정리하여 텍스트 형식으로 출력"""
@@ -51,34 +51,6 @@ def format_plan_to_text(plan_data, category="운동"):
 
     return formatted_text
 
-# ✅ JSON 형식의 응답을 파싱
-
-def parse_response(response, category):
-    """AI 응답이 JSON, Markdown, 일반 텍스트 등 다양한 형식일 경우 자동 변환"""
-    if isinstance(response, dict) and "메시지" in response:
-        response = response["메시지"]
-
-    if isinstance(response, str):
-        # ✅ JSON 변환 시도
-        try:
-            parsed_response = json.loads(response)
-            if isinstance(parsed_response, list):
-                return parsed_response
-        except json.JSONDecodeError:
-            pass  # JSON 변환 실패 시 계속 진행
-
-        # ✅ Markdown 테이블 변환 시도
-        if "|" in response:
-            return parse_markdown_table(response)
-
-        # ✅ 일반 텍스트 변환 시도
-        return parse_text_based_response(response)
-
-    elif isinstance(response, list):
-        return response
-    else:
-        return None
-    
 
 
 # ✅ AI 건강 코치 페이지
