@@ -1,27 +1,15 @@
-# ✅ 최신 Streamlit 버전
+# ✅ Streamlit 및 데이터 처리 라이브러리
 streamlit==1.30.0
-
-# ✅ 데이터 분석 라이브러리
 pandas==2.0.3
 numpy==1.24.2
 scikit-learn==1.3.0
 
-# ✅ PyTorch (⚠️ Streamlit Cloud에서 직접 설치 불가능. 따로 설치해야 함.)
-# pip 설치 대신, PyTorch 공식 URL에서 수동 설치할 것.
-# torch
-# torchvision
-# torchaudio
-
-# ✅ 머신러닝 및 AI 모델 라이브러리
+# ✅ Hugging Face 및 기타 필수 라이브러리
 transformers==4.36.2
 dill==0.3.5.1
-
-# ✅ 시각화 관련 라이브러리
 matplotlib==3.7.1
 seaborn==0.12.2
 altair==5.1.2
 plotly==5.17.0
-
-# ✅ 기타 Streamlit 플러그인 및 유틸리티
 streamlit-option-menu==0.3.2
 requests==2.31.0

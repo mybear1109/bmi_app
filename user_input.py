@@ -254,34 +254,48 @@ def get_user_input(existing_data, user_id):
     # 스타일링을 위한 CSS
     st.markdown("""
     <style>
-    .dataframe {
-        border-collapse: collapse;
-        margin: 25px 0;
-        font-size: 0.9em;
-        font-family: sans-serif;
-        min-width: 400px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-    }
-    .dataframe thead tr {
-        background-color: #009879;
-        color: #ffffff;
-        text-align: left;
-    }
-    .dataframe th,
-    .dataframe td {
-        padding: 12px 15px;
-    }
-    .dataframe tbody tr {
-        border-bottom: 1px solid #dddddd;
-    }
-    .dataframe tbody tr:nth-of-type(even) {
-        background-color: #f3f3f3;
-    }
-    .dataframe tbody tr:last-of-type {
-        border-bottom: 2px solid #009879;
-    }
+        .dataframe {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 0.9em;
+            box-shadow: 0 2px 15px rgba(64,64,64,.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .dataframe thead tr {
+            background-color: #3498db;
+            color: #ffffff;
+            text-align: left;
+        }
+        .dataframe th, .dataframe td {
+            padding: 12px 15px;
+        }
+        .dataframe th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
+        }
+        .dataframe tbody tr {
+            transition: background-color 0.3s ease;
+        }
+        .dataframe tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        .dataframe tbody tr:nth-of-type(even) {
+            background-color: #f8f9fa;
+        }
+        .dataframe tbody td {
+            border-bottom: 1px solid #e9ecef;
+        }
+        .dataframe tbody tr:last-of-type td {
+            border-bottom: none;
+        }
     </style>
     """, unsafe_allow_html=True)
+
 
     # 데이터프레임을 HTML 테이블로 변환
     html_table = df_selected.to_html(index=False, classes='dataframe')
