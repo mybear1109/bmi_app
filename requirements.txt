@@ -7,7 +7,7 @@ numpy==1.23.3  # 수학적 계산을 위한 라이브러리
 scikit-learn==1.0.2  # 머신러닝 모델을 위한 라이브러리
 
 # PyTorch 및 모델 관련 라이브러리
-torch==1.13.1  # 모델 로딩을 위한 PyTorch 버전
+torch==2.0.1  # 모델 로딩을 위한 PyTorch 버전
 transformers==4.25.1  # Hugging Face의 모델 및 토크나이저
 dill==0.3.5.1  # 객체 직렬화를 위한 라이브러리
 
