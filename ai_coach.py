@@ -118,5 +118,34 @@ def generate_recommendation(user_info, goal, excluded_foods):
     st.table(all_excluded_foods)   
 
 
+# ✅ 식단 계획 시각화
+def display_diet_plan(diet_plan):
+    st.success("✅ 맞춤형 식단 추천이 완료되었습니다!")
+    st.subheader("🥗 7일 맞춤형 식단 계획")
 
+    if isinstance(diet_plan, list):
+        df = pd.DataFrame(diet_plan)
+        if not all(col in df.columns for col in ["요일", "아침", "점심", "저녁", "총칼로리 (kcal)"]):
+            st.error("🚨 필요한 열이 응답에 없습니다. (요일, 아침, 점심, 저녁, 총칼로리 (kcal))")
+            return
+
+        st.dataframe(df[["요일", "아침", "점심", "저녁", "총칼로리 (kcal)"]], use_container_width=True)
+    else:
+        st.error(f"🚨 잘못된 응답 형식: 리스트 형식이 아닙니다.")
+
+
+# ✅ 운동 계획 시각화
+def display_exercise_plan(exercise_plan):
+    st.success("✅ 맞춤형 운동 추천이 완료되었습니다!")
+    st.subheader("🏋️ 7일 맞춤형 운동 계획")
+
+    if isinstance(exercise_plan, list):
+        df = pd.DataFrame(exercise_plan)
+        if not all(col in df.columns for col in ["요일", "운동", "시간(분)", "칼로리 소모량(kcal)"]):
+            st.error("🚨 필요한 열이 응답에 없습니다. (요일, 운동, 시간(분), 칼로리 소모량(kcal))")
+            return
+
+        st.dataframe(df[["요일", "운동", "시간(분)", "칼로리 소모량(kcal)"]], use_container_width=True)
+    else:
+        st.error(f"🚨 잘못된 응답 형식: 리스트 형식이 아닙니다.")
 
