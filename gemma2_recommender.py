@@ -71,31 +71,25 @@ def parse_json_response(response_json):
     try:
         content = response_json['choices'][0]['message']['content']
         
-        # 응답이 텍스트일 경우 JSON 형식으로 처리하지 않고 텍스트를 그대로 반환
+        # 응답이 JSON 형식이 아닐 경우 예외 처리
         if "```json" not in content:
-            print(f"content 형식입니다. 응답 내용: {content}")
-            return {"메시지": f" {content}"}
-     
+            print(f"🚨 JSON 형식이 아닙니다. 응답 내용: {content}")
+            return {"메시지": content}  # 그대로 반환하여 별도 처리 가능하도록 함
 
         # JSON 부분만 추출해서 처리
-        json_text = content.split("```json")[-1].split("```")[0].strip()  # json 형식만 추출
+        json_text = content.split("```json")[-1].split("```")[0].strip()
         try:
-            # 제어 문자를 처리하기 위해 '\r', '\n', '\t', '\f' 등을 공백으로 변환
-            json_text = json_text.replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t").replace("\f", "\\f")
-            
-            # 작은따옴표를 큰따옴표로 변경
-            json_text = json_text.replace("'", '"')  # 작은따옴표를 큰따옴표로 변경
-
-            # 수정된 JSON 텍스트를 파싱하여 반환
+            json_text = json_text.replace("'", '"')  # 작은따옴표 -> 큰따옴표 변환
             return json.loads(json_text)
         except json.JSONDecodeError as e:
-            print(f"json_text 형식입니다. 응답 내용: {json_text}")
+            print(f"🚨 JSON 변환 오류 발생: {json_text}")
             print(f"오류 위치: {e}")
-            return {"메시지":  " 🚨 json_text 로  변환 되었습니다."}
+            return {"메시지": "🚨 JSON 변환 실패"}
 
     except KeyError as e:
         print(f"🚨 응답에서 필수 항목을 찾을 수 없음: {e}")
         return {"메시지": "🚨 응답 처리 오류"}
+
     
 def get_user_info_with_default(user_data):
     """사용자 정보를 기본값으로 대체하여 유효한 정보를 반환"""
@@ -187,5 +181,18 @@ def display_formatted_data(all_excluded_foods):
     # 데이터프레임 생성
     all_excluded_foods = pd.DataFrame(lines, columns=['내용'])
 
+def parse_markdown_table(text):
+    """Markdown 형식의 표를 DataFrame으로 변환"""
+    lines = text.strip().split("\n")
+    if len(lines) < 2:
+        return None
 
+    # 헤더와 데이터 행 분리
+    headers = [h.strip() for h in lines[0].split("|")[1:-1]]
+    data = [row.split("|")[1:-1] for row in lines[2:]]
+
+    # DataFrame 생성
+    df = pd.DataFrame(data, columns=headers)
+    
+    return df
     
