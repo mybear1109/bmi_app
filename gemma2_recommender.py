@@ -1,23 +1,19 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import torch
-import json
 import os
+import json
 
-# 환경 변수에서 Hugging Face API 키 가져오기
 HF_API_KEY = os.getenv("HF_API_KEY")
 
 def load_gemma_model(model_name):
     """모델을 로드하는 함수"""
     try:
-        tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=HF_API_KEY)
-        model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            use_auth_token=HF_API_KEY,
-            device_map="cpu",  # 강제로 CPU에서 로드
-            torch_dtype=torch.bfloat16,  # 16비트 정밀도 사용
-            low_cpu_mem_usage=True  # 메모리 절약을 위한 설정
+        pipe = pipeline(
+            "text-generation",
+            model=model_name,
+            model_kwargs={"torch_dtype": torch.bfloat16, "use_auth_token": HF_API_KEY},  # API Key 인증 추가
+            device="mps",  # Mac에서 MPS 사용
         )
-        pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)
         print(f"✅ {model_name} 모델 로드 성공")
         return pipe
     except Exception as e:
@@ -34,7 +30,7 @@ def generate_text(model, tokenizer, prompt, max_tokens=256):
         max_new_tokens=max_tokens,
         do_sample=True, 
         temperature=1.3,
-        pad_token_id=tokenizer.eos_token_id  # pad_token_id 설정 (eos_token과 동일)
+        pad_token_id=tokenizer.eos_token_id
     )
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
@@ -51,17 +47,13 @@ def parse_json_response(response_text):
             try:
                 return json.loads(json_output)  # JSON 변환 시도
             except json.JSONDecodeError:
-                st.error("🚨 JSON 변환 오류 발생, 모델 응답을 확인하세요.")
-                st.write(response_text)  # 오류 발생 시 원시 응답 텍스트 출력
+                print("🚨 JSON 변환 오류 발생, 모델 응답을 확인하세요.")
                 return [{"메시지": "🚨 JSON 변환 오류"}]
         else:
-            st.error("🚨 모델 응답이 예상되는 JSON 형식이 아닙니다.")
-            st.write(response_text)  # 예상하지 못한 형식일 경우 원시 응답 출력
+            print("🚨 모델 응답이 예상되는 JSON 형식이 아닙니다.")
             return [{"메시지": "🚨 JSON 데이터 변환 실패, 모델 응답을 확인하세요."}]
-      
-
     except Exception as e:
-        st.error(f"🚨 응답 처리 중 예외 발생: {e}")
+        print(f"🚨 응답 처리 중 예외 발생: {e}")
         return [{"메시지": "🚨 응답 처리 오류"}]
 
 def get_gemma_recommendation(category, user_info, excluded_foods=[]):
@@ -102,12 +94,11 @@ def get_gemma_recommendation(category, user_info, excluded_foods=[]):
     prompt = system_content + prompt
 
     # 모델 로드
-    pipe = load_gemma_model("google/gemma-2-9b-it")
-    if not pipe:
+    model, tokenizer = load_gemma_model("google/gemma-2-9b-it")
+    if not model:
         return [{"메시지": "🚨 모델 로딩 실패"}]
 
     # 예측 수행
-    response_text = generate_text(pipe.model, pipe.tokenizer, prompt)
+    response_text = generate_text(model, tokenizer, prompt)
     
-    # 응답 처리
     return parse_json_response(response_text)

@@ -8,3 +8,11 @@ streamlit-option-menu==0.3.0
 scikit-learn==1.0.2
 numpy==1.23.3
 altair==4.2.0
+streamlit==1.16.0
+torch==1.13.1  # 모델을 로딩하기 위해 필요한 PyTorch 버전
+transformers==4.25.1  # Hugging Face의 transformers 라이브러리
+pandas==1.4.2  # 데이터 처리 라이브러리
+scikit-learn==1.0.2  # 예측 모델을 위한 라이브러리 (필요시)
+matplotlib==3.5.2  # 데이터 시각화를 위한 라이브러리
+seaborn==0.11.2  # 데이터 시각화
+requests==2.27.1  # API 요청을 위한 라이브러리
