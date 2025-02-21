@@ -6,6 +6,7 @@ import os
 from model_loader import model_exercise, model_food  # ✅ 올바르게 import 확인
 from user_data_utils import load_user_data, save_user_data
 
+
 st.markdown(
     """
     <style>
@@ -45,7 +46,11 @@ st.markdown(
 
 # ✅ 예측 데이터 저장 경로
 PREDICTION_FILE = "data/predictions.csv"
-model = model_exercise.eval(),model_food.eval()
+
+# ✅ 모델을 평가 모드로 설정
+model_exercise.eval()
+model_food.eval()
+
 
 
 def preprocess_input(user_data):
@@ -261,7 +266,7 @@ def display_prediction_page():
                 """,
                 unsafe_allow_html=True
             )
-
+            st.markdown("<br>", unsafe_allow_html=True)
             st.markdown(
                 f"""
                 <div style="background-color:#f0f8ff;padding:15px;border-radius:10px;border-left:5px solid #4F8BF9;">
@@ -293,5 +298,5 @@ def save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_fo
         df = new_data
 
     df.to_csv(PREDICTION_FILE, index=False)
-
-    st.success("🎉 축하합니다! 예측 결과가 성공적으로 저장되었습니다! 🎉\n귀하의 건강 여정을 추적하고 개선할 수 있는 소중한 데이터가 안전하게 보관되었습니다.")
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.success("🎉 축하합니다! 예측 결과가 성공적으로 저장되었습니다! 🎉귀하의 건강 여정을 추적하고 개선할 수 있는 소중한 데이터가 안전하게 보관되었습니다.")
