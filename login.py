@@ -2,6 +2,37 @@ import streamlit as st
 import re
 import hashlib
 from user_data_utils import load_user_data, save_user_data
+import json
+import os
+
+USER_DATA_FILE = "data/user_data.json"
+
+# ✅ 사용자 데이터 로드 함수 수정
+def load_user_data():
+    """📌 사용자 데이터 로드"""
+    try:
+        if not os.path.exists(USER_DATA_FILE):
+            return {}
+        with open(USER_DATA_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        st.warning(f"🚨 사용자 데이터 파일({USER_DATA_FILE})이 손상되었습니다. 기본값을 사용합니다.")
+        return {}
+    except Exception as e:
+        st.error(f"🚨 사용자 데이터 로드 중 오류 발생: {e}")
+        return {}
+
+# ✅ 사용자 데이터 저장 함수
+def save_user_data(data):
+    """📌 사용자 데이터 저장"""
+    try:
+        os.makedirs(os.path.dirname(USER_DATA_FILE), exist_ok=True)
+        with open(USER_DATA_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        st.error(f"❌ 사용자 정보 저장 중 오류 발생: {e}")
+
+
 
 # ✅ 스타일 적용
 st.markdown("""
@@ -91,27 +122,32 @@ def login():
 
     if st.button("로그인", key="login_button"):
         hashed_password = hash_password(password)
+   
 
         # 로그인 검증
-        if nickname in user_data and user_data[nickname]["password"] == hashed_password:
-            st.markdown(f'<p class="success-font">🎉 환영합니다, {nickname}님!</p>', unsafe_allow_html=True)
-            st.session_state["logged_in"] = True
-            st.session_state["nickname"] = nickname
-            st.session_state["user_info"] = user_data[nickname]
-            st.session_state["show_signup"] = False
-            st.session_state["show_auth"] = False
-            st.experimental_rerun()  # 로그인 성공 후 새로 고침
-        else:
-            st.markdown('<p class="error-font">🚨 사용자 닉네임 또는 비밀번호가 올바르지 않습니다.</p>', unsafe_allow_html=True)
+        try:    
+            if nickname in user_data and user_data[nickname]["password"] == hashed_password:
+                st.markdown(f'<p class="success-font">🎉 환영합니다, {nickname}님!</p>', unsafe_allow_html=True)
+                st.session_state["logged_in"] = True
+                st.session_state["nickname"] = nickname
+                st.session_state["user_info"] = user_data[nickname]
+                st.session_state["show_signup"] = False
+                st.session_state["show_auth"] = False
+                st.rerun()  # 로그인 성공 후 새로 고침
+            else:
+                st.markdown('<p class="error-font">🚨 사용자 닉네임 또는 비밀번호가 올바르지 않습니다.</p>', unsafe_allow_html=True)
+        except KeyError:
+                st.error('<p class="error-font">🚨 사용자 데이터에 문제가 있습니다. 관리자에게 문의하세요.</p>', unsafe_allow_html=True)    
 
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🆕 회원가입", key="signup_button"):
             st.session_state["show_signup"] = True
-            st.experimental_rerun()  # 회원가입 페이지로 이동 후 새로 고침
+            st.rerun()  # 회원가입 페이지로 이동 후 새로 고침
     with col2:
         if st.button("🚀 게스트로 입장", key="guest_button"):
             guest_login()
+            st.rerun()
 
 # ✅ 게스트 로그인 기능
 def guest_login():
@@ -120,7 +156,7 @@ def guest_login():
     st.session_state["nickname"] = "게스트"
     st.session_state["user_info"] = {"is_guest": True}
     st.session_state["show_auth"] = False
-    st.experimental_rerun()  # 게스트 로그인 후 새로 고침
+    st.rerun() # 게스트 로그인 후 새로 고침
 
 # ✅ 로그아웃 기능
 def logout():
@@ -131,7 +167,7 @@ def logout():
     st.session_state["show_signup"] = False
     st.session_state["show_auth"] = False
     st.markdown('<p class="success-font">✅ 로그아웃되었습니다.</p>', unsafe_allow_html=True)
-    st.experimental_rerun()  # 로그아웃 후 새로 고침
+    st.rerun()  # 로그아웃 후 새로 고침
 
 # ✅ 사용자명 검증 함수
 def is_valid_username(username):
@@ -176,9 +212,9 @@ def signup():
                 save_user_data(user_data)
                 st.markdown('<p class="success-font">✅ 회원가입이 완료되었습니다. 이제 로그인할 수 있습니다.</p>', unsafe_allow_html=True)
                 st.session_state["show_signup"] = False
-                st.experimental_rerun()
+                st.rerun()
 
     with col2:
         if st.button("⬅️ 로그인으로 돌아가기"):
             st.session_state["show_signup"] = False
-            st.experimental_rerun()  # 로그인 페이지로 돌아가기 후 새로 고침
+            st.rerun()  # 로그인 페이지로 돌아가기 후 새로 고침
