@@ -1,9 +1,10 @@
 import requests
 import json
 import os
+import streamlit as st
 
-# Hugging Face API Key 설정
-HF_API_KEY = os.getenv("HF_API_KEY")  # 환경변수에서 API Key를 가져옵니다.
+# Hugging Face API Key를 secrets.toml에서 가져오기
+HF_API_KEY = st.secrets["HF_API_KEY"]  # secrets.toml에 저장된 API 키를 사용
 
 def generate_text_via_api(prompt, model_name="google/gemma-2-9b-it", max_tokens=256):
     """Hugging Face API를 사용하여 텍스트 생성"""

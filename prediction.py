@@ -3,7 +3,7 @@ import time
 import torch
 import pandas as pd
 import os
-from model_manager import model_exercise, model_food  # ✅ 올바르게 import 확인
+from  model_manager import model_exercise, model_food  # ✅ 올바르게 import 확인
 from user_data_utils import load_user_data, save_user_data
 
 st.markdown("""
