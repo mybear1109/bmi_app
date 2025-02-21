@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ✅ 페이지 설정
-st.set_page_config(page_title="건강 관리 앱", page_icon="🏥", layout="wide")
+st.set_page_config(page_title=" AI 피트니스 코치", page_icon="🏠", layout="wide")
 import json
 import os
 from sidebar import get_selected_menu
