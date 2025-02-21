@@ -32,7 +32,11 @@ def display_visualization_page():
         
         fig_bmi_weight.add_trace(go.Histogram(x=df['BMI'], name="BMI 분포"), row=1, col=1)
         fig_bmi_weight.add_trace(go.Scatter(x=df['현재 체중'], y=df['목표 체중'], mode='markers', 
-                                            name="체중 목표", marker=dict(color=df['체중_차이'], colorscale='RdYlGn_r')), row=1, col=2)
+                                            name="체중 목표", marker=dict(color=df['체중_차이'], colorscale='RdYlGn_r',
+                                            sizemode='area',  # 면적 기준으로 크기 설정
+                                            sizeref=2.*max(df['체중_차이'])/(40.**2),  # 크기 조정
+                                            sizemin=4  # 최소 크기 설정)
+                                            )), row=1, col=2)
         
         fig_bmi_weight.update_layout(height=500, title_text="BMI 분포 및 체중 목표 분석")
         st.plotly_chart(fig_bmi_weight, use_container_width=True)
@@ -51,7 +55,7 @@ def display_visualization_page():
         health_indicators = ['BMI', '허리둘레', '현재 체중', '수축기혈압(최고 혈압)', '이완기혈압(최저 혈압)', 
                              'HDL콜레스테롤', 'LDL콜레스테롤', '트리글리세라이드']
         corr_matrix = df[health_indicators].corr()
-        fig_corr = px.imshow(corr_matrix, text_auto=True, aspect="auto",
+        fig_corr = px.imshow(corr_matrix, text_auto=True, aspect="auto",color_continuous_scale='purples',
                              title="건강 지표 간 상관관계 히트맵")
         st.plotly_chart(fig_corr, use_container_width=True)
         st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
