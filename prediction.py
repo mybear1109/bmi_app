@@ -266,38 +266,67 @@ def display_prediction_page():
         with st.spinner("⏳ AI가 데이터를 분석 중입니다..."):
             time.sleep(2)
 
-        if user_data:
-            prob_exercise = get_final_health_score(model_exercise, user_data)
-            prob_food = get_final_health_score(model_food, user_data)
+    if user_data:
+        prob_exercise = get_final_health_score(model_exercise, user_data)
+        prob_food = get_final_health_score(model_food, user_data)
 
-            exercise_recommendation = generate_recommendation(prob_exercise, "운동")
-            diet_recommendation = generate_recommendation(prob_food, "식단")
+        exercise_recommendation = generate_recommendation(prob_exercise, "운동")
+        diet_recommendation = generate_recommendation(prob_food, "식단")
 
-            # 시각화 스타일 개선
-            st.markdown(
-                f"""
-                <div style="background-color:#f0f8ff;padding:15px;border-radius:10px;border-left:5px solid #4F8BF9;">
-                    <h3>🏃‍♂️ 운동: <span style="color:#e74c3c;">{prob_exercise} 점</span></h3>
-                    <p style="margin-top:5px;font-size:16px;">{exercise_recommendation}</p>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown(
-                f"""
-                <div style="background-color:#f0f8ff;padding:15px;border-radius:10px;border-left:5px solid #4F8BF9;">
-                    <h3>🥗 식단: <span style="color:#e74c3c;">{prob_food} 점</span></h3>
-                    <p style="margin-top:5px;font-size:16px;">{diet_recommendation}</p>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            
+        # 스타일 정의
+        st.markdown("""
+        <style>
+        .health-score-container {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        .score {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .recommendation {
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .icon {
+            font-size: 36px;
+            margin-right: 10px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+        # 운동 점수 및 추천 표시
+        st.markdown(f"""
+        <div class="health-score-container">
+            <h2><span class="icon">🏋️‍♂️</span> 운동 건강 점수</h2>
+            <div class="score">{prob_exercise}</div>
+            <div class="recommendation">{exercise_recommendation}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # 식단 점수 및 추천 표시
+        st.markdown(f"""
+        <div class="health-score-container">
+            <h2><span class="icon">🥗</span> 식단 건강 점수</h2>
+            <div class="score">{prob_food}</div>
+            <div class="recommendation">{diet_recommendation}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
             
             # 예측 결과 저장
-            save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food)
-        else:
+        save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food)
+    else:
             st.error("사용자 정보가 없어 예측을 실행할 수 없습니다. 먼저 사용자 정보를 입력해주세요.")
 
 
@@ -316,5 +345,11 @@ def save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_fo
         df = new_data
 
     df.to_csv(PREDICTION_FILE, index=False)
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.success("🎉 축하합니다! 예측 결과가 성공적으로 저장되었습니다! 🎉귀하의 건강 여정을 추적하고 개선할 수 있는 소중한 데이터가 안전하게 보관되었습니다.")
+        # 행동 촉구 메시지
+    st.success("🎉 분석이 완료되었습니다! 아래 버튼을 클릭하여 상세한 맞춤 계획을 받아보세요.")
+    if st.button("📋 맞춤 건강 계획 받기"):
+        st.balloons()
+        st.info("🚀 축하합니다! 당신만의 맞춤 건강 여정이 시작되었습니다. 함께 건강해져 봐요!")
+
+    else:
+        st.error("⚠️ 사용자 정보가 없습니다. 먼저 기본 정보를 입력해주세요.")
