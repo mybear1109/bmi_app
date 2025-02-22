@@ -72,7 +72,7 @@ def parse_json_response(response_json):
         # 응답이 텍스트일 경우 JSON 형식으로 처리하지 않고 텍스트를 그대로 반환
         if "```json" not in content:
             print(f"content 형식입니다. 응답 내용: {content}")
-            return {"메시지": f"예상치 못한 응답 형식: {content}"}
+            return {"메시지": "content"}
 
         # JSON 부분만 추출해서 처리
         json_text = content.split("```json")[-1].split("```")[0].strip()  # json 형식만 추출
