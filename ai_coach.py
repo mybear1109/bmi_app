@@ -5,34 +5,61 @@ from gemma2_recommender import get_gemma_recommendation
 
 def display_ai_coach_page():
     st.header("🏋️‍♂️ AI 건강 코치")
-    
-    # 세션 데이터 안전하게 파싱
+
+    # 사용자 데이터 불러오기
     user_data = st.session_state.get("user_data", {})
     if isinstance(user_data, str):
         try:
             user_data = json.loads(user_data)
         except json.JSONDecodeError:
             user_data = {}
-    
-    # 필요한 건강 정보 추출
-    user_info = { key: user_data.get(key, "미측정") for key in [
-        "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)",
-        "혈압 차이", "총콜레스테롤", "고혈당 위험", "간 지표",
-        "성별", "연령대", "비만 위험 지수", "흡연상태", "음주여부"
-    ]}
-    
+
+    user_id = user_data.get("user_id", "게스트")
+
+    # 사용자 건강 정보 변환
+    user_info = {
+        key: user_data.get(key, "미측정") for key in [
+            "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)", "혈압 차이",
+            "총콜레스테롤", "고혈당 위험", "간 지표", "성별", "연령대", "비만 위험 지수", "흡연상태", "음주여부"
+        ]
+    }
+
+    # 사용자 입력
     st.subheader("⚙️ 개인화 설정")
-    goal = st.selectbox("🎯 목표 설정", ["체중 감량", "근력 향상", "혈압 관리", "일반 건강 관리"])
-    user_info["목표"] = goal
     
     col1, col2 = st.columns(2)
-    with col1:
-        excluded_foods = st.text_input("🍴 알러지 또는 못 먹는 음식 입력 (쉼표 구분)", key="excluded_foods")
-        excluded_foods = [food.strip() for food in excluded_foods.split(',') if food.strip()]
-    with col2:
-        restricted_exercises = st.text_input("🏋️ 제한해야 할 운동 (쉼표 구분)", key="restricted_exercises")
-        restricted_exercises = [exercise.strip() for exercise in restricted_exercises.split(',') if exercise.strip()]
     
+    with col1:
+        goal = st.selectbox("🎯 목표 설정", ["체중 감량", "근력 향상", "혈압 관리", "일반 건강 관리"])
+        user_info["목표"] = goal
+
+        excluded_foods = st.text_input("🍴 알러지 또는 못 먹는 음식 입력 (쉼표 구분)", "", key="excluded_foods")
+        excluded_foods = [food.strip() for food in excluded_foods.split(',') if food.strip()]
+        
+        preferred_foods = st.text_input("😋 선호하는 음식 (쉼표 구분)", "", key="preferred_foods")
+        preferred_foods = [food.strip() for food in preferred_foods.split(',') if food.strip()]
+        
+        diet_restriction = st.selectbox("🥗 식단 제한", ["없음", "채식", "육식", "저탄수화물", "저지방", "글루텐 프리"])
+    
+    with col2:
+        restricted_exercises = st.text_input("🏋️ 제한해야 할 운동 (쉼표 구분)", "", key="restricted_exercises")
+        restricted_exercises = [exercise.strip() for exercise in restricted_exercises.split(',') if exercise.strip()]
+        
+        fitness_level = st.select_slider("💪 현재 체력 수준", options=["매우 낮음", "낮음", "보통", "높음", "매우 높음"])
+        
+        exercise_preference = st.multiselect("🏃‍♀️ 선호하는 운동 유형", 
+                                             ["유산소", "근력", "유연성", "균형", "고강도 인터벌", "요가", "필라테스"])
+
+    # 사용자 정보 업데이트
+    user_info.update({
+        "excluded_foods": excluded_foods,
+        "preferred_foods": preferred_foods,
+        "diet_restriction": diet_restriction,
+        "restricted_exercises": restricted_exercises,
+        "fitness_level": fitness_level,
+        "exercise_preference": exercise_preference
+    })
+
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🥗 식단 계획 추천", key="diet_button"):
