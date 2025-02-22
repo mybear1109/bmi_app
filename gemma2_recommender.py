@@ -50,8 +50,9 @@ def generate_text_via_api(prompt, model_name="google/gemma-2-9b-it"):
         '[{"요일": ["월", "화", "수", "목", "금", "토", "일"],"운동": ["달리기 30분", "자전거 45분", "수영 30분", "휴식", "웨이트 60분", "달리기 45분", "휴식"],  "칼로리 소모": [300, 400, 350, 0, 500, 450, 0]}]\n'
         "식단 예시:\n"
         '[{"요일": ["월", "화", "수", "목", "금", "토", "일"], "월", "아침": ["계란 + 오트밀", "그릭 요거트", "과일 + 견과류", "계란 + 토스트", "오트밀", "그릭 요거트","총칼로리 (kcal): 250"],  "점심": ["닭가슴살 샐러드", "연어 샐러드", "현미밥 + 야채", "닭가슴살 샐러드", "연어 샐러드", "현미밥 + 야채", "닭가슴살 샐러드","총칼로리 (kcal): 250"], , "저녁": ["구운 채소", "찐 생선", "닭가슴살", "구운 채소", "찐 생선", "닭가슴살", "구운 채소","총칼로리 (kcal): 250"],"총칼로리 (kcal): 750"}]\n\n'
-        "식단 계획 추천 과 운동 계획 추천 을 선택하여 따로 작성해주세요\n\n"
+        "식단과 운동 을 선택에 따라 JSON으로 구분해서 반환해주세요.\n\n"
         "유저가 버튼을 눌렀을경우 각각의 추천 결과를 보여주는 함수에 따라 결과를 보여주세요\n\n"
+      
         }
     ]
     try:
@@ -137,18 +138,17 @@ def expand_allergies(allergies):
             expanded.add(allergy)
     return list(expanded)
 
-# 운동 및 식단 추천 로직
+# ✅ 운동 및 식단 추천 요청 함수
 def get_gemma_recommendation(category, user_info, allergies=[], excluded_foods=[]):
-    """운동 및 식단 추천 함수"""
-    user_info = get_user_info_with_default(user_info)  # 미측정된 정보 기본값으로 대체
+    """운동 및 식단을 별도로 요청하는 함수"""
     user_info_text = json.dumps(user_info, ensure_ascii=False) if isinstance(user_info, dict) else str(user_info)
     prompt = f"사용자 건강 상태: {user_info_text}\n"
-
+    
     if category == "운동":
-        prompt += "사용자의 건강 상태와 목표에 맞는 7일 운동 계획을 제공해 주세요."
+        prompt += "사용자의 건강 상태와 목표에 맞는 7일 운동 계획을 JSON 형식으로 제공해 주세요."
     elif category == "식단":
-        prompt += "사용자의 건강 상태를 고려한 7일 식단을 제공해 주세요."
-        
+        prompt += "사용자의 건강 상태를 고려한 7일 식단을 JSON 형식으로 제공해 주세요."
+    
         # 알레르기 정보 확장 및 처리
         expanded_allergies = expand_allergies(allergies)
         all_excluded_foods = set(expanded_allergies + excluded_foods)
@@ -159,6 +159,15 @@ def get_gemma_recommendation(category, user_info, allergies=[], excluded_foods=[
         return {"메시지": "🚨 올바른 카테고리를 입력하세요: '운동' 또는 '식단'"}
     
     return generate_text_via_api(prompt)
+
+
+# ✅ 운동과 식단을 구분하여 표시하는 함수
+def display_separate_recommendations(response):
+    """운동 및 식단을 구분하여 출력"""
+    if isinstance(response, dict) and "운동" in response and "식단" in response:
+        exercise_plan = response["운동"]
+        diet_plan = response["식단"]
+
 
 def clean_and_format_data(all_excluded_foods):
     # 불필요한 마크다운 구문 제거
