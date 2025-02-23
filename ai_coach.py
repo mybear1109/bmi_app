@@ -1,7 +1,7 @@
 import json
 import streamlit as st
 import pandas as pd
-from kogpt2_recommender import get_gemma_recommendation  # 모델 추천 함수 호출 (파일명이 kogpt2_recommender.py라고 가정)
+from kogpt2_recommender import get_gemma_recommendation
 
 # 사용자 데이터 불러오기 함수
 def load_user_data():
@@ -45,7 +45,6 @@ def display_diet_plan(diet_plan):
             st.error("🚨 응답에 필요한 열이 없습니다. (요일, 아침, 점심, 저녁, 총칼로리 (kcal))")
             st.markdown("**원시 응답 데이터:**")
             st.json(diet_plan)
-            # 원시 응답을 마크다운 텍스트로도 표시
             if isinstance(diet_plan, list) and len(diet_plan) > 0 and isinstance(diet_plan[0], dict):
                 raw_md = diet_plan[0].get("메시지", "")
                 if raw_md:
@@ -74,7 +73,7 @@ def display_exercise_plan(exercise_plan):
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
     
-    # 응답 데이터에 "weekly_exercise_plan" 키가 있으면 변환
+    # 만약 응답 데이터에 "weekly_exercise_plan" 키가 있으면 변환
     if (isinstance(exercise_plan, list) and exercise_plan and 
         isinstance(exercise_plan[0], dict) and "weekly_exercise_plan" in exercise_plan[0]):
         weekly_plan = exercise_plan[0].get("weekly_exercise_plan", [])
@@ -113,16 +112,14 @@ def display_exercise_plan(exercise_plan):
     else:
         st.error("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
 
-# 메인 페이지 표시 함수
+# --- 메인 페이지 표시 함수 ---
 def display_ai_coach_page():
     st.header("🏋️‍♂️ AI 건강 코치")
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # 사용자 데이터 불러오기 및 처리
     user_data = load_user_data()
     user_info = process_user_info(user_data)
     
-    # 사용자 입력 받기
     st.subheader("🎛️ 맞춤 건강 프로필 설정")
     st.markdown("<br>", unsafe_allow_html=True)
     goal = st.selectbox("🎯 건강 목표", ["체중 관리", "근력 증진", "심혈관 건강 개선", "전반적 웰빙 향상"])
@@ -149,7 +146,6 @@ def display_ai_coach_page():
                                               "고강도 인터벌 트레이닝", "요가", "필라테스"])
         st.markdown("<br>", unsafe_allow_html=True)
     
-    # 사용자 정보 업데이트
     user_info.update({
         "excluded_foods": excluded_foods,
         "preferred_foods": preferred_foods,

@@ -154,14 +154,30 @@ def get_exercise_recommendation(user_info):
     prompt = f"사용자의 건강 상태와 목표에 맞는 7일 운동 계획을 JSON 형식으로 제공해 주세요.\n"
     prompt += f"사용자 정보: {json.dumps(user_info, ensure_ascii=False)}\n\n"
     prompt += (
-        "- 모든 대답은 반드시 한국어로 작성해주세요.\n"
+        "- 모든 대답은 반드시 한국어로 해주세요.\n"
+        "- 식단과 운동은 유저의 선택에 따라 각각 결과로 작성해주세요.\n"
+        "- 당신은 전문적인 AI 피트니스 코치이며, 개인 맞춤형 건강 관리 전문가입니다.\n"
+        "- 사용자의 건강 정보를 기반으로 최적의 운동 계획을 작성해 주세요.\n"
+        "- 일반적인 조언이 아니라, 사용자의 현재 건강 상태와 목표에 맞춘 상세한 가이드를 제공해야 합니다.\n"
+        "- 예측결과의 점수에 따라 사용자에게 운동을 추천해 주세요.\n"
+        "- 운동 추천 점수가 높을수록 사용자의 운동 습관이 좋다는 의미입니다.\n"
+        "- 사용자의 신체 상태(BMI, 체중, 활동 수준 등)에 따라 운동 강도를 조정하세요.\n"
+        "- 매일 수행할 운동을 추천하고, 각 운동의 시간(분)과 예상 소모 칼로리를 포함하세요.\n"
+        "- 운동 부위(상체, 하체, 코어 등)를 균형 있게 고려하세요.\n"
+        "- 사용자가 피해야 할 운동(부상 위험, 건강 상태 고려)을 주의하세요.\n"
+        "- 아프거나 불편한 부위가 있는 경우, 해당 부위를 피하도록 운동을 추천하세요.\n"
+        "- 운동의 이점과 권장 이유를 간략히 설명하세요.\n"
+        "- 운동 전후 스트레칭과 근력 운동을 포함하여 다양한 운동을 추천하세요.\n"
+        "- 운동을 처음 하시는 유저를 위해 운동 방법에 대한 첨부자료나 링크를 제공해주세요.\n"
+        "- 운동의 경우 목표체중을 위해 계산해서 작성해주세요.\n"
+        "- 스트레칭만 하는 날과 휴식하는 날도 포함하여 운동 계획을 제공하세요.\n"
         "- 운동 계획은 구체적이어야 하며, 매일의 운동 내용과 소요 시간(분)을 포함해야 합니다.\n"
-        "- 예시와 같이 7일치 운동 계획을 제공해 주세요.\n"
-        "- 아래 예시를 참고하여 한국어로 작성해 주세요.\n"
+        "- 아래 예시를 참고하여 한국어로 7일치 운동 계획을 제공해 주세요.\n"
         "- 운동 예시:\n"
         "[{'요일': ['월', '화', '수', '목', '금', '토', '일'], '운동': ['달리기 30분', '자전거 45분', '수영 30분', '휴식', '웨이트 60분', '달리기 45분', '휴식'], '칼로리 소모': [300, 400, 350, 0, 500, 450, 0]}]\n"
     )
     return generate_text_via_api(prompt)
+
 
 def get_diet_recommendation(user_info, excluded_foods):
     """
@@ -172,10 +188,17 @@ def get_diet_recommendation(user_info, excluded_foods):
     prompt += f"사용자 정보: {json.dumps(user_info, ensure_ascii=False)}\n"
     prompt += f"제외할 음식: {', '.join(excluded_foods)}\n"
     prompt += (
-        "- 모든 대답은 반드시 한국어로 작성해주세요.\n"
+        "- 모든 대답은 반드시 한국어로 해주세요.\n"
+        "- 식단과 운동은 유저의 선택에 따라 각각 결과로 작성해주세요.\n"
+        "- 당신은 전문적인 영양사입니다. 사용자의 건강 정보를 기반으로 최적의 다이어트 식단 계획을 작성해 주세요.\n"
+        "- 음식의 영양적 이점과 섭취 이유를 간략히 설명하세요.\n"
+        "- 다이어트를 할 경우 칼로리 및 영양소 함량을 고려하여 작성해주세요.\n"
+        "- 목표 설정에 따라 식단을 작성하고, 사용자가 섭취해야 하는 칼로리를 계산하여 제공하세요.\n"
+        "- 식단의 경우 목표체중을 위해 계산해서 작성해주세요.\n"
+        "- 최대한 다양한 식재료를 활용하여, 맛있고 건강한 다이어트 식단을 추천하세요.\n"
         "- 다이어트를 위한 식단은 칼로리 조절과 균형 잡힌 영양소(단백질, 탄수화물, 지방 비율)가 반영되어야 합니다.\n"
         "- 아침, 점심, 저녁 3끼 식단을 구체적으로 작성해 주세요.\n"
-        "- 아래 예시를 참고하여 한국어로 작성해 주세요.\n"
+        "- 아래 예시를 참고하여 한국어로 7일 식단 계획을 제공해 주세요.\n"
         "- 예시:\n"
         "[{'요일': ['월', '화', '수', '목', '금', '토', '일'], '아침': ['계란 + 오트밀', '그릭 요거트', '과일 + 견과류', '계란 + 토스트', '오트밀', '그릭 요거트', '과일 스무디'], '점심': ['닭가슴살 샐러드', '연어 샐러드', '현미밥 + 야채', '닭가슴살 샐러드', '연어 샐러드', '현미밥 + 야채', '닭가슴살 샐러드'], '저녁': ['구운 채소', '찐 생선', '닭가슴살', '구운 채소', '찐 생선', '닭가슴살', '구운 채소'], '총칼로리 (kcal)': [1500, 1550, 1600, 1500, 1550, 1600, 1500]}]\n"
     )
@@ -228,140 +251,3 @@ def parse_markdown_table(text):
         return None
     df = pd.DataFrame(filtered_data, columns=headers)
     return df.to_dict(orient="records")
-
-# --- 결과 표시 함수 ---
-
-def display_diet_plan(diet_plan):
-    if isinstance(diet_plan, dict) and "메시지" in diet_plan:
-        st.error(f"🚨 식단 추천 생성 중 문제가 발생했습니다: {diet_plan['메시지']}")
-        st.markdown("**원시 응답:**")
-        st.code(json.dumps(diet_plan, indent=4, ensure_ascii=False))
-        return
-    if isinstance(diet_plan, dict):
-        diet_plan = [diet_plan]
-    if isinstance(diet_plan, list):
-        df = pd.DataFrame(diet_plan)
-        required_cols = ["요일", "아침", "점심", "저녁", "총칼로리 (kcal)"]
-        if not all(col in df.columns for col in required_cols):
-            st.error("🚨 응답에 필요한 열이 없습니다. (요일, 아침, 점심, 저녁, 총칼로리 (kcal))")
-            st.markdown("**원시 응답 데이터:**")
-            st.json(diet_plan)
-            if isinstance(diet_plan, list) and len(diet_plan) > 0 and isinstance(diet_plan[0], dict):
-                raw_md = diet_plan[0].get("메시지", "")
-                if raw_md:
-                    display_raw_markdown(raw_md)
-            return
-        styled_df = (
-            df[required_cols]
-            .style
-            .set_properties(**{'text-align': 'center', 'font-size': '16px'})
-            .background_gradient(cmap='Blues', subset=["총칼로리 (kcal)"])
-            .set_table_styles([
-                {'selector': 'th', 'props': [('background-color', '#4CAF50'), ('color', 'white')]}
-            ])
-        )
-        st.dataframe(styled_df, use_container_width=True)
-    else:
-        st.error("🚨 응답 형식 오류: 식단 추천 결과가 리스트 형식이 아닙니다.")
-
-def display_exercise_plan(exercise_plan):
-    if isinstance(exercise_plan, dict) and "메시지" in exercise_plan:
-        st.error(f"🚨 운동 추천 생성 중 문제가 발생했습니다: {exercise_plan['메시지']}")
-        st.markdown("**원시 응답:**")
-        st.code(json.dumps(exercise_plan, indent=4, ensure_ascii=False))
-        return
-    if isinstance(exercise_plan, dict):
-        exercise_plan = [exercise_plan]
-    
-    if (isinstance(exercise_plan, list) and exercise_plan and 
-        isinstance(exercise_plan[0], dict) and "weekly_exercise_plan" in exercise_plan[0]):
-        weekly_plan = exercise_plan[0].get("weekly_exercise_plan", [])
-        transformed = []
-        for day in weekly_plan:
-            transformed.append({
-                "요일": day.get("day", ""),
-                "운동": day.get("focus", ""),
-                "시간(분)": day.get("duration", ""),
-                "칼로리 소모량(kcal)": "정보 없음"
-            })
-        exercise_plan = transformed
-    
-    if isinstance(exercise_plan, list):
-        df = pd.DataFrame(exercise_plan)
-        required_cols = ["요일", "운동", "시간(분)", "칼로리 소모량(kcal)"]
-        if not all(col in df.columns for col in required_cols):
-            st.error("🚨 응답에 필요한 열이 없습니다. (요일, 운동, 시간(분), 칼로리 소모량(kcal))")
-            st.markdown("**원시 응답 데이터:**")
-            st.json(exercise_plan)
-            if isinstance(exercise_plan, list) and len(exercise_plan) > 0 and isinstance(exercise_plan[0], dict):
-                raw_md = exercise_plan[0].get("메시지", "")
-                if raw_md:
-                    display_raw_markdown(raw_md)
-            return
-        styled_df = (
-            df[required_cols]
-            .style
-            .set_properties(**{'text-align': 'center', 'font-size': '16px'})
-            .background_gradient(cmap='Oranges', subset=["칼로리 소모량(kcal)"])
-            .set_table_styles([
-                {'selector': 'th', 'props': [('background-color', '#FF5722'), ('color', 'white')]}
-            ])
-        )
-        st.dataframe(styled_df, use_container_width=True)
-    else:
-        st.error("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
-
-# --- 메인 페이지 표시 함수 ---
-def display_ai_coach_page():
-    st.header("🏋️‍♂️ AI 건강 코치")
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    user_data = load_user_data()
-    user_info = process_user_info(user_data)
-    
-    st.subheader("🎛️ 맞춤 건강 프로필 설정")
-    st.markdown("<br>", unsafe_allow_html=True)
-    goal = st.selectbox("🎯 건강 목표", ["체중 관리", "근력 증진", "심혈관 건강 개선", "전반적 웰빙 향상"])
-    user_info["목표"] = goal
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        excluded_foods = st.text_input("🚫 식품 알레르기 및 기피 항목 (쉼표로 구분)", "", key="excluded_foods")
-        excluded_foods = [food.strip() for food in excluded_foods.split(',') if food.strip()]
-        st.markdown("<br>", unsafe_allow_html=True)
-        preferred_foods = st.text_input("😋 선호하는 음식 (쉼표 구분)", "", key="preferred_foods")
-        preferred_foods = [food.strip() for food in preferred_foods.split(',') if food.strip()]
-        st.markdown("<br>", unsafe_allow_html=True)
-        diet_restriction = st.selectbox("🍽️ 식이 요법 유형", ["일반식", "채식", "육류 중심", "저탄수화물", "저지방", "글루텐 프리"])
-    with col2:
-        fitness_level = st.select_slider("💪 현재 체력 수준", options=["매우 낮음", "낮음", "보통", "높음", "매우 높음"])
-        st.markdown("<br>", unsafe_allow_html=True)
-        restricted_exercises = st.text_input("⚠️ 운동 제한 사항 (쉼표로 구분)", "", key="restricted_exercises")
-        restricted_exercises = [exercise.strip() for exercise in restricted_exercises.split(',') if exercise.strip()]
-        st.markdown("<br>", unsafe_allow_html=True)
-        exercise_preference = st.multiselect("🏃‍♀️ 선호하는 운동 유형", 
-                                             ["유산소 운동", "근력 트레이닝", "유연성 운동", "균형 및 코어", 
-                                              "고강도 인터벌 트레이닝", "요가", "필라테스"])
-        st.markdown("<br>", unsafe_allow_html=True)
-    
-    user_info.update({
-        "excluded_foods": excluded_foods,
-        "preferred_foods": preferred_foods,
-        "diet_restriction": diet_restriction,
-        "restricted_exercises": restricted_exercises,
-        "fitness_level": fitness_level,
-        "exercise_preference": exercise_preference
-    })
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🥗 식단 계획 추천", key="diet_button"):
-            with st.spinner("AI가 식단을 추천하는 중...⏳"):
-                diet_plan = get_gemma_recommendation("식단", user_info, excluded_foods)
-            display_diet_plan(diet_plan)
-    with col2:
-        if st.button("🏋️ 운동 계획 추천", key="workout_button"):
-            with st.spinner("AI가 운동 계획을 추천하는 중...⏳"):
-                exercise_plan = get_gemma_recommendation("운동", user_info)
-            display_exercise_plan(exercise_plan)
