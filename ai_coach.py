@@ -3,11 +3,10 @@ import re
 import streamlit as st
 import pandas as pd
 from gemma2_recommender import get_gemma_recommendation
-from user_data_utils import load_user_data  # 사용자 데이터 로딩 관련 함수
-import os
+from user_data_utils import load_user_data
 
-# 사용자 데이터 불러오기 함수 (로컬)
-def load_user_data_local():
+# 사용자 데이터 불러오기 함수
+def load_user_data():
     user_data = st.session_state.get("user_data", {})
     if isinstance(user_data, str):
         try:
@@ -31,8 +30,44 @@ def display_raw_markdown(raw_text):
     st.markdown("**원시 응답 (마크다운):**")
     st.markdown(f"> {raw_text}")
 
+# 대체 구조(중첩된 식단 구조)를 평탄화하는 함수
+def flatten_diet_plan(plan: dict) -> dict:
+    """
+    plan 예시:
+    {
+      "일일 총칼로리": 1300,
+      "아침": {"메뉴": "계란 + 오트밀 (130g), 과일 1개, 생선 150g", "칼로리": 300},
+      "점심": {"메뉴": "닭가슴살 샐러드 (150g), 콩나물 150g", "칼로리": 400},
+      "저녁": {"메뉴": "구운 채소 + 연어 (150g), 랑치 150g, 주스 150ml", "칼로리": 450},
+      "간식": {"메뉴": "그릭 요거트 (150g)", "칼로리": 150},
+      "설명": "고단백 저탄수화물 식단으로 체지방 감소 도움"
+    }
+    평탄화 결과:
+    {
+      "일일 총칼로리": 1300,
+      "아침 메뉴": "계란 + 오트밀 (130g), 과일 1개, 생선 150g",
+      "아침 칼로리": 300,
+      "점심 메뉴": "닭가슴살 샐러드 (150g), 콩나물 150g",
+      "점심 칼로리": 400,
+      "저녁 메뉴": "구운 채소 + 연어 (150g), 랑치 150g, 주스 150ml",
+      "저녁 칼로리": 450,
+      "간식 메뉴": "그릭 요거트 (150g)",
+      "간식 칼로리": 150,
+      "설명": "고단백 저탄수화물 식단으로 체지방 감소 도움"
+    }
+    """
+    flat = {}
+    for key, value in plan.items():
+        if isinstance(value, dict):
+            flat[f"{key} 메뉴"] = value.get("메뉴", "")
+            flat[f"{key} 칼로리"] = value.get("칼로리", "")
+        else:
+            flat[key] = value
+    return flat
+
 # 식단 추천 결과 표시 함수
 def display_diet_plan(diet_plan):
+    # 오류 응답 처리
     if isinstance(diet_plan, dict) and "메시지" in diet_plan:
         st.error("🚨 식단 추천 생성 중 문제가 발생했습니다. (관리자 로그 참조)")
         st.code(json.dumps(diet_plan, indent=4, ensure_ascii=False))
@@ -41,6 +76,7 @@ def display_diet_plan(diet_plan):
         diet_plan = [diet_plan]
     
     df = pd.DataFrame(diet_plan)
+    # 기본 예상 열 구조
     expected_cols = ["요일", "아침", "점심", "저녁", "총칼로리 (kcal)"]
     if all(col in df.columns for col in expected_cols):
         styled_df = (
@@ -53,40 +89,32 @@ def display_diet_plan(diet_plan):
             ])
         )
         st.dataframe(styled_df, use_container_width=True)
+    # 대체 구조 처리: 예를 들어 '일일 총칼로리' 키가 존재하는 경우
+    elif "일일 총칼로리" in df.columns:
+        # 평탄화하여 새로운 DataFrame 생성
+        flat_data = [flatten_diet_plan(item) for item in diet_plan if isinstance(item, dict)]
+        df2 = pd.DataFrame(flat_data)
+        # 예상 대체 열 구조
+        alt_expected = ["일일 총칼로리", "아침 메뉴", "아침 칼로리",
+                        "점심 메뉴", "점심 칼로리",
+                        "저녁 메뉴", "저녁 칼로리",
+                        "간식 메뉴", "간식 칼로리", "설명"]
+        missing = [col for col in alt_expected if col not in df2.columns]
+        if missing:
+            st.warning(f"대체 열 중 누락된 열: {', '.join(missing)}. 원시 응답 데이터를 확인하세요.")
+            st.json(diet_plan)
+            display_raw_markdown(str(diet_plan[0]))
+        else:
+            styled_df2 = (
+                df2[alt_expected]
+                .style
+                .set_properties(**{'text-align': 'center', 'font-size': '16px'})
+                .set_table_styles([
+                    {'selector': 'th', 'props': [('background-color', '#1976D2'), ('color', 'white')]}
+                ])
+            )
+            st.dataframe(styled_df2, use_container_width=True)
     else:
-        # 대체 구조 (예: meals 배열) 변환 시도
-        if df.columns.str.contains("meals").any():
-            transformed = []
-            for item in diet_plan:
-                if "meals" in item and isinstance(item["meals"], list):
-                    for meal in item["meals"]:
-                        meal_time = meal.get("time", "")
-                        meal_food = meal.get("food", "")
-                        if isinstance(meal_food, list):
-                            meal_food = ", ".join(map(str, meal_food))
-                        desc = meal.get("description", "")
-                        if desc:
-                            meal_food += f" / {desc}"
-                        # 한글, 숫자, 기본 구두점만 남기기
-                        meal_time = re.sub(r'[^가-힣0-9\s\.,:\(\)\[\]\-]+', '', meal_time)
-                        meal_food = re.sub(r'[^가-힣0-9\s\.,:\(\)\[\]\-]+', '', meal_food)
-                        transformed.append({
-                            "시간": meal_time if meal_time else "(미정)",
-                            "음식": meal_food if meal_food else "(내용 없음)"
-                        })
-            if transformed:
-                st.markdown("### 식단 추천 (대체 구조로 변환)")
-                df2 = pd.DataFrame(transformed)
-                df2.reset_index(drop=True, inplace=True)
-                styled_df2 = (
-                    df2.style
-                    .set_properties(**{'text-align': 'center', 'font-size': '16px'})
-                    .set_table_styles([
-                        {'selector': 'th', 'props': [('background-color', '#1976D2'), ('color', 'white')]}
-                    ])
-                )
-                st.dataframe(styled_df2, use_container_width=True)
-                return
         st.warning("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
         st.json(diet_plan)
         if len(diet_plan) > 0:
@@ -101,7 +129,7 @@ def display_exercise_plan(exercise_plan):
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
     
-    # 만약 "weekly_exercise_plan" 구조가 있으면 변환 처리
+    # weekly_exercise_plan 구조가 있으면 변환 처리
     if (isinstance(exercise_plan, list) and exercise_plan and 
         isinstance(exercise_plan[0], dict) and "weekly_exercise_plan" in exercise_plan[0]):
         weekly_plan = exercise_plan[0].get("weekly_exercise_plan", [])
@@ -142,8 +170,7 @@ def display_ai_coach_page():
     st.header("🏋️‍♂️ AI 건강 코치")
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # 사용자 데이터 불러오기 및 처리
-    user_data = load_user_data_local()
+    user_data = load_user_data()
     user_info = process_user_info(user_data)
     
     st.subheader("🎛️ 맞춤 건강 프로필 설정")
