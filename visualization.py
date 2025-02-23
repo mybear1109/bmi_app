@@ -5,6 +5,8 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import numpy as np
 import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+
 
 # 데이터 파일 경로 설정
 uploaded_file = "data/predictions.csv"
@@ -44,7 +46,7 @@ def display_visualization_page():
         fig_bmi_age = go.Figure(go.Histogram2d(
                         x=df["BMI"],
                         y=df["연령대"],
-                        colorscale="Viridis"
+                        colorscale="Deep",
                     ))
         fig_bmi_age.update_xaxes(title="BMI (체질량지수)")
         fig_bmi_age.update_yaxes(title="연령대")
@@ -114,7 +116,7 @@ def display_visualization_page():
     st.header("🩸 고혈당 위험과 BMI의 관계")
     try:
         df['BMI_범주'] = pd.cut(df['BMI'], bins=[0, 18.5, 25, 30, 100], labels=['저체중', '정상', '과체중', '비만'])
-        heatmap_data = df.groupby(['고혈당 위험', 'BMI_범주']).size().unstack(fill_value=0)
+        heatmap_data = df.groupby(['고혈당 위험', 'BMI_범주']).size().unstack(fill_value=0, observed=False)
         fig_glucose_bmi = px.imshow(heatmap_data, x=heatmap_data.columns, y=heatmap_data.index,
                                     color_continuous_scale="YlOrRd",
                                     labels=dict(x="BMI 범주", y="고혈당 위험", color="빈도"),

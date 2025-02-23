@@ -7,14 +7,13 @@ import os
 from sidebar import get_selected_menu
 from home import display_home_page
 from prediction import display_prediction_page
-from visualization import  display_visualization_page
+from visualization import display_visualization_page
 from ai_coach import display_ai_coach_page
 from user_input import get_user_input
 from model_loader import model_exercise, model_food 
 from user_data_utils import save_user_data, load_user_data
 from login import display_auth_page, check_login_status, logout  
-
-
+from info import display_info_page
 
 # ✅ 세션 초기화
 def initialize_session():
@@ -46,12 +45,12 @@ def app():
                 st.session_state["user_data"] = None
                 st.session_state["guest_mode"] = False
                 st.session_state["show_auth"] = False
-          
+                st.rerun()
 
         else:
             if st.button("🔐 로그인/회원가입", key="login_btn"):
                 st.session_state["show_auth"] = True
-         
+                st.rerun()
 
             st.markdown("<br>", unsafe_allow_html=True)
 
@@ -59,7 +58,7 @@ def app():
                 st.session_state["logged_in"] = True
                 st.session_state["nickname"] = "게스트"
                 st.session_state["guest_mode"] = True
-          
+                st.rerun()
 
     # ✅ 로그인 상태 확인
     if not st.session_state["logged_in"] and st.session_state.get("show_auth", False):
@@ -71,7 +70,7 @@ def app():
 
     if menu_option == "홈 화면":
         display_home_page()
-    elif menu_option == "정보 입력":
+    elif menu_option == "건강 정보 입력":
         existing_data = st.session_state.get("user_data", {})
 
         if isinstance(existing_data, str):
@@ -88,10 +87,11 @@ def app():
             st.session_state["user_data"] = json.dumps(user_data)
             save_user_data(user_id, user_data)
             st.success("✅ 사용자 정보가 저장되었습니다!")
-      
-
+    
     elif menu_option == "예측하기":
         display_prediction_page()
+    elif menu_option == "알면 좋은 정보":
+        display_info_page()
     elif menu_option == "데이터 시각화":
         display_visualization_page()
     elif menu_option == "AI 건강 코치":

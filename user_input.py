@@ -110,7 +110,8 @@ def get_user_input(existing_data, user_id):
             existing_data = {}
 
     # ✅ 기본 정보 입력
-    st.header("👤 기본 정보")
+    st.header("🏥 건강 정보 입력")
+    st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
