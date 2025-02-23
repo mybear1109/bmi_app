@@ -141,7 +141,7 @@ def display_visualization_page():
     try:
         fig_drinking_liver = px.histogram(df, x="간 지표", color="음주여부", barmode="group",
                                           title="음주 여부와 간 지표의 관계",
-                                          labels={"간 지표": "간 지표", "음주여부": "음주 여부", "count": "빈도"},
+                                          labels={"간 지표": "간 지표", "음주여부": "음주 여부", "빈도": "빈도"},
                                           category_orders={"간 지표": ["정상", "경계", "위험"]})
         fig_drinking_liver.update_layout(legend_title_text='음주 여부')
         st.plotly_chart(fig_drinking_liver, use_container_width=True)
