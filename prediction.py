@@ -47,17 +47,20 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 예측 데이터 저장 경로
+# 예측 결과 저장 경로
 PREDICTION_FILE = "data/predictions.csv"
 
-# 모델 평가 모드 설정
+# 모델을 평가 모드로 설정
 if model_exercise:
     model_exercise.eval()
 if model_food:
     model_food.eval()
 
 def preprocess_input(user_data):
-    """필수 키 값들을 숫자형 데이터로 변환하여 Tensor로 반환합니다."""
+    """
+    입력 데이터 전처리:
+    필수 키 값들을 숫자형 데이터로 변환하여 Tensor로 반환합니다.
+    """
     required_keys = [
         "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)",
         "혈압 차이", "총콜레스테롤", "고혈당 위험", "간 지표",
@@ -81,15 +84,23 @@ def preprocess_input(user_data):
     return torch.tensor([processed_data], dtype=torch.float32)
 
 def predict_health_score(model, input_data):
-    """모델을 사용하여 예측 점수를 산출합니다."""
+    """
+    모델을 사용하여 예측 점수를 산출합니다.
+    만약 모델 출력이 스칼라인 경우 그대로 사용하고, 여러 요소가 있으면 평균값을 사용합니다.
+    """
     if model is None:
         return 50  # 모델이 없으면 기본 점수 50
     try:
         input_tensor = preprocess_input(input_data)
         with torch.no_grad():
             output = model(input_tensor)
-        # 모델 출력값을 점수로 변환 (0~100 사이의 값으로 조정)
-        base_score = output.item() * 60
+        # 출력값이 다수의 요소이면 평균값을 취함
+        if output.numel() > 1:
+            base_value = output.mean().item()
+        else:
+            base_value = output.item()
+        # 모델 출력값에 60을 곱하여 0~100 사이의 점수로 보정
+        base_score = base_value * 60
         base_score = max(25, min(100, base_score))
         return int(base_score)
     except Exception as e:
@@ -99,7 +110,7 @@ def predict_health_score(model, input_data):
 def calculate_health_score(user_info):
     """
     건강 정보 기반 점수 계산:
-      - BMI가 18.5 ~ 23이면 10점, 그 외에는 6점 등으로 정상 범위에 있을 경우 높은 점수를 부여합니다.
+    - 예를 들어, BMI가 18.5~23이면 10점, 그렇지 않으면 6점 등 정상 범위일 경우 높은 점수를 부여합니다.
     """
     score_components = {
         "BMI": 10 if 18.5 <= user_info.get("BMI", 0) <= 23 else 6,
@@ -116,13 +127,15 @@ def calculate_health_score(user_info):
 def get_final_health_score(model, user_info, rec_type):
     """
     최종 건강 점수를 산출합니다.
-    rec_type: "운동"인 경우에는 모델 예측 30%, 건강 정보 70%, 
-             "식단"인 경우에는 모델 예측 20%, 건강 정보 80% 비중으로 산출합니다.
-    또한, calibration_factor를 적용하여 모델 예측 점수를 보정합니다.
+    rec_type에 따라 모델 예측 점수와 건강 정보 점수의 가중치를 다르게 적용합니다.
+      - 운동: 모델 예측 30%, 건강 정보 70%
+      - 식단: 모델 예측 20%, 건강 정보 80%
+    또한, calibration_factor(보정 계수)를 적용하여 모델 예측 점수를 보정합니다.
     """
     predicted = predict_health_score(model, user_info)
     health = calculate_health_score(user_info)
-    calibration_factor = 1.0  # 필요에 따라 조정 (예: 재학습 또는 후처리를 통해 보정)
+    # 보정 계수: 필요 시 조정 (예: 모델의 기본 치수와 실제 사용자 차이를 보정)
+    calibration_factor = 1.0
     calibrated_predicted = predicted * calibration_factor
     
     if rec_type == "운동":
@@ -179,12 +192,14 @@ def generate_recommendation(final_score, recommendation_type):
 def display_prediction_page():
     st.header("🔍 AI 기반 운동 및 식단 예측")
     user_id = st.session_state.get("nickname", "게스트")
-    # load_user_data() 함수는 이미 세션의 데이터를 JSON으로 파싱합니다.
     user_data = load_user_data(user_id)
     
     if user_data:
         st.subheader("📌 사용자 정보")
-        display_columns = ["user_id", "성별", "연령대", "허리둘레", "BMI", "총콜레스테롤", "혈압 차이", "식전혈당(공복혈당)", "간 지표", "비만 위험 지수", "활동 수준"]
+        display_columns = [
+            "user_id", "성별", "연령대", "허리둘레", "BMI", "총콜레스테롤",
+            "혈압 차이", "식전혈당(공복혈당)", "간 지표", "비만 위험 지수", "활동 수준"
+        ]
         column_descriptions = {
             "user_id": "사용자 ID",
             "성별": "성별",
@@ -235,10 +250,14 @@ def display_prediction_page():
         st.error("사용자 정보가 없어 예측을 실행할 수 없습니다. 먼저 사용자 정보를 입력해주세요.")
 
 def save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food):
+    """
+    예측 결과를 CSV 파일에 저장합니다.
+    """
     user_data["운동 확률"] = prob_exercise
     user_data["식단 확률"] = prob_food
     user_data["예측 날짜"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
     new_data = pd.DataFrame([user_data])
+    PREDICTION_FILE = "data/predictions.csv"
     if os.path.exists(PREDICTION_FILE):
         df = pd.read_csv(PREDICTION_FILE)
         df = pd.concat([df, new_data], ignore_index=True)
