@@ -5,8 +5,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import pandas as pd
 import os
+import json
 from model_loader import model_exercise, model_food  # ✅ 올바르게 import 확인
 from user_data_utils import load_user_data,save_user_data
+from model import ExercisePredictionModel, FoodPredictionModel
 
 
 
@@ -131,7 +133,7 @@ def get_final_health_score(model, user_info):
     predicted_score = predict_health_score(model, user_info)  # 모델 예측 점수
     health_score = calculate_health_score(user_info)  # 건강 종합 점수
 
-    final_score = int((predicted_score * 0.4) + (health_score * 0.6))  # 가중 평균
+    final_score = int((predicted_score * 0.6) + (health_score * 0.4))  # 가중 평균
 
     return final_score
 
