@@ -1,75 +1,253 @@
-import torch
-import os
 import streamlit as st
-import logging
-from model import ExercisePredictionModel, FoodPredictionModel  # 반드시 model.py에서 가져옴
-from transformers import AutoTokenizer, AutoModelForCausalLM
+import time
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import pandas as pd
+import os
+import json
+from model_loader import model_exercise, model_food  # 모델 로더에서 모델 불러오기
+from user_data_utils import load_user_data, save_user_data
 
-# 관리자용 로깅 설정 (콘솔 또는 파일에 기록)
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
-
-# 모델 저장 경로
-MODEL_EXERCISE_PATH = "models/model_exercise.pth"
-MODEL_FOOD_PATH = "models/model_food.pth"
-
-def load_model(model_path, model_class, input_dim=13):
+# UI 스타일 설정
+st.markdown(
     """
-    PyTorch 모델 로드 함수.
-    weights_only 옵션으로 시도하며, 실패 시 weights_only=False로 재시도합니다.
-    """
-    model = model_class(input_dim)
-    if not os.path.exists(model_path):
-        logging.error(f"🚨 모델 파일을 찾을 수 없습니다: {model_path}")
-        return None
+    <style>
+    .big-font {
+        font-size:30px !important;
+        font-weight: bold;
+    }
+    .stButton>button {
+        color: #4F8BF9;
+        border-radius: 50px;
+        height: 3em;
+        width: 100%;
+    }
+    .user-info {
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+    .health-score {
+        font-size: 48px;
+        font-weight: bold;
+    }
+    .recommendation {
+        font-size: 18px;
+        margin-top: 15px;
+        padding: 12px;
+        background-color: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        text-align: center;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# 예측 데이터 저장 경로
+PREDICTION_FILE = "data/predictions.csv"
+
+# 모델 평가 모드 설정
+if model_exercise:
+    model_exercise.eval()
+if model_food:
+    model_food.eval()
+
+def preprocess_input(user_data):
+    """필수 키 값들을 숫자형 데이터로 변환하여 Tensor로 반환합니다."""
+    required_keys = [
+        "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)",
+        "혈압 차이", "총콜레스테롤", "고혈당 위험", "간 지표",
+        "성별", "연령대", "비만 위험 지수", "흡연상태", "음주여부"
+    ]
+    processed_data = []
+    for key in required_keys:
+        value = user_data.get(key, 0)
+        if key == "성별":
+            value = 1 if value in ["남성", "Male", "M"] else 0
+        elif key == "흡연상태":
+            value = 1 if value == "흡연" else 0
+        elif key == "음주여부":
+            value = 1 if value == "음주" else 0
+        else:
+            try:
+                value = float(value)
+            except ValueError:
+                value = 0
+        processed_data.append(value)
+    return torch.tensor([processed_data], dtype=torch.float32)
+
+def predict_health_score(model, input_data):
+    """모델을 사용하여 예측 점수를 산출합니다."""
+    if model is None:
+        return 50  # 모델이 없으면 기본 점수 50
     try:
-        checkpoint = torch.load(model_path, map_location=torch.device("cpu"), weights_only=True)
-        model.load_state_dict(checkpoint, strict=False)
-        model.eval()
-        logging.info(f"✅ 모델 로드 성공: {model_path}")
-        return model
+        input_tensor = preprocess_input(input_data)
+        with torch.no_grad():
+            output = model(input_tensor)
+        # 모델 출력값을 점수로 변환 (0~100 사이의 값으로 조정)
+        base_score = output.item() * 60
+        base_score = max(25, min(100, base_score))
+        return int(base_score)
     except Exception as e:
-        logging.error(f"🚨 모델 로드 중 오류 발생 (weights_only=True 실패): {e}")
-        try:
-            checkpoint = torch.load(model_path, map_location=torch.device("cpu"), weights_only=False)
-            model.load_state_dict(checkpoint, strict=False)
-            model.eval()
-            logging.info(f"✅ 모델 로드 성공 (weights_only=False): {model_path}")
-            return model
-        except Exception as e2:
-            logging.error(f"🚨 모델 로드 중 오류 발생 (weights_only=False): {e2}")
-    return None
+        st.error(f"🚨 예측 중 오류 발생: {e}")
+        return 25
 
-# 모델 로드 실행
-model_exercise = load_model(MODEL_EXERCISE_PATH, ExercisePredictionModel, input_dim=13)
-model_food = load_model(MODEL_FOOD_PATH, FoodPredictionModel, input_dim=13)
-
-# 환경 변수 또는 secrets.toml에서 API 키를 가져옵니다.
-HF_API_KEY = os.getenv("HF_API_KEY")  # 미리 선언된 API 키 변수
-
-@st.cache_resource
-def load_gemma_model():
+def calculate_health_score(user_info):
     """
-    Gemma 모델과 토크나이저 로드 함수.
-    `token` 인자를 사용하여 인증 토큰을 전달합니다.
+    건강 정보 기반 점수 계산:
+      - BMI가 18.5 ~ 23이면 10점, 그 외에는 6점 등으로 정상 범위에 있을 경우 높은 점수를 부여합니다.
     """
-    model_name = "google/gemma-2b-it"
-    try:
-        hf_token = HF_API_KEY
-        if not hf_token:
-            logging.error("🚨 HF_API_KEY가 설정되지 않았습니다!")
-            return None, None
-        tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token)
-        model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            device_map="auto",
-            torch_dtype=torch.float16,
-            token=hf_token
-        )
-        logging.info("✅ Gemma 모델 로드 성공")
-        return tokenizer, model
-    except Exception as e:
-        logging.error(f"🚨 Gemma 모델 로딩 중 오류 발생: {e}")
-        return None, None
+    score_components = {
+        "BMI": 10 if 18.5 <= user_info.get("BMI", 0) <= 23 else 6,
+        "허리둘레": 8 if user_info.get("허리둘레", 0) <= 85 else 5,
+        "혈압": 10 if 90 <= user_info.get("수축기혈압(최고 혈압)", 0) <= 120 and 60 <= user_info.get("이완기혈압(최저 혈압)", 0) <= 80 else 7,
+        "총 콜레스테롤": 10 if user_info.get("총콜레스테롤", 0) < 200 else 6,
+        "고혈당 위험": 8 if user_info.get("고혈당 위험", "낮음") == "낮음" else 5,
+        "간 지표": 10 if user_info.get("간 지표", "정상") == "정상" else 7,
+        "흡연/음주": 10 if user_info.get("흡연상태", "비흡연") == "비흡연" and user_info.get("음주여부", "비음주") == "비음주" else 6,
+        "연령/성별": 8
+    }
+    return sum(score_components.values())
 
-# Gemma 모델과 토크나이저 로드 (UI에 메시지 표시 X)
-gemma_tokenizer, gemma_model = load_gemma_model()
+def get_final_health_score(model, user_info, rec_type):
+    """
+    최종 건강 점수를 산출합니다.
+    rec_type: "운동"인 경우에는 모델 예측 30%, 건강 정보 70%, 
+             "식단"인 경우에는 모델 예측 20%, 건강 정보 80% 비중으로 산출합니다.
+    또한, calibration_factor를 적용하여 모델 예측 점수를 보정합니다.
+    """
+    predicted = predict_health_score(model, user_info)
+    health = calculate_health_score(user_info)
+    calibration_factor = 1.0  # 필요에 따라 조정 (예: 재학습 또는 후처리를 통해 보정)
+    calibrated_predicted = predicted * calibration_factor
+    
+    if rec_type == "운동":
+        final = int((calibrated_predicted * 0.3) + (health * 0.7))
+    elif rec_type == "식단":
+        final = int((calibrated_predicted * 0.2) + (health * 0.8))
+    else:
+        final = int((calibrated_predicted * 0.3) + (health * 0.7))
+    return final
+
+def generate_recommendation(final_score, recommendation_type):
+    """추천 메시지 생성 함수"""
+    if recommendation_type == "운동":
+        if final_score > 90:
+            return "🏆 최고의 운동 습관! 꾸준한 운동이 건강을 지키는 열쇠입니다."
+        elif final_score > 80:
+            return "🥇 훌륭한 운동 습관입니다. 조금 더 강도 있는 운동을 고려해 보세요."
+        elif final_score > 70:
+            return "🥈 좋은 운동 습관입니다! 다양한 운동을 시도해 보세요."
+        elif final_score > 60:
+            return "🥉 꾸준한 운동을 하고 계시네요! 유산소와 근력 운동을 균형 있게 조합해 보세요."
+        elif final_score > 50:
+            return "⚠️ 운동량을 늘려보세요. 하루 30분 정도의 걷기부터 시작해 보세요."
+        elif final_score > 40:
+            return "⚠️ 운동 부족입니다. 가벼운 스트레칭부터 시작하세요."
+        elif final_score > 30:
+            return "❗ 규칙적인 운동 계획이 필요합니다. 매일 조금씩 시작해 보세요."
+        elif final_score > 20:
+            return "❗❗ 운동이 매우 부족합니다. 가능한 한 매일 몸을 움직이세요."
+        else:
+            return "❗❗❗ 건강에 적신호입니다! 즉시 전문가와 상담하세요."
+    elif recommendation_type == "식단":
+        if final_score > 90:
+            return "🏆 완벽한 식단 관리! 균형 잡힌 영양 섭취를 유지하세요."
+        elif final_score > 80:
+            return "🥇 매우 건강한 식습관입니다. 식단을 계속 유지하세요!"
+        elif final_score > 70:
+            return "🥈 좋은 식습관입니다. 신선한 채소와 과일을 더 늘려 보세요."
+        elif final_score > 60:
+            return "🥉 괜찮은 식단입니다. 가공식품을 줄이고 자연식 위주로 개선해 보세요."
+        elif final_score > 50:
+            return "⚠️ 식단 개선이 필요합니다. 탄수화물과 단백질의 균형을 맞춰 보세요."
+        elif final_score > 40:
+            return "⚠️ 건강한 식습관을 위해 더 많은 신선한 재료를 섭취해 보세요."
+        elif final_score > 30:
+            return "❗ 식단 개선이 필요합니다. 매 끼니에 영양소를 골고루 포함시키세요!"
+        elif final_score > 20:
+            return "❗❗ 식단이 매우 불균형합니다. 전문가의 상담이 필요합니다."
+        else:
+            return "❗❗❗ 건강에 위험 신호가 감지됩니다. 즉시 전문가와 상담하세요."
+    else:
+        return "🚨 알 수 없는 추천 유형입니다."
+
+def display_prediction_page():
+    st.header("🔍 AI 기반 운동 및 식단 예측")
+    user_id = st.session_state.get("nickname", "게스트")
+    # load_user_data() 함수는 이미 세션의 데이터를 JSON으로 파싱합니다.
+    user_data = load_user_data(user_id)
+    
+    if user_data:
+        st.subheader("📌 사용자 정보")
+        display_columns = ["user_id", "성별", "연령대", "허리둘레", "BMI", "총콜레스테롤", "혈압 차이", "식전혈당(공복혈당)", "간 지표", "비만 위험 지수", "활동 수준"]
+        column_descriptions = {
+            "user_id": "사용자 ID",
+            "성별": "성별",
+            "연령대": "연령대",
+            "허리둘레": "허리둘레 (cm)",
+            "BMI": "체질량지수 (kg/m^2)",
+            "총콜레스테롤": "총 콜레스테롤 (mg/dL)",
+            "혈압 차이": "혈압 차이 (mmHg)",
+            "식전혈당(공복혈당)": "식전혈당 (mg/dL)",
+            "간 지표": "간 건강 지표",
+            "비만 위험 지수": "비만 위험 지수",
+            "활동 수준": "활동 수준"
+        }
+        user_info_df = pd.DataFrame([{column_descriptions.get(col, col): user_data.get(col, 'N/A') for col in display_columns}])
+        st.markdown(user_info_df.to_html(index=False, classes=['dataframe'], escape=False), unsafe_allow_html=True)
+    else:
+        st.error("사용자 정보가 없어 예측을 실행할 수 없습니다. 먼저 사용자 정보를 입력해주세요.")
+    
+    if st.button("🔮 AI 예측 실행", help="클릭하여 AI 기반 운동 및 식단 예측을 시작합니다."):
+        with st.spinner("⏳ AI가 데이터를 분석 중입니다..."):
+            time.sleep(2)
+    
+    if user_data:
+        prob_exercise = get_final_health_score(model_exercise, user_data, "운동")
+        prob_food = get_final_health_score(model_food, user_data, "식단")
+        
+        exercise_recommendation = generate_recommendation(prob_exercise, "운동")
+        diet_recommendation = generate_recommendation(prob_food, "식단")
+        
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #6e8efb, #a777e3); border-radius: 15px; padding: 20px; color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.2); margin-bottom: 30px;">
+            <h2 style="text-align: center;"><span style="font-size: 36px;">🏋️‍♂️</span> 운동 건강 점수</h2>
+            <div style="font-size: 48px; font-weight: bold; text-align: center;">{prob_exercise}</div>
+            <div style="background-color: rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; margin-top: 15px; font-size: 18px; text-align: center;">{exercise_recommendation}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #6e8efb, #a777e3); border-radius: 15px; padding: 20px; color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.2); margin-bottom: 30px;">
+            <h2 style="text-align: center;"><span style="font-size: 36px;">🥗</span> 식단 건강 점수</h2>
+            <div style="font-size: 48px; font-weight: bold; text-align: center;">{prob_food}</div>
+            <div style="background-color: rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; margin-top: 15px; font-size: 18px; text-align: center;">{diet_recommendation}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food)
+    else:
+        st.error("사용자 정보가 없어 예측을 실행할 수 없습니다. 먼저 사용자 정보를 입력해주세요.")
+
+def save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food):
+    user_data["운동 확률"] = prob_exercise
+    user_data["식단 확률"] = prob_food
+    user_data["예측 날짜"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+    new_data = pd.DataFrame([user_data])
+    if os.path.exists(PREDICTION_FILE):
+        df = pd.read_csv(PREDICTION_FILE)
+        df = pd.concat([df, new_data], ignore_index=True)
+    else:
+        df = new_data
+    df.to_csv(PREDICTION_FILE, index=False)
+    st.success("🎉 분석이 완료되었습니다! 아래 버튼을 클릭하여 상세한 맞춤 계획을 받아보세요.")
+    if st.button("📋 맞춤 건강 계획 받기"):
+        st.balloons()
+        st.info("🚀 축하합니다! 당신만의 맞춤 건강 여정이 시작되었습니다. 함께 건강해져 봐요!")
+    else:
+        st.error("⚠️ 사용자 정보가 없습니다. 먼저 기본 정보를 입력해주세요.")
