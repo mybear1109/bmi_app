@@ -28,7 +28,7 @@ def generate_text_via_api(prompt, model_name="google/gemma-2-9b-it"):
         )
         return parse_json_response(response_json)
     except requests.exceptions.RequestException as e:
-        print(f"🚨 API 호출 오류: {e}")
+        st.error(f"🚨 API 호출 오류: {e}")
         return {"메시지": "🚨 API 호출 오류 발생"}
 
 def extract_json_from_message(message):
@@ -56,7 +56,7 @@ def parse_json_response(response_json):
 
         content = content.strip()
         if not content:
-            print("🚨 응답 내용이 비어 있습니다.")
+            st.error("🚨 응답 내용이 비어 있습니다.")
             return {"메시지": "응답 내용이 비어 있습니다."}
         
         # 만약 백틱으로 감싼 JSON 블록이 있으면 그 내부만 추출
@@ -70,11 +70,11 @@ def parse_json_response(response_json):
             json_text = json_text.replace("'", '"')
             return json.loads(json_text)
         except json.JSONDecodeError as e:
-            print(f"🚨 JSON 변환 오류 발생:\n{json_text}\n오류: {e}")
+            st.error(f"🚨 JSON 변환 오류 발생:\n{json_text}\n오류: {e}")
             # 변환 오류가 발생해도 원시 텍스트를 반환하여 사용자에게 보여줌
             return {"메시지": json_text}
     except (json.JSONDecodeError, KeyError) as e:
-        print(f"🚨 응답 처리 오류: {e}")
+        st.error(f"🚨 응답 처리 오류: {e}")
         return {"메시지": "🚨 응답 처리 오류"}
 
 def get_user_info_with_default(user_data):

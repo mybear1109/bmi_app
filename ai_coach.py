@@ -33,7 +33,7 @@ def display_raw_markdown(raw_text):
 def display_diet_plan(diet_plan):
     # 만약 추천 결과가 dict이고 "메시지" 키가 있으면 raw 텍스트를 그대로 표시합니다.
     if isinstance(diet_plan, dict) and "메시지" in diet_plan:
-        st.info("추천된 식단:")
+        st.info("🍽️ 추천된 식단:")
         st.markdown(f"```\n{diet_plan['메시지']}\n```")
         return
     # dict라면 리스트로 변환
@@ -66,7 +66,7 @@ def display_diet_plan(diet_plan):
 # 운동 추천 결과 표시 함수
 def display_exercise_plan(exercise_plan):
     if isinstance(exercise_plan, dict) and "메시지" in exercise_plan:
-        st.info("추천된 운동 계획:")
+        st.info("💪 추천된 운동 계획:")
         st.markdown(f"```\n{exercise_plan['메시지']}\n```")
         return
     if isinstance(exercise_plan, dict):
