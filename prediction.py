@@ -1,270 +1,164 @@
 import streamlit as st
 import time
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import pandas as pd
+import numpy as np
+import torch
 import os
-import json
-from model_loader import model_exercise, model_food  # 모델 로더에서 모델 불러오기
+import uuid
+from model_loader import model_exercise, model_food, load_model
+from user_input import get_user_input
 from user_data_utils import load_user_data, save_user_data
 
-
-
-
-st.markdown(
-    """
-    <style>
-    .big-font {
-        font-size:30px !important;
-        font-weight: bold;
-    }
-    .stButton>button {
-        color: #4F8BF9;
-        border-radius: 50px;
-        height: 3em;
-        width: 100%;
-    }
-    .user-info {
-        margin-bottom: 15px;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-    }
-    .health-score {
-        font-size: 48px;
-        font-weight: bold;
-    }
-    .recommendation {
-        font-size: 18px;
-        margin-top: 15px;
-        padding: 12px;
-        background-color: rgba(255,255,255,0.1);
-        border-radius: 10px;
-        text-align: center;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-# 예측 데이터 저장 경로
+# ✅ 예측 데이터 저장 파일 경로
 PREDICTION_FILE = "data/predictions.csv"
 
-# 모델 평가 모드 설정
-model_exercise.eval()
-model_food.eval()
+# ✅ 모델 로드 (없으면 로드)
+if model_exercise is None:
+    model_exercise = load_model("models/model_exercise.pth", input_dim=13)
+if model_food is None:
+    model_food = load_model("models/model_food.pth", input_dim=13)
 
 def preprocess_input(user_data):
-    """
-    입력 데이터 전처리:
-    필수 키 값들을 숫자형 데이터로 변환하여 Tensor로 반환합니다.
-    """
+    """📌 모델 입력을 위해 데이터를 변환"""
     required_keys = [
-        "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)",
-        "혈압 차이", "총콜레스테롤", "고혈당 위험", "간 지표",
-        "성별", "연령대", "비만 위험 지수", "흡연상태", "음주여부"
+        "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)", "혈압 차이",
+        "콜레스테롤", "고혈당 위험", "간 지표", "성별", "연령대", "비만 위험 지수", "흡연상태", "음주여부"
     ]
-    processed_data = []
-    for key in required_keys:
-        value = user_data.get(key, 0)
-        if key == "성별":
-            value = 1 if value in ["남성", "Male", "M"] else 0
-        elif key == "흡연상태":
-            value = 1 if value == "흡연" else 0
-        elif key == "음주여부":
-            value = 1 if value == "음주" else 0
-        else:
-            try:
-                value = float(value)
-            except ValueError:
-                value = 0
-        processed_data.append(value)
-    # [processed_data]를 텐서로 변환 (shape: [1, n_features])
-    return torch.tensor([processed_data], dtype=torch.float32)
 
-def predict_health_score(model, input_data):
-    """
-    모델을 사용하여 예측 점수를 산출합니다.
-    만약 모델의 출력이 스칼라가 아니라면 평균값을 사용합니다.
-    """
+    # ✅ 데이터가 없는 경우 기본값 0으로 설정
+    processed_data = [user_data.get(key, 0) for key in required_keys]
+
+    # ✅ 성별을 숫자로 변환 (남성 = 1, 여성 = 0)
+    processed_data[0] = 1 if user_data.get("성별", "남성") in ["남성", "Male", "M"] else 0
+    
+    return torch.tensor([processed_data], dtype=torch.float32)
+    
+# ✅ 예측 함수
+def predict(model, input_data):
+    """📌 운동 또는 식단 예측 수행"""
     if model is None:
-        return 50  # 모델이 없으면 기본 점수 50
+        return "🚨 모델이 로드되지 않았습니다!", 0
     try:
         input_tensor = preprocess_input(input_data)
         with torch.no_grad():
             output = model(input_tensor)
-        # 출력이 스칼라가 아니면 평균값을 취합니다.
-        if output.numel() > 1:
-            base_value = output.mean().item()
-        else:
-            base_value = output.item()
-        # 모델 출력값에 60을 곱하여 0~100 사이의 점수로 보정
-        base_score = base_value * 60
-        base_score = max(25, min(100, base_score))
-        return int(base_score)
+            probabilities = torch.nn.functional.softmax(output, dim=1)
+            prediction_score = int(probabilities[:, 1].item() * 100)
+        return prediction_score
     except Exception as e:
-        st.error(f"🚨 예측 중 오류 발생: {e}")
-        return 25
-
-def calculate_health_score(user_info):
-    """
-    건강 정보 기반 점수 계산:
-      - 예를 들어, BMI가 18.5~23이면 10점, 그렇지 않으면 6점 등 정상 범위일 경우 높은 점수를 부여합니다.
-    """
-    score_components = {
-        "BMI": 10 if 18.5 <= user_info.get("BMI", 0) <= 23 else 6,
-        "허리둘레": 8 if user_info.get("허리둘레", 0) <= 85 else 5,
-        "혈압": 10 if 90 <= user_info.get("수축기혈압(최고 혈압)", 0) <= 120 and 60 <= user_info.get("이완기혈압(최저 혈압)", 0) <= 80 else 7,
-        "총 콜레스테롤": 10 if user_info.get("총콜레스테롤", 0) < 200 else 6,
-        "고혈당 위험": 8 if user_info.get("고혈당 위험", "낮음") == "낮음" else 5,
-        "간 지표": 10 if user_info.get("간 지표", "정상") == "정상" else 7,
-        "흡연/음주": 10 if user_info.get("흡연상태", "비흡연") == "비흡연" and user_info.get("음주여부", "비음주") == "비음주" else 6,
-        "연령/성별": 8
-    }
-    return sum(score_components.values())
-
-def get_final_health_score(model, user_info, rec_type):
-    """
-    최종 건강 점수를 산출합니다.
-    rec_type에 따라 모델 예측 점수와 건강 정보 점수의 가중치를 다르게 적용합니다.
-      - 운동: 모델 예측 30%, 건강 정보 70%
-      - 식단: 모델 예측 20%, 건강 정보 80%
-    또한, calibration_factor를 적용하여 모델 예측 점수를 보정합니다.
-    """
-    predicted = predict_health_score(model, user_info)
-    health = calculate_health_score(user_info)
-    calibration_factor = 1.0  # 보정 계수 (필요 시 조정)
-    calibrated_predicted = predicted * calibration_factor
-    
-    if rec_type == "운동":
-        final = int((calibrated_predicted * 0.3) + (health * 0.7))
-    elif rec_type == "식단":
-        final = int((calibrated_predicted * 0.2) + (health * 0.8))
+        return f"🚨 예측 중 오류 발생: {e}", 0
+        
+# ✅ 운동 추천 로직
+def generate_exercise_recommendation(score):
+    if score > 90:
+        return "🏆 최고의 운동 습관! 다른 사람들에게 동기부여가 되는 운동 루틴을 공유해보세요."
+    elif score > 80:
+        return "🥇 훌륭한 운동 습관! 새로운 운동에 도전하여 다양성을 더해보세요."
+    elif score > 70:
+        return "🥈 좋은 운동 패턴입니다. 운동 강도나 시간을 조금씩 늘려 체력을 향상시켜보세요."
+    elif score > 60:
+        return "🥉 꾸준히 운동하고 계시네요. 운동의 다양성을 높여 전신 운동 효과를 노려보세요."
+    elif score > 50:
+        return "⚠️ 운동량을 조금 더 늘려보세요. 일상 속 활동량부터 늘려가는 것이 좋습니다."
+    elif score > 40:
+        return "⚠️ 운동이 부족합니다. 규칙적인 운동 습관을 만들어보세요. 가벼운 조깅이나 홈트레이닝부터 시작해보는 것은 어떨까요?"
+    elif score > 30:
+        return "❗ 운동이 많이 부족합니다. 매일 30분 걷기부터 시작해보세요. 작은 변화가 큰 차이를 만듭니다."
+    elif score > 20:
+        return "❗❗ 운동이 매우 부족합니다. 엘리베이터 대신 계단 이용하기 등 일상 속 작은 운동부터 시작해보세요."
     else:
-        final = int((calibrated_predicted * 0.3) + (health * 0.7))
-    return final
+        return "❗❗❗ 건강에 적신호가 켜졌습니다. 지금 당장 가벼운 스트레칭이라도 시작해보세요. 작은 움직임이 건강의 시작입니다."
 
-def generate_recommendation(final_score, recommendation_type):
-    """추천 메시지 생성 함수"""
-    if recommendation_type == "운동":
-        if final_score > 90:
-            return "🏆 최고의 운동 습관! 꾸준한 운동이 건강을 지키는 열쇠입니다."
-        elif final_score > 80:
-            return "🥇 훌륭한 운동 습관입니다. 조금 더 강도 있는 운동을 고려해 보세요."
-        elif final_score > 70:
-            return "🥈 좋은 운동 습관입니다! 다양한 운동을 시도해 보세요."
-        elif final_score > 60:
-            return "🥉 꾸준한 운동을 하고 계시네요! 유산소와 근력 운동을 균형 있게 조합해 보세요."
-        elif final_score > 50:
-            return "⚠️ 운동량을 늘려보세요. 하루 30분 정도의 걷기부터 시작해 보세요."
-        elif final_score > 40:
-            return "⚠️ 운동 부족입니다. 가벼운 스트레칭부터 시작하세요."
-        elif final_score > 30:
-            return "❗ 규칙적인 운동 계획이 필요합니다. 매일 조금씩 시작해 보세요."
-        elif final_score > 20:
-            return "❗❗ 운동이 매우 부족합니다. 가능한 한 매일 몸을 움직이세요."
-        else:
-            return "❗❗❗ 건강에 적신호입니다! 즉시 전문가와 상담하세요."
-    elif recommendation_type == "식단":
-        if final_score > 90:
-            return "🏆 완벽한 식단 관리! 균형 잡힌 영양 섭취를 유지하세요."
-        elif final_score > 80:
-            return "🥇 매우 건강한 식습관입니다. 식단을 계속 유지하세요!"
-        elif final_score > 70:
-            return "🥈 좋은 식습관입니다. 신선한 채소와 과일을 더 늘려 보세요."
-        elif final_score > 60:
-            return "🥉 괜찮은 식단입니다. 가공식품을 줄이고 자연식 위주로 개선해 보세요."
-        elif final_score > 50:
-            return "⚠️ 식단 개선이 필요합니다. 탄수화물과 단백질의 균형을 맞춰 보세요."
-        elif final_score > 40:
-            return "⚠️ 건강한 식습관을 위해 더 많은 신선한 재료를 섭취해 보세요."
-        elif final_score > 30:
-            return "❗ 식단 개선이 필요합니다. 매 끼니에 영양소를 골고루 포함시키세요!"
-        elif final_score > 20:
-            return "❗❗ 식단이 매우 불균형합니다. 전문가의 상담이 필요합니다."
-        else:
-            return "❗❗❗ 건강에 위험 신호가 감지됩니다. 즉시 전문가와 상담하세요."
+# ✅ 식단 추천 로직
+def generate_diet_recommendation(score):
+    if score > 90:
+        return "🏆 완벽한 식단 관리! 현재의 균형 잡힌 식습관을 유지하면서, 다른 사람들과 건강한 레시피를 공유해보세요."
+    elif score > 80:
+        return "🥇 매우 건강한 식습관입니다. 다양한 슈퍼푸드를 시도해보며 영양의 질을 더욱 높여보세요."
+    elif score > 70:
+        return "🥈 좋은 식습관을 가지고 계십니다. 계절별 신선한 식재료를 활용해 식단에 변화를 주어보세요."
+    elif score > 60:
+        return "🥉 괜찮은 식단이에요. 단백질 섭취를 조금 더 늘리고 정제된 탄수화물은 줄여보세요."
+    elif score > 50:
+        return "⚠️ 식단 개선이 필요합니다. 영양 균형을 위해 다양한 색깔의 과일과 채소를 섭취해보세요."
+    elif score > 40:
+        return "⚠️ 식습관 개선이 필요합니다. 패스트푸드와 가공식품 섭취를 줄이고 홈쿡을 늘려보세요."
+    elif score > 30:
+        return "❗ 영양 섭취가 불균형합니다. 매 끼니에 단백질, 탄수화물, 지방, 비타민을 골고루 섭취하도록 노력해보세요."
+    elif score > 20:
+        return "❗❗ 식단이 매우 불균형합니다. 영양사와 상담을 통해 개인에게 맞는 식단 계획을 세워보는 것은 어떨까요?"
     else:
-        return "🚨 알 수 없는 추천 유형입니다."
+        return "❗❗❗ 건강에 위험 신호입니다. 전문가의 도움을 받아 식단을 전면 개선해야 합니다. 지금 바로 건강한 한 끼부터 시작해보세요."
 
 def display_prediction_page():
-    st.header("🔍 AI 기반 운동 및 식단 예측")
-    user_id = st.session_state.get("nickname", "게스트")
-    # load_user_data()는 이미 세션 데이터를 파싱합니다.
-    user_data = load_user_data(user_id)
+    """📌 예측 페이지 표시"""
+    st.header("🔍 운동 및 식단 예측")
     
-    if user_data:
-        st.subheader("📌 사용자 정보")
-        display_columns = [
-            "user_id", "성별", "연령대", "허리둘레", "BMI", "총콜레스테롤",
-            "혈압 차이", "식전혈당(공복혈당)", "간 지표", "비만 위험 지수", "활동 수준"
-        ]
-        column_descriptions = {
-            "user_id": "사용자 ID",
-            "성별": "성별",
-            "연령대": "연령대",
-            "허리둘레": "허리둘레 (cm)",
-            "BMI": "체질량지수 (kg/m^2)",
-            "총콜레스테롤": "총 콜레스테롤 (mg/dL)",
-            "혈압 차이": "혈압 차이 (mmHg)",
-            "식전혈당(공복혈당)": "식전혈당 (mg/dL)",
-            "간 지표": "간 건강 지표",
-            "비만 위험 지수": "비만 위험 지수",
-            "활동 수준": "활동 수준"
-        }
-        user_info_df = pd.DataFrame([{column_descriptions.get(col, col): user_data.get(col, 'N/A') for col in display_columns}])
-        st.markdown(user_info_df.to_html(index=False, classes=['dataframe'], escape=False), unsafe_allow_html=True)
-    else:
-        st.error("사용자 정보가 없어 예측을 실행할 수 없습니다. 먼저 사용자 정보를 입력해주세요.")
+    if not st.session_state.get("logged_in", False):
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("🔐 로그인/회원가입"):
+                st.session_state["show_auth"] = True
+                st.rerun()
+        with col2:
+            if st.button("🚀 게스트로 입장"):
+                st.session_state.update({"logged_in": True, "nickname": "게스트", "guest_mode": True})
+                st.rerun()
+        st.stop()
     
+    user_id = st.session_state["nickname"]
+    existing_user_data = load_user_data(user_id)
     
-    if st.button("🔮 AI 예측 실행", help="클릭하여 AI 기반 운동 및 식단 예측을 시작합니다."):
-        with st.spinner("⏳ AI가 데이터를 분석 중입니다..."):
+    # ✅ 사용자 정보 미리 보기 및 수정 가능
+    with st.expander("📋 사용자 정보 미리 보기 및 수정"):
+        if existing_user_data:
+            st.write(pd.DataFrame([existing_user_data]))
+
+        modify_data = st.button("📝 정보 수정")
+        if existing_user_data is None or modify_data:
+            user_data = get_user_input(user_id=user_id, default_values=existing_user_data)
+            if user_data is None:
+                st.warning("사용자 정보를 입력해주세요.")
+                return
+            save_user_data(user_id, user_data)
+            st.success("✅ 사용자 정보가 저장되었습니다!")
+            st.rerun()
+        else:
+            user_data = existing_user_data
+
+    if st.button("🔍 예측 실행") and user_data is not None:
+        with st.spinner("⏳ 예측 중..."):
             time.sleep(2)
-    
-    if user_data:
-        prob_exercise = get_final_health_score(model_exercise, user_data, "운동")
-        prob_food = get_final_health_score(model_food, user_data, "식단")
         
-        exercise_recommendation = generate_recommendation(prob_exercise, "운동")
-        diet_recommendation = generate_recommendation(prob_food, "식단")
-        
-        st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #6e8efb, #a777e3); border-radius: 15px; padding: 20px; color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.2); margin-bottom: 30px;">
-            <h2 style="text-align: center;"><span style="font-size: 36px;">🏋️‍♂️</span> 운동 건강 점수</h2>
-            <div style="font-size: 48px; font-weight: bold; text-align: center;">{prob_exercise}</div>
-            <div style="background-color: rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; margin-top: 15px; font-size: 18px; text-align: center;">{exercise_recommendation}</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #6e8efb, #a777e3); border-radius: 15px; padding: 20px; color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.2); margin-bottom: 30px;">
-            <h2 style="text-align: center;"><span style="font-size: 36px;">🥗</span> 식단 건강 점수</h2>
-            <div style="font-size: 48px; font-weight: bold; text-align: center;">{prob_food}</div>
-            <div style="background-color: rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; margin-top: 15px; font-size: 18px; text-align: center;">{diet_recommendation}</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
+        prob_exercise = predict(model_exercise, user_data)
+        prob_food = predict(model_food, user_data)
+
+        st.success("✅ 예측 완료!")
+        st.subheader("📋 예측 결과")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("### 🏃 운동 예측")
+            st.markdown(f"**운동 확률:** {prob_exercise}%")
+        with col2:
+            st.markdown("### 🍎 식단 예측")
+            st.markdown(f"**식단 개선 필요 확률:** {prob_food}%")
+
         save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food)
-    else:
-        st.error("사용자 정보가 없어 예측을 실행할 수 없습니다. 먼저 사용자 정보를 입력해주세요.")
 
 def save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food):
+    """📌 기존 예측 데이터를 기존 컬럼에 저장"""
     user_data["운동 확률"] = prob_exercise
     user_data["식단 확률"] = prob_food
     user_data["예측 날짜"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+
     new_data = pd.DataFrame([user_data])
+
     if os.path.exists(PREDICTION_FILE):
         df = pd.read_csv(PREDICTION_FILE)
         df = pd.concat([df, new_data], ignore_index=True)
     else:
         df = new_data
+
     df.to_csv(PREDICTION_FILE, index=False)
-    st.success("🎉 분석이 완료되었습니다! 아래 버튼을 클릭하여 상세한 맞춤 계획을 받아보세요.")
-    if st.button("📋 맞춤 건강 계획 받기"):
-        st.balloons()
-        st.info("🚀 축하합니다! 당신만의 맞춤 건강 여정이 시작되었습니다. 함께 건강해져 봐요!")
-    else:
-        st.error("⚠️ 사용자 정보가 없습니다. 먼저 기본 정보를 입력해주세요.")
+    st.success("✅ 예측 결과가 저장되었습니다!")
