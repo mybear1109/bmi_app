@@ -1,7 +1,11 @@
 import json
+import re
 import streamlit as st
 import pandas as pd
 from gemma2_recommender import get_gemma_recommendation
+from user_data_utils import load_user_data
+
+
 
 # 사용자 데이터 불러오기 함수
 def load_user_data():
@@ -15,13 +19,12 @@ def load_user_data():
 
 # 사용자 건강 정보 처리 함수
 def process_user_info(user_data):
-    return {
-        key: user_data.get(key, "미측정") for key in [
-            "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)",
-            "혈압 차이", "총콜레스테롤", "고혈당 위험", "간 지표",
-            "성별", "연령대", "비만 위험 지수", "흡연상태", "음주여부"
-        ]
-    }
+    keys = [
+        "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)",
+        "혈압 차이", "총콜레스테롤", "고혈당 위험", "간 지표",
+        "성별", "연령대", "비만 위험 지수", "흡연상태", "음주여부"
+    ]
+    return { key: user_data.get(key, "미측정") for key in keys }
 
 # 원시 응답을 깔끔한 마크다운 형식으로 출력하는 함수 (디버깅용)
 def display_raw_markdown(raw_text):
@@ -52,15 +55,25 @@ def display_diet_plan(diet_plan):
         )
         st.dataframe(styled_df, use_container_width=True)
     else:
-        # meals 구조를 감지하여 변환 시도
+        # 대체 구조 (예: meals 배열) 변환 시도
         if df.columns.str.contains("meals").any():
             transformed = []
             for item in diet_plan:
                 if "meals" in item and isinstance(item["meals"], list):
                     for meal in item["meals"]:
+                        meal_time = meal.get("time", "")
+                        meal_food = meal.get("food", "")
+                        if isinstance(meal_food, list):
+                            meal_food = ", ".join(map(str, meal_food))
+                        desc = meal.get("description", "")
+                        if desc:
+                            meal_food += f" / {desc}"
+                        # 한글, 숫자, 기본 구두점만 남기기
+                        meal_time = re.sub(r'[^가-힣0-9\s\.,:\(\)\[\]\-]+', '', meal_time)
+                        meal_food = re.sub(r'[^가-힣0-9\s\.,:\(\)\[\]\-]+', '', meal_food)
                         transformed.append({
-                            "시간": meal.get("time", "(미정)"),
-                            "음식": meal.get("food", "(내용 없음)")
+                            "시간": meal_time if meal_time else "(미정)",
+                            "음식": meal_food if meal_food else "(내용 없음)"
                         })
             if transformed:
                 st.markdown("### 식단 추천 (대체 구조로 변환)")
@@ -89,7 +102,7 @@ def display_exercise_plan(exercise_plan):
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
     
-    # weekly_exercise_plan 구조가 있으면 변환 처리
+    # 만약 "weekly_exercise_plan" 구조가 있으면 변환 처리
     if (isinstance(exercise_plan, list) and exercise_plan and 
         isinstance(exercise_plan[0], dict) and "weekly_exercise_plan" in exercise_plan[0]):
         weekly_plan = exercise_plan[0].get("weekly_exercise_plan", [])
@@ -130,7 +143,6 @@ def display_ai_coach_page():
     st.header("🏋️‍♂️ AI 건강 코치")
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # 사용자 데이터 불러오기 및 처리
     user_data = load_user_data()
     user_info = process_user_info(user_data)
     
