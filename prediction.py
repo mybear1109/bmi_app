@@ -7,6 +7,7 @@ import pandas as pd
 import os
 from model_loader import model_exercise, model_food  # ✅ 올바르게 import 확인
 from user_data_utils import load_user_data, save_user_data
+from model import FoodPredictionModel, ExercisePredictionModel
 
 
 st.markdown(
