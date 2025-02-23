@@ -182,26 +182,6 @@ def display_prediction_page():
     # load_user_data() 함수는 이미 세션의 데이터를 JSON으로 파싱합니다.
     user_data = load_user_data(user_id)
     
-    if user_data:
-        st.subheader("📌 사용자 정보")
-        display_columns = ["user_id", "성별", "연령대", "허리둘레", "BMI", "총콜레스테롤", "혈압 차이", "식전혈당(공복혈당)", "간 지표", "비만 위험 지수", "활동 수준"]
-        column_descriptions = {
-            "user_id": "사용자 ID",
-            "성별": "성별",
-            "연령대": "연령대",
-            "허리둘레": "허리둘레 (cm)",
-            "BMI": "체질량지수 (kg/m^2)",
-            "총콜레스테롤": "총 콜레스테롤 (mg/dL)",
-            "혈압 차이": "혈압 차이 (mmHg)",
-            "식전혈당(공복혈당)": "식전혈당 (mg/dL)",
-            "간 지표": "간 건강 지표",
-            "비만 위험 지수": "비만 위험 지수",
-            "활동 수준": "활동 수준"
-        }
-        user_info_df = pd.DataFrame([{column_descriptions.get(col, col): user_data.get(col, 'N/A') for col in display_columns}])
-        st.markdown(user_info_df.to_html(index=False, classes=['dataframe'], escape=False), unsafe_allow_html=True)
-    else:
-        st.error("사용자 정보가 없어 예측을 실행할 수 없습니다. 먼저 사용자 정보를 입력해주세요.")
     
     if st.button("🔮 AI 예측 실행", help="클릭하여 AI 기반 운동 및 식단 예측을 시작합니다."):
         with st.spinner("⏳ AI가 데이터를 분석 중입니다..."):
