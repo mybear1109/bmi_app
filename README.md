@@ -95,6 +95,7 @@
 ├── login.py                     # 회원가입&로그인 기능
 ├── home.py                      # 홈 화면
 ├── sidebar.py                   # 사이드바 설정
+├── info.py                      # 자랑하는 페이지 😼
 ├── user_input.py                # 유저 정보 입력 폼
 ├── user_data_utils.py           # 유저 데이터 처리 (불러오기, 저장)
 ├── model.py                     # 데이터 모듈 (데이터셋 핸들링)
