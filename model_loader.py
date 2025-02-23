@@ -2,43 +2,58 @@ import torch
 import os
 import streamlit as st
 import logging
-from model import ExercisePredictionModel, FoodPredictionModel  # 모델 클래스 가져오기
-from transformers import AutoTokenizer, AutoModelForCausalLM # Hugging Face 모델 가져오기
+import pickle
+import model  # 모델 모듈 전체를 불러와서 model.ExercisePredictionModel 등으로 접근
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
-# 로깅 설정 (관리자용 로그)
+# 관리자용 로깅 설정 (콘솔에만 출력)
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # 모델 저장 경로
 MODEL_EXERCISE_PATH = "models/model_exercise.pth"
 MODEL_FOOD_PATH = "models/model_food.pth"
 
-def load_model(model_path, model_class, input_dim=13):
+# 커스텀 언피클러: __main__에서 찾으려는 클래스명을 'model' 모듈로 매핑
+class MyUnpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        if module == '__main__':
+            module = 'model'
+        return super().find_class(module, name)
+
+def load_model_custom(model_path, model_class, input_dim=13):
     """
-    PyTorch 모델 로드 함수.
-    weights_only 옵션 대신 기본 설정(weights_only=False)으로 모델을 안전하게 로드합니다.
+    PyTorch 모델을 로드합니다.
+    checkpoint가 dict 형식이면 load_state_dict를 사용하고,
+    그렇지 않으면 checkpoint를 그대로 모델 인스턴스로 사용합니다.
     (파일이 신뢰할 수 있는 경우에만 사용하세요.)
-    내부 오류는 로깅하며, UI에는 간단한 메시지로 처리합니다.
     """
-    model = model_class(input_dim)
+    # 모델 클래스의 인스턴스를 미리 생성 (model 모듈 내 클래스로 접근)
+    model_instance = model_class(input_dim)
     if not os.path.exists(model_path):
         logging.error(f"🚨 모델 파일을 찾을 수 없습니다: {model_path}")
         st.error("모델 파일이 존재하지 않습니다.")
         return None
     try:
-        # weights_only=True 사용 시 오류가 발생하므로 weights_only=False로 로드
-        checkpoint = torch.load(model_path, map_location=torch.device("cpu"), weights_only=False)
-        model.load_state_dict(checkpoint, strict=False)
-        model.eval()
+        with open(model_path, 'rb') as f:
+            checkpoint = MyUnpickler(f).load()
+        
+        if isinstance(checkpoint, dict):
+            model_instance.load_state_dict(checkpoint, strict=False)
+        else:
+            # checkpoint가 이미 모델 인스턴스인 경우
+            model_instance = checkpoint
+        
+        model_instance.eval()
         logging.info(f"✅ 모델 로드 성공: {model_path}")
-        return model
+        return model_instance
     except Exception as e:
         logging.error(f"🚨 모델 로드 중 오류 발생: {e}")
         st.error("모델 로드에 문제가 발생했습니다. 관리자에게 문의하세요.")
     return None
 
-# 모델 로드 실행 (UI에는 성공/실패 메시지 최소화)
-model_exercise = load_model(MODEL_EXERCISE_PATH, ExercisePredictionModel, input_dim=13)
-model_food = load_model(MODEL_FOOD_PATH, FoodPredictionModel, input_dim=13)
+# 모델 로드 실행 (UI에는 상세 오류 메시지 표시하지 않음)
+model_exercise = load_model_custom(MODEL_EXERCISE_PATH, model.ExercisePredictionModel, input_dim=13)
+model_food = load_model_custom(MODEL_FOOD_PATH, model.FoodPredictionModel, input_dim=13)
 
 # 환경 변수 또는 secrets.toml에서 API 키를 가져옵니다.
 HF_API_KEY = os.getenv("HF_API_KEY")  # 미리 선언된 API 키 변수
@@ -47,7 +62,7 @@ HF_API_KEY = os.getenv("HF_API_KEY")  # 미리 선언된 API 키 변수
 def load_gemma_model():
     """
     Gemma 모델과 토크나이저 로드 함수.
-    오류 발생 시 내부 로깅만 하고, 사용자에게는 간단한 메시지를 표시합니다.
+    내부 오류는 관리자 로그로 기록되며, 사용자에게는 간단한 메시지만 표시합니다.
     """
     model_name = "google/gemma-2b-it"
     try:
@@ -55,19 +70,19 @@ def load_gemma_model():
         if not hf_token:
             logging.error("🚨 HF_API_KEY가 설정되지 않았습니다!")
             return None, None
-        # use_auth_token 대신 token 사용 (또는 최신 버전에서는 token 매개변수 사용)
-        tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token)
-        model = AutoModelForCausalLM.from_pretrained(
+        # 최신 transformers에서는 token 매개변수와 trust_remote_code 옵션을 사용합니다.
+        tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token, trust_remote_code=True)
+        model_instance = AutoModelForCausalLM.from_pretrained(
             model_name,
             device_map="auto",
             torch_dtype=torch.float16,
-            token=hf_token
+            token=hf_token,
+            trust_remote_code=True
         )
         logging.info("✅ Gemma 모델 로드 성공")
-        return tokenizer, model
+        return tokenizer, model_instance
     except Exception as e:
         logging.error(f"🚨 Gemma 모델 로딩 중 오류 발생: {e}")
-        # 사용자에게 자세한 오류는 표시하지 않음
         st.error("Gemma 모델 로드 중 문제가 발생했습니다. (관리자 로그 참조)")
         return None, None
 
