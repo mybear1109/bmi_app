@@ -62,7 +62,7 @@ def preprocess_input(user_data):
     """
     required_keys = [
         "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)",
-        "혈압 차이", "총콜레스테롤", "고혈당 위험", "간 지표",
+        "혈압 차이", "콜레스테롤", "고혈당 위험", "간 지표",
         "성별", "연령대", "비만 위험 지수", "흡연상태", "음주여부"
     ]
     processed_data = []
@@ -110,7 +110,7 @@ def calculate_health_score(user_info):
         "BMI": 10 if 18.5 <= user_info.get("BMI", 0) <= 23 else 6,
         "허리둘레": 8 if user_info.get("허리둘레", 0) <= 85 else 5,
         "혈압": 10 if 90 <= user_info.get("수축기혈압(최고 혈압)", 0) <= 120 and 60 <= user_info.get("이완기혈압(최저 혈압)", 0) <= 80 else 7,
-        "총 콜레스테롤": 10 if user_info.get("총콜레스테롤", 0) < 200 else 6,
+        "콜레스테롤": 10 if user_info.get("콜레스테롤", 0) < 200 else 6,
         "고혈당 위험": 8 if user_info.get("고혈당 위험", "낮음") == "낮음" else 5,
         "간 지표": 10 if user_info.get("간 지표", "정상") == "정상" else 7,
         "흡연/음주": 10 if user_info.get("흡연상태", "비흡연") == "비흡연" and user_info.get("음주여부", "비음주") == "비음주" else 6,
@@ -189,14 +189,14 @@ def display_prediction_page():
     
     if user_data:
         st.subheader("📌 사용자 정보")
-        display_columns = ["user_id", "성별", "연령대", "허리둘레", "BMI", "총콜레스테롤", "혈압 차이", "식전혈당(공복혈당)", "간 지표", "비만 위험 지수", "활동 수준"]
+        display_columns = ["user_id", "성별", "연령대", "허리둘레", "BMI", "콜레스테롤", "혈압 차이", "식전혈당(공복혈당)", "간 지표", "비만 위험 지수", "활동 수준"]
         column_descriptions = {
             "user_id": "사용자 ID",
             "성별": "성별",
             "연령대": "연령대",
             "허리둘레": "허리둘레 (cm)",
             "BMI": "체질량지수 (kg/m^2)",
-            "총콜레스테롤": "총 콜레스테롤 (mg/dL)",
+            "콜레스테롤": "콜레스테롤 (mg/dL)",
             "혈압 차이": "혈압 차이 (mmHg)",
             "식전혈당(공복혈당)": "식전혈당 (mg/dL)",
             "간 지표": "간 건강 지표",
@@ -238,8 +238,8 @@ def display_prediction_page():
         st.error("사용자 정보가 없어 예측을 실행할 수 없습니다. 먼저 사용자 정보를 입력해주세요.")
 
 def save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food):
-    user_data["운동 확률"] = prob_exercise
-    user_data["식단 확률"] = prob_food
+    user_data["운동 점수"] = prob_exercise
+    user_data["식단 점수"] = prob_food
     user_data["예측 날짜"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
     new_data = pd.DataFrame([user_data])
     if os.path.exists(PREDICTION_FILE):
