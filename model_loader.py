@@ -26,6 +26,7 @@ def load_model(model_path, model_class, input_dim=13):
         model.load_state_dict(checkpoint, strict=False)
         model.eval()
         logging.info(f"✅ 모델 로드 성공: {model_path}")
+        print(f"✅ 모델 로드 성공: {model_path}")
         return model
     except Exception as e:
         logging.error(f"🚨 모델 로드 중 오류 발생 (weights_only=True 실패): {e}")
@@ -34,6 +35,7 @@ def load_model(model_path, model_class, input_dim=13):
             model.load_state_dict(checkpoint, strict=False)
             model.eval()
             logging.info(f"✅ 모델 로드 성공 (weights_only=False): {model_path}")
+            print(f"✅ 모델 로드 성공 (weights_only=False): {model_path}")
             return model
         except Exception as e2:
             logging.error(f"🚨 모델 로드 중 오류 발생 (weights_only=False): {e2}")
@@ -66,6 +68,7 @@ def load_gemma_model():
             token=hf_token
         )
         logging.info("✅ Gemma 모델 로드 성공")
+        print("✅ Gemma 모델 로드 성공")
         return tokenizer, model
     except Exception as e:
         logging.error(f"🚨 Gemma 모델 로딩 중 오류 발생: {e}")
