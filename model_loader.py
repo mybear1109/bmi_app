@@ -37,11 +37,11 @@ def load_gemma_model():
     """Gemma 모델과 토크나이저 로드 함수"""
     model_name = "google/gemma-2b-it"
     try:
-        # 이미 HF_API_KEY에서 토큰을 가져왔으므로 이를 사용합니다.
         hf_token = HF_API_KEY
         if not hf_token:
             st.error("🚨 HF_API_KEY가 설정되지 않았습니다!")
             return None, None
+        # AutoTokenizer를 사용하여 토크나이저 불러오기
         tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=hf_token)
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
