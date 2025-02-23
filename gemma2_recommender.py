@@ -7,9 +7,6 @@ import streamlit as st
 import logging
 from typing import List, Dict, Set
 
-# 로깅 설정 (관리자용 로그는 콘솔에 출력되고, 사용자에게는 보이지 않음)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
 # 환경 변수 또는 secrets.toml에서 API 키를 가져옵니다.
 HF_API_KEY = os.getenv("HF_API_KEY")
 
@@ -19,6 +16,24 @@ client = InferenceClient(
     api_key=HF_API_KEY
 )
 
+# 로깅 설정 (관리자용 로그는 콘솔에 출력되고, 사용자에게는 보이지 않음)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+def generate_text_via_api(prompt: str, model_name: str = "google/gemma-2b-it"):
+    """
+    Hugging Face API의 chat completions를 사용하여 텍스트를 생성합니다.
+    prompt를 메시지 리스트로 변환하여 API 호출 후 응답을 파싱합니다.
+    """
+    messages = [{"role": "user", "content": prompt}]
+    try:
+        response_json = client.chat.completions.create(
+            model=model_name,
+            messages=messages
+        )
+        return parse_json_response(response_json)
+    except requests.exceptions.RequestException as e:
+        st.error(f"🚨 API 호출 오류: {e}")
+        return {"메시지": "🚨 API 호출 오류 발생"}
+    
 def clean_control_characters(text: str) -> str:
     """텍스트 내의 제어문자(ASCII 0~31 등)를 제거합니다."""
     return re.sub(r'[\x00-\x1F]+', ' ', text)
@@ -76,7 +91,7 @@ def get_user_info_with_default(user_data):
     사용자 정보 중 '미측정' 항목은 기본값으로 채워 반환합니다.
     """
     default_info = {
-        "BMI": 24.5,
+        "BMI": 23,
         "허리둘레": "80cm",
         "수축기혈압(최고 혈압)": 120,
         "이완기혈압(최저 혈압)": 80,
@@ -120,21 +135,7 @@ def expand_allergies(allergies: List[str]) -> Set[str]:
             expanded.add(allergy)
     return expanded
 
-def generate_text_via_api(prompt: str, model_name: str = "google/gemma-2b-it"):
-    """
-    Hugging Face API의 chat completions를 사용하여 텍스트를 생성합니다.
-    prompt를 메시지 리스트로 변환하여 API 호출 후 응답을 파싱합니다.
-    """
-    messages = [{"role": "user", "content": prompt}]
-    try:
-        response_json = client.chat.completions.create(
-            model=model_name,
-            messages=messages
-        )
-        return parse_json_response(response_json)
-    except requests.exceptions.RequestException as e:
-        st.error(f"🚨 API 호출 오류: {e}")
-        return {"메시지": "🚨 API 호출 오류 발생"}
+
 
 def get_gemma_recommendation(category, user_info, additional_info=[]):
     """
