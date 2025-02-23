@@ -52,7 +52,10 @@ def load_gemma_model():
         st.success("✅ Gemma 모델 로드 성공")
         return tokenizer, model
     except Exception as e:
-        st.error(f"🚨 Gemma 모델 로딩 중 오류 발생: {e}")
+        # Gemma 모델 로딩 중 발생하는 Tokenizer 관련 오류를 UI에 보이지 않도록 함
+        # st.error(f"🚨 Gemma 모델 로딩 중 오류 발생: {e}")
+        # 대신 로그에만 기록하거나, st.write()를 사용하여 간단히 알림
+        st.write("Gemma 모델 로딩 중 오류 발생 (로그 확인)")
         return None, None
 
 # Gemma 모델과 토크나이저 로드

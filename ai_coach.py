@@ -23,22 +23,23 @@ def process_user_info(user_data):
         ]
     }
 
-# 원시 응답을 깔끔하게 마크다운으로 출력하는 함수
+# 원시 응답을 마크다운 텍스트로 예쁘게 출력하는 함수
 def display_raw_markdown(raw_text):
     st.markdown("---")
     st.markdown("**원시 응답 (마크다운):**")
-    st.markdown(f"> {raw_text}")
+    st.markdown(raw_text)
 
-# 식단 추천 결과를 표시하는 함수
+# 식단 추천 결과 표시 함수
 def display_diet_plan(diet_plan):
+    # 만약 추천 결과가 dict이고 "메시지" 키가 있으면 raw 텍스트를 그대로 표시합니다.
     if isinstance(diet_plan, dict) and "메시지" in diet_plan:
-        st.error(f"🚨 식단 추천 생성 중 문제가 발생했습니다: {diet_plan['메시지']}")
-        st.markdown("**원시 응답:**")
-        st.code(json.dumps(diet_plan, indent=4, ensure_ascii=False))
+        st.info("🍽️ 추천된 식단:")
+        st.markdown(f"```\n{diet_plan['메시지']}\n```")
         return
-    # dict인 경우 리스트로 감싸기
+    # dict라면 리스트로 변환
     if isinstance(diet_plan, dict):
         diet_plan = [diet_plan]
+    # 리스트인 경우 DataFrame으로 변환 시도
     if isinstance(diet_plan, list):
         df = pd.DataFrame(diet_plan)
         expected_cols = ["요일", "아침", "점심", "저녁", "총칼로리 (kcal)"]
@@ -56,20 +57,21 @@ def display_diet_plan(diet_plan):
         else:
             st.warning("예상하는 열이 모두 존재하지 않습니다. 원시 응답을 아래에 표시합니다.")
             st.json(diet_plan)
-            display_raw_markdown(diet_plan[0].get("메시지", ""))
+            # 또한 마크다운으로도 출력
+            if isinstance(diet_plan, list) and len(diet_plan) > 0:
+                display_raw_markdown(diet_plan[0].get("메시지", ""))
     else:
-        st.error("🚨 응답 형식 오류: 식단 추천 결과가 리스트 형식이 아닙니다.")
+        st.error("식단 추천 결과를 표시할 수 없습니다.")
 
-# 운동 추천 결과를 표시하는 함수
+# 운동 추천 결과 표시 함수
 def display_exercise_plan(exercise_plan):
     if isinstance(exercise_plan, dict) and "메시지" in exercise_plan:
-        st.error(f"🚨 운동 추천 생성 중 문제가 발생했습니다: {exercise_plan['메시지']}")
-        st.markdown("**원시 응답:**")
-        st.code(json.dumps(exercise_plan, indent=4, ensure_ascii=False))
+        st.info("💪 추천된 운동 계획:")
+        st.markdown(f"```\n{exercise_plan['메시지']}\n```")
         return
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
-    # 만약 응답 데이터에 "weekly_exercise_plan" 키가 있다면 변환
+    # 만약 응답 데이터에 "weekly_exercise_plan" 키가 있으면 변환
     if (isinstance(exercise_plan, list) and exercise_plan and 
         isinstance(exercise_plan[0], dict) and "weekly_exercise_plan" in exercise_plan[0]):
         weekly_plan = exercise_plan[0].get("weekly_exercise_plan", [])
@@ -99,9 +101,10 @@ def display_exercise_plan(exercise_plan):
         else:
             st.warning("예상하는 열이 모두 존재하지 않습니다. 원시 응답을 아래에 표시합니다.")
             st.json(exercise_plan)
-            display_raw_markdown(exercise_plan[0].get("메시지", ""))
+            if isinstance(exercise_plan, list) and len(exercise_plan) > 0:
+                display_raw_markdown(exercise_plan[0].get("메시지", ""))
     else:
-        st.error("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
+        st.error("운동 추천 결과를 표시할 수 없습니다.")
 
 # --- 메인 페이지 표시 함수 ---
 def display_ai_coach_page():
@@ -138,7 +141,6 @@ def display_ai_coach_page():
                                               "고강도 인터벌 트레이닝", "요가", "필라테스"])
         st.markdown("<br>", unsafe_allow_html=True)
     
-    # 사용자 정보 업데이트
     user_info.update({
         "excluded_foods": excluded_foods,
         "preferred_foods": preferred_foods,
@@ -156,6 +158,6 @@ def display_ai_coach_page():
             display_diet_plan(diet_plan)
     with col2:
         if st.button("🏋️ 운동 계획 추천", key="workout_button"):
-            with st.spinner("AI가 운동을 추천하는 중...⏳"):
+            with st.spinner("AI가 운동 계획을 추천하는 중...⏳"):
                 exercise_plan = get_gemma_recommendation("운동", user_info)
             display_exercise_plan(exercise_plan)
