@@ -16,14 +16,11 @@ transformers==4.36.2
 dill==0.3.5.1
 sentencepiece==0.1.96
 
-
-
 # ✅ 시각화 관련 라이브러리
 matplotlib==3.7.1
 seaborn==0.12.2
 altair==5.1.2
 plotly==5.17.0
-logging
 
 # ✅ 추가 라이브러리
 streamlit-option-menu==0.3.2

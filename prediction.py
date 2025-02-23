@@ -8,10 +8,6 @@ import os
 import json
 from model_loader import model_exercise, model_food  # 모델 로더에서 모델 불러오기
 from user_data_utils import load_user_data, save_user_data
-import logging
-
-# 관리자용 로깅 설정 (콘솔에만 출력)
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # UI 스타일 설정
 st.markdown(
@@ -54,14 +50,16 @@ st.markdown(
 # 예측 데이터 저장 경로
 PREDICTION_FILE = "data/predictions.csv"
 
-# 모델 평가 모드 설정
+# 모델을 평가 모드로 설정
 if model_exercise:
     model_exercise.eval()
 if model_food:
     model_food.eval()
 
 def preprocess_input(user_data):
-    """필수 키 값들을 숫자형 데이터로 변환하여 Tensor로 반환합니다."""
+    """
+    입력 데이터 전처리: 필수 키 값들을 숫자형 데이터로 변환하여 Tensor로 반환합니다.
+    """
     required_keys = [
         "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)",
         "혈압 차이", "총콜레스테롤", "고혈당 위험", "간 지표",
@@ -85,14 +83,17 @@ def preprocess_input(user_data):
     return torch.tensor([processed_data], dtype=torch.float32)
 
 def predict_health_score(model, input_data):
-    """모델을 사용하여 예측 점수를 산출합니다."""
+    """
+    모델을 사용하여 예측 점수를 산출합니다.
+    모델이 없을 경우 기본 점수 50을 반환합니다.
+    """
     if model is None:
-        return 50  # 모델이 없으면 기본 점수 50
+        return 50
     try:
         input_tensor = preprocess_input(input_data)
         with torch.no_grad():
             output = model(input_tensor)
-        # 모델 출력값을 점수로 변환 (0~100 사이의 값으로 조정)
+        # 모델 출력값을 0~100 사이의 점수로 변환 (출력값에 60을 곱함)
         base_score = output.item() * 60
         base_score = max(25, min(100, base_score))
         return int(base_score)
@@ -103,7 +104,7 @@ def predict_health_score(model, input_data):
 def calculate_health_score(user_info):
     """
     건강 정보 기반 점수 계산:
-      - BMI가 18.5 ~ 23이면 10점, 그 외에는 6점 등으로 정상 범위에 있을 경우 높은 점수를 부여합니다.
+      - 예를 들어 BMI가 18.5 ~ 23이면 10점, 그 외에는 6점 등 정상 범위에 있을 경우 높은 점수를 부여합니다.
     """
     score_components = {
         "BMI": 10 if 18.5 <= user_info.get("BMI", 0) <= 23 else 6,
@@ -120,21 +121,22 @@ def calculate_health_score(user_info):
 def get_final_health_score(model, user_info, rec_type):
     """
     최종 건강 점수를 산출합니다.
-    rec_type: "운동"인 경우에는 모델 예측 30%, 건강 정보 70%, 
-             "식단"인 경우에는 모델 예측 20%, 건강 정보 80% 비중으로 산출합니다.
-    또한, calibration_factor를 적용하여 모델 예측 점수를 보정합니다.
+    rec_type에 따라 모델 예측 점수와 건강 정보 점수의 가중치를 다르게 적용합니다.
+      - 운동: 모델 예측 30%, 건강 정보 70% (보정 계수 0.8 적용)
+      - 식단: 모델 예측 20%, 건강 정보 80% (보정 계수 0.9 적용)
     """
     predicted = predict_health_score(model, user_info)
     health = calculate_health_score(user_info)
-    calibration_factor = 1.0  # 필요에 따라 조정 (예: 재학습 또는 후처리를 통해 보정)
-    calibrated_predicted = predicted * calibration_factor
     
     if rec_type == "운동":
-        final = int((calibrated_predicted * 0.3) + (health * 0.7))
+        calibration_factor = 0.8
+        final = int((predicted * calibration_factor * 0.3) + (health * 0.7))
     elif rec_type == "식단":
-        final = int((calibrated_predicted * 0.2) + (health * 0.8))
+        calibration_factor = 0.9
+        final = int((predicted * calibration_factor * 0.2) + (health * 0.8))
     else:
-        final = int((calibrated_predicted * 0.3) + (health * 0.7))
+        calibration_factor = 0.8
+        final = int((predicted * calibration_factor * 0.3) + (health * 0.7))
     return final
 
 def generate_recommendation(final_score, recommendation_type):
@@ -183,9 +185,26 @@ def generate_recommendation(final_score, recommendation_type):
 def display_prediction_page():
     st.header("🔍 AI 기반 운동 및 식단 예측")
     user_id = st.session_state.get("nickname", "게스트")
-    # load_user_data() 함수는 이미 세션의 데이터를 JSON으로 파싱합니다.
     user_data = load_user_data(user_id)
     
+    if user_data:
+        st.subheader("📌 사용자 정보")
+        display_columns = ["user_id", "성별", "연령대", "허리둘레", "BMI", "총콜레스테롤", "혈압 차이", "식전혈당(공복혈당)", "간 지표", "비만 위험 지수", "활동 수준"]
+        column_descriptions = {
+            "user_id": "사용자 ID",
+            "성별": "성별",
+            "연령대": "연령대",
+            "허리둘레": "허리둘레 (cm)",
+            "BMI": "체질량지수 (kg/m^2)",
+            "총콜레스테롤": "총 콜레스테롤 (mg/dL)",
+            "혈압 차이": "혈압 차이 (mmHg)",
+            "식전혈당(공복혈당)": "식전혈당 (mg/dL)",
+            "간 지표": "간 건강 지표",
+            "비만 위험 지수": "비만 위험 지수",
+            "활동 수준": "활동 수준"
+        }
+        user_info_df = pd.DataFrame([{column_descriptions.get(col, col): user_data.get(col, 'N/A') for col in display_columns}])
+        st.markdown(user_info_df.to_html(index=False, classes=['dataframe'], escape=False), unsafe_allow_html=True)
     
     if st.button("🔮 AI 예측 실행", help="클릭하여 AI 기반 운동 및 식단 예측을 시작합니다."):
         with st.spinner("⏳ AI가 데이터를 분석 중입니다..."):
