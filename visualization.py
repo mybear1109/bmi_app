@@ -116,7 +116,7 @@ def display_visualization_page():
     st.header("🩸 고혈당 위험과 BMI의 관계")
     try:
         df['BMI_범주'] = pd.cut(df['BMI'], bins=[0, 18.5, 25, 30, 100], labels=['저체중', '정상', '과체중', '비만'])
-        heatmap_data = df.groupby(['고혈당 위험', 'BMI_범주']).size().unstack(fill_value=0, observed=True)
+        heatmap_data = df.groupby(['고혈당 위험', 'BMI_범주']).size().unstack(fill_value=0)
         fig_glucose_bmi = px.imshow(heatmap_data, x=heatmap_data.columns, y=heatmap_data.index,
                                     color_continuous_scale="YlOrRd",
                                     labels=dict(x="BMI 범주", y="고혈당 위험", color="빈도"),
