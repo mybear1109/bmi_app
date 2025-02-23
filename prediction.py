@@ -8,10 +8,9 @@ import os
 import json
 from model_loader import model_exercise, model_food  # 모델 로더에서 모델 불러오기
 from user_data_utils import load_user_data, save_user_data
-import logging
 
-# 관리자용 로깅 설정 (콘솔에만 출력)
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
 
 st.markdown(
     """
