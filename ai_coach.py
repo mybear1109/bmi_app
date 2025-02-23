@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 from gemma2_recommender import get_gemma_recommendation
 from user_data_utils import load_user_data  # 사용자 데이터 로드 함수
+
 # 사용자 데이터 불러오기 함수
 def load_user_data():
     user_data = st.session_state.get("user_data", {})
@@ -13,7 +14,6 @@ def load_user_data():
         except json.JSONDecodeError:
             return {}
     return user_data
-
 
 # 사용자 데이터 불러오기 및 건강 정보 처리
 def process_user_info(user_data):
