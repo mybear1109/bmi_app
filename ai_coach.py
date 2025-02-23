@@ -23,7 +23,7 @@ def process_user_info(user_data):
         ]
     }
 
-# 원시 응답을 마크다운 텍스트로 출력하는 함수
+# 원시 응답을 마크다운 텍스트로 예쁘게 출력하는 함수
 def display_raw_markdown(raw_text):
     st.markdown("---")
     st.markdown("**원시 응답 (마크다운):**")
@@ -31,45 +31,18 @@ def display_raw_markdown(raw_text):
 
 # 식단 추천 결과 표시 함수
 def display_diet_plan(diet_plan):
-    # 오류 응답 처리
+    # 만약 추천 결과가 dict이고 "메시지" 키가 있으면 raw 텍스트를 그대로 표시합니다.
     if isinstance(diet_plan, dict) and "메시지" in diet_plan:
-        st.error(f"🚨 식단 추천 생성 중 문제가 발생했습니다: {diet_plan['메시지']}")
-        st.markdown("**원시 응답:**")
-        st.code(json.dumps(diet_plan, indent=4, ensure_ascii=False))
+        st.info("추천된 식단(원시 텍스트):")
+        st.markdown(f"```\n{diet_plan['메시지']}\n```")
         return
-
-    # 만약 응답이 JSON 객체 형태로 '식단 계획' 키를 포함하고 있다면 이를 변환
-    if isinstance(diet_plan, dict) and "식단 계획" in diet_plan:
-        plan = diet_plan["식단 계획"]
-        transformed = []
-        # plan은 요일별 식단 정보가 딕셔너리 형태로 구성되었다고 가정합니다.
-        for day, items in plan.items():
-            day_dict = {"요일": day, "아침": "", "점심": "", "저녁": "", "총칼로리 (kcal)": 0}
-            for item in items:
-                try:
-                    cal = float(item.get("칼로리", 0))
-                except (ValueError, TypeError):
-                    cal = 0
-                day_dict["총칼로리 (kcal)"] += cal
-                remark = item.get("비고", "").strip()
-                # "아침", "점심", "저녁"이라는 키워드로 분류 (대소문자와 공백은 무시)
-                if "아침" in remark:
-                    day_dict["아침"] = item.get("음식", "")
-                elif "점심" in remark:
-                    day_dict["점심"] = item.get("음식", "")
-                elif "저녁" in remark:
-                    day_dict["저녁"] = item.get("음식", "")
-            transformed.append(day_dict)
-        diet_plan = transformed
-
-    # dict 형태이면 리스트로 감싸기
+    # dict라면 리스트로 변환
     if isinstance(diet_plan, dict):
         diet_plan = [diet_plan]
-    
+    # 리스트인 경우 DataFrame으로 변환 시도
     if isinstance(diet_plan, list):
         df = pd.DataFrame(diet_plan)
         expected_cols = ["요일", "아침", "점심", "저녁", "총칼로리 (kcal)"]
-        # 만약 예상 열이 모두 있다면 표로 표시, 아니면 원시 데이터를 그대로 출력
         if all(col in df.columns for col in expected_cols):
             styled_df = (
                 df[expected_cols]
@@ -82,23 +55,22 @@ def display_diet_plan(diet_plan):
             )
             st.dataframe(styled_df, use_container_width=True)
         else:
-            st.error("🚨 응답에 필요한 열이 없습니다. (예상 열: " + ", ".join(expected_cols) + ")")
-            st.markdown("**원시 응답 데이터:**")
+            st.warning("예상하는 열이 모두 존재하지 않습니다. 원시 응답을 아래에 표시합니다.")
             st.json(diet_plan)
-            display_raw_markdown(diet_plan[0].get("메시지", ""))
+            # 또한 마크다운으로도 출력
+            if isinstance(diet_plan, list) and len(diet_plan) > 0:
+                display_raw_markdown(diet_plan[0].get("메시지", ""))
     else:
-        st.error("🚨 응답 형식 오류: 식단 추천 결과가 리스트 형식이 아닙니다.")
+        st.error("식단 추천 결과를 표시할 수 없습니다.")
 
 # 운동 추천 결과 표시 함수
 def display_exercise_plan(exercise_plan):
     if isinstance(exercise_plan, dict) and "메시지" in exercise_plan:
-        st.error(f"🚨 운동 추천 생성 중 문제가 발생했습니다: {exercise_plan['메시지']}")
-        st.markdown("**원시 응답:**")
-        st.code(json.dumps(exercise_plan, indent=4, ensure_ascii=False))
+        st.info("추천된 운동 계획(원시 텍스트):")
+        st.markdown(f"```\n{exercise_plan['메시지']}\n```")
         return
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
-    
     # 만약 응답 데이터에 "weekly_exercise_plan" 키가 있으면 변환
     if (isinstance(exercise_plan, list) and exercise_plan and 
         isinstance(exercise_plan[0], dict) and "weekly_exercise_plan" in exercise_plan[0]):
@@ -112,7 +84,6 @@ def display_exercise_plan(exercise_plan):
                 "칼로리 소모량(kcal)": "정보 없음"
             })
         exercise_plan = transformed
-
     if isinstance(exercise_plan, list):
         df = pd.DataFrame(exercise_plan)
         expected_cols = ["요일", "운동", "시간(분)", "칼로리 소모량(kcal)"]
@@ -128,12 +99,12 @@ def display_exercise_plan(exercise_plan):
             )
             st.dataframe(styled_df, use_container_width=True)
         else:
-            st.error("🚨 응답에 필요한 열이 없습니다. (예상 열: " + ", ".join(expected_cols) + ")")
-            st.markdown("**원시 응답 데이터:**")
+            st.warning("예상하는 열이 모두 존재하지 않습니다. 원시 응답을 아래에 표시합니다.")
             st.json(exercise_plan)
-            display_raw_markdown(exercise_plan[0].get("메시지", ""))
+            if isinstance(exercise_plan, list) and len(exercise_plan) > 0:
+                display_raw_markdown(exercise_plan[0].get("메시지", ""))
     else:
-        st.error("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
+        st.error("운동 추천 결과를 표시할 수 없습니다.")
 
 # --- 메인 페이지 표시 함수 ---
 def display_ai_coach_page():
@@ -187,6 +158,6 @@ def display_ai_coach_page():
             display_diet_plan(diet_plan)
     with col2:
         if st.button("🏋️ 운동 계획 추천", key="workout_button"):
-            with st.spinner("AI가 운동을 추천하는 중...⏳"):
+            with st.spinner("AI가 운동 계획을 추천하는 중...⏳"):
                 exercise_plan = get_gemma_recommendation("운동", user_info)
             display_exercise_plan(exercise_plan)

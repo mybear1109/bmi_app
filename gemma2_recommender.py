@@ -59,6 +59,7 @@ def parse_json_response(response_json):
             st.error("🚨 응답 내용이 비어 있습니다.")
             return {"메시지": "응답 내용이 비어 있습니다."}
         
+        # 만약 백틱으로 감싼 JSON 블록이 있으면 그 내부만 추출
         if "```json" in content:
             json_text = content.split("```json")[-1].split("```")[0].strip()
         else:
@@ -70,7 +71,8 @@ def parse_json_response(response_json):
             return json.loads(json_text)
         except json.JSONDecodeError as e:
             st.error(f"🚨 JSON 변환 오류 발생:\n{json_text}\n오류: {e}")
-            return {"메시지": f"🚨 JSON 변환 오류: {json_text}"}
+            # 변환 오류가 발생해도 원시 텍스트를 반환하여 사용자에게 보여줌
+            return {"메시지": json_text}
     except (json.JSONDecodeError, KeyError) as e:
         st.error(f"🚨 응답 처리 오류: {e}")
         return {"메시지": "🚨 응답 처리 오류"}
@@ -136,7 +138,7 @@ def get_gemma_recommendation(category, user_info, allergies=[], excluded_foods=[
         prompt += "사용자의 건강 상태와 목표에 맞는 7일 운동 계획을 JSON 형식으로 제공해 주세요. 모든 대답은 반드시 한국어로 작성해주세요."
     elif category == "식단":
         prompt += ("사용자의 건강 상태와 체중 감량, 저탄수화물, 다이어트 목표에 맞는 7일 식단 계획을 JSON 형식으로 제공해 주세요. "
-                   "모든 대답은 반드시 한국어로 작성해주세요. 다이어트 식단은 칼로리 조절과 균형 잡힌 영양소 구성이 반영되어야 합니다.")
+                   "모든 대답은 반드시 한국어로 작성해 주세요. 다이어트 식단은 칼로리 조절과 균형 잡힌 영양소 구성이 반영되어야 합니다.")
         expanded_allergies = expand_allergies(allergies)
         all_excluded_foods = set(expanded_allergies + excluded_foods)
         if all_excluded_foods:
@@ -154,7 +156,7 @@ def get_exercise_recommendation(user_info):
     prompt = f"사용자의 건강 상태와 목표에 맞는 7일 운동 계획을 JSON 형식으로 제공해 주세요.\n"
     prompt += f"사용자 정보: {json.dumps(user_info, ensure_ascii=False)}\n\n"
     prompt += (
-        "- 모든 대답은 반드시 한국어로 작성해주세요.\n"
+        "- 모든 대답은 반드시 한국어로 작성해 주세요.\n"
         "- 운동 계획은 구체적이어야 하며, 매일의 운동 내용과 소요 시간(분)을 포함해야 합니다.\n"
         "- 아래 예시를 참고하여 한국어로 7일치 운동 계획을 제공해 주세요.\n"
         "- 운동 예시:\n"
@@ -171,7 +173,7 @@ def get_diet_recommendation(user_info, excluded_foods):
     prompt += f"사용자 정보: {json.dumps(user_info, ensure_ascii=False)}\n"
     prompt += f"제외할 음식: {', '.join(excluded_foods)}\n"
     prompt += (
-        "- 모든 대답은 반드시 한국어로 작성해주세요.\n"
+        "- 모든 대답은 반드시 한국어로 작성해 주세요.\n"
         "- 다이어트를 위한 식단은 칼로리 조절과 균형 잡힌 영양소(단백질, 탄수화물, 지방 비율)가 반영되어야 합니다.\n"
         "- 아침, 점심, 저녁 3끼 식단을 구체적으로 작성해 주세요.\n"
         "- 아래 예시를 참고하여 한국어로 7일 식단 계획을 제공해 주세요.\n"
