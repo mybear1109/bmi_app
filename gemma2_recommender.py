@@ -58,7 +58,7 @@ def parse_json_response(response_json):
             st.error("🚨 응답 내용이 비어 있습니다.")
             return {"메시지": "응답 내용이 비어 있습니다."}
         
-        # 백틱으로 감싼 JSON 블록이 있으면 내부만 추출
+        # 백틱 블록으로 감싼 JSON이 있으면 내부만 추출
         if "```json" in content:
             json_text = content.split("```json")[-1].split("```")[0].strip()
         else:
@@ -70,7 +70,6 @@ def parse_json_response(response_json):
             return json.loads(json_text)
         except json.JSONDecodeError as e:
             st.error(f"🚨 JSON 변환 오류 발생:\n{json_text}\n오류: {e}")
-            # 변환 오류 발생 시, 원시 텍스트를 그대로 반환해 사용자에게 보여줌
             return {"메시지": json_text}
     except (json.JSONDecodeError, KeyError) as e:
         st.error(f"🚨 응답 처리 오류: {e}")
