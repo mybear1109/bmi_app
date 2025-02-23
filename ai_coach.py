@@ -5,8 +5,6 @@ import pandas as pd
 from gemma2_recommender import get_gemma_recommendation
 from user_data_utils import load_user_data
 
-
-
 # 사용자 데이터 불러오기 함수
 def load_user_data():
     user_data = st.session_state.get("user_data", {})
@@ -154,15 +152,15 @@ def display_ai_coach_page():
     
     col1, col2 = st.columns(2)
     with col1:
-        excluded_foods = st.text_input("🚫 식품 알레르기 및 기피 항목 (쉼표로 구분)", "", key="excluded_foods")
-        excluded_foods = [food.strip() for food in excluded_foods.split(',') if food.strip()]
+        allergen_foods = st.text_input("🚫 식품 알레르기 및 기피 항목 (쉼표로 구분)", "", key="allergen_foods")
+        allergen_foods = [food.strip() for food in allergen_foods.split(',') if food.strip()]
         st.markdown("<br>", unsafe_allow_html=True)
         preferred_foods = st.text_input("😋 선호하는 음식 (쉼표 구분)", "", key="preferred_foods")
         preferred_foods = [food.strip() for food in preferred_foods.split(',') if food.strip()]
         st.markdown("<br>", unsafe_allow_html=True)
-        diet_restriction = st.selectbox("🍽️ 식이 요법 유형", ["일반식", "채식", "육류 중심", "저탄수화물", "저지방", "글루텐 프리"])
+        diet_restriction = st.selectbox("🍽️ 식이 요법 유형", ["선택 안함", "일반식", "채식", "육류 중심", "저탄수화물", "저지방", "글루텐 프리"])
     with col2:
-        fitness_level = st.select_slider("💪 현재 체력 수준", options=["매우 낮음", "낮음", "보통", "높음", "매우 높음"])
+        fitness_level = st.select_slider("💪 현재 체력 수준", options=["선택 안함", "매우 낮음", "낮음", "보통", "높음", "매우 높음"])
         st.markdown("<br>", unsafe_allow_html=True)
         restricted_exercises = st.text_input("⚠️ 운동 제한 사항 (쉼표로 구분)", "", key="restricted_exercises")
         restricted_exercises = [exercise.strip() for exercise in restricted_exercises.split(',') if exercise.strip()]
@@ -173,7 +171,7 @@ def display_ai_coach_page():
         st.markdown("<br>", unsafe_allow_html=True)
     
     user_info.update({
-        "excluded_foods": excluded_foods,
+        "allergen_foods": allergen_foods,
         "preferred_foods": preferred_foods,
         "diet_restriction": diet_restriction,
         "restricted_exercises": restricted_exercises,
@@ -185,10 +183,25 @@ def display_ai_coach_page():
     with col1:
         if st.button("🥗 식단 계획 추천", key="diet_button"):
             with st.spinner("AI가 식단을 추천하는 중...⏳"):
-                diet_plan = get_gemma_recommendation("식단", user_info, excluded_foods)
+                additional_foods = []
+                if allergen_foods:
+                    additional_foods.append(("알레르기 및 기피 음식", allergen_foods))
+                if preferred_foods:
+                    additional_foods.append(("선호하는 음식", preferred_foods))
+                if diet_restriction != "선택 안함":
+                    additional_foods.append(("식이 요법", diet_restriction))
+                diet_plan = get_gemma_recommendation("식단", user_info, additional_foods)
             display_diet_plan(diet_plan)
     with col2:
         if st.button("🏋️ 운동 계획 추천", key="workout_button"):
             with st.spinner("AI가 운동을 추천하는 중...⏳"):
-                exercise_plan = get_gemma_recommendation("운동", user_info)
+                additional_exercises = []
+                if fitness_level != "선택 안함":
+                    additional_exercises.append(("체력 수준", fitness_level))
+                if exercise_preference:
+                    additional_exercises.append(("선호하는 운동 유형", exercise_preference))
+                if restricted_exercises:
+                    additional_exercises.append(("제한된 운동", restricted_exercises))
+                exercise_plan = get_gemma_recommendation("운동", user_info, additional_exercises)
             display_exercise_plan(exercise_plan)
+
