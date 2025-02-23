@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 # ✅ 운동 예측 모델
 import torch.nn.functional as F
 
