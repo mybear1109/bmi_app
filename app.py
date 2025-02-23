@@ -7,7 +7,7 @@ import os
 from sidebar import get_selected_menu
 from home import display_home_page
 from prediction import display_prediction_page
-from visualization import get_visualization_data, display_visualization_page
+from visualization import  display_visualization_page
 from ai_coach import display_ai_coach_page
 from user_input import get_user_input
 from model_loader import model_exercise, model_food 
