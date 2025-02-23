@@ -4,7 +4,6 @@ import requests
 from huggingface_hub import InferenceClient
 import os
 import streamlit as st
-import pandas as pd
 
 # 환경 변수 또는 secrets.toml에서 API 키를 가져옵니다.
 HF_API_KEY = os.getenv("HF_API_KEY")
