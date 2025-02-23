@@ -23,53 +23,79 @@ def process_user_info(user_data):
         ]
     }
 
-# 원시 응답을 깔끔하게 마크다운으로 출력하는 함수
+# 원시 응답을 깔끔한 마크다운 형식으로 출력하는 함수
 def display_raw_markdown(raw_text):
     st.markdown("---")
     st.markdown("**원시 응답 (마크다운):**")
-    # > 로 인용하여 보기 좋게 표시
     st.markdown(f"> {raw_text}")
 
-# 식단 추천 결과를 표 또는 JSON으로 예쁘게 표시하는 함수
+# 식단 추천 결과 표시 함수
 def display_diet_plan(diet_plan):
     if isinstance(diet_plan, dict) and "메시지" in diet_plan:
-        st.error(f"🚨 식단 추천 생성 중 문제가 발생했습니다.")
-        st.markdown("**원시 응답 (JSON):**")
+        st.error("🚨 식단 추천 생성 중 문제가 발생했습니다.")
         st.code(json.dumps(diet_plan, indent=4, ensure_ascii=False))
         return
+
+    # 만약 결과가 dict이면 리스트로 감싸기
     if isinstance(diet_plan, dict):
         diet_plan = [diet_plan]
-    if isinstance(diet_plan, list):
-        df = pd.DataFrame(diet_plan)
-        expected_cols = ["요일", "아침", "점심", "저녁", "총칼로리 (kcal)"]
-        if all(col in df.columns for col in expected_cols):
-            styled_df = (
-                df[expected_cols]
-                .style
-                .set_properties(**{'text-align': 'center', 'font-size': '16px'})
-                .background_gradient(cmap='Blues', subset=["총칼로리 (kcal)"])
-                .set_table_styles([
-                    {'selector': 'th', 'props': [('background-color', '#4CAF50'), ('color', 'white')]}
-                ])
-            )
-            st.dataframe(styled_df, use_container_width=True)
-        else:
-            st.warning("예상 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
-            st.json(diet_plan)
-            display_raw_markdown(diet_plan[0].get("메시지", ""))
+    
+    # 먼저 예상하는 열이 모두 존재하는지 확인
+    expected_cols = ["요일", "아침", "점심", "저녁", "총칼로리 (kcal)"]
+    df = pd.DataFrame(diet_plan)
+    if all(col in df.columns for col in expected_cols):
+        styled_df = (
+            df[expected_cols]
+            .style
+            .set_properties(**{'text-align': 'center', 'font-size': '16px'})
+            .background_gradient(cmap='Blues', subset=["총칼로리 (kcal)"])
+            .set_table_styles([
+                {'selector': 'th', 'props': [('background-color', '#4CAF50'), ('color', 'white')]}
+            ])
+        )
+        st.dataframe(styled_df, use_container_width=True)
     else:
-        st.error("🚨 응답 형식 오류: 식단 추천 결과가 리스트 형식이 아닙니다.")
+        # 대체 구조가 있는지 확인 (예: "meals" 키가 존재하는 경우)
+        if df.columns.str.contains("meals").any():
+            # meals 배열 내의 각 항목은 "time"과 "food"로 구성된다고 가정
+            transformed = []
+            for item in diet_plan:
+                if "meals" in item:
+                    for meal in item["meals"]:
+                        transformed.append({
+                            "시간": meal.get("time", ""),
+                            "음식": meal.get("food", "")
+                        })
+            if transformed:
+                st.markdown("**식단 추천 (대체 구조로 변환):**")
+                df2 = pd.DataFrame(transformed)
+                styled_df = (
+                    df2.style
+                    .set_properties(**{'text-align': 'center', 'font-size': '16px'})
+                    .set_table_styles([
+                        {'selector': 'th', 'props': [('background-color', '#1976D2'), ('color', 'white')]}
+                    ])
+                )
+                st.dataframe(styled_df, use_container_width=True)
+                return
+        # 예상 구조가 없을 경우 원시 응답을 JSON 형식으로 출력
+        st.warning("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
+        st.json(diet_plan)
+        # 원시 응답 마크다운도 같이 보여줌 (디버깅용)
+        if isinstance(diet_plan, list) and len(diet_plan) > 0:
+            display_raw_markdown(str(diet_plan[0]))
 
-# 운동 추천 결과를 표 또는 JSON으로 예쁘게 표시하는 함수
+# 운동 추천 결과 표시 함수
 def display_exercise_plan(exercise_plan):
     if isinstance(exercise_plan, dict) and "메시지" in exercise_plan:
-        st.error(f"🚨 운동 추천 생성 중 문제가 발생했습니다.")
-        st.markdown("**원시 응답 (JSON):**")
+        st.error("🚨 운동 추천 생성 중 문제가 발생했습니다.")
         st.code(json.dumps(exercise_plan, indent=4, ensure_ascii=False))
         return
+
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
-    # 만약 응답 데이터에 "weekly_exercise_plan" 키가 있다면 변환
+    
+    # 만약 "weekly_exercise_plan" 키가 있다면 변환
     if (isinstance(exercise_plan, list) and exercise_plan and 
         isinstance(exercise_plan[0], dict) and "weekly_exercise_plan" in exercise_plan[0]):
         weekly_plan = exercise_plan[0].get("weekly_exercise_plan", [])
@@ -82,6 +108,7 @@ def display_exercise_plan(exercise_plan):
                 "칼로리 소모량(kcal)": "정보 없음"
             })
         exercise_plan = transformed
+    
     if isinstance(exercise_plan, list):
         df = pd.DataFrame(exercise_plan)
         expected_cols = ["요일", "운동", "시간(분)", "칼로리 소모량(kcal)"]
@@ -97,9 +124,10 @@ def display_exercise_plan(exercise_plan):
             )
             st.dataframe(styled_df, use_container_width=True)
         else:
-            st.warning("예상 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
+            st.warning("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
             st.json(exercise_plan)
-            display_raw_markdown(exercise_plan[0].get("메시지", ""))
+            if isinstance(exercise_plan, list) and len(exercise_plan) > 0:
+                display_raw_markdown(str(exercise_plan[0]))
     else:
         st.error("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
 
@@ -138,7 +166,6 @@ def display_ai_coach_page():
                                               "고강도 인터벌 트레이닝", "요가", "필라테스"])
         st.markdown("<br>", unsafe_allow_html=True)
     
-    # 사용자 정보 업데이트
     user_info.update({
         "excluded_foods": excluded_foods,
         "preferred_foods": preferred_foods,
