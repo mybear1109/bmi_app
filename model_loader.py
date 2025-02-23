@@ -1,10 +1,10 @@
 import torch
 import os
 import streamlit as st
-import logging
 import pickle
 import model  # 모델 모듈 전체를 불러와서 model.ExercisePredictionModel 등으로 접근
 from transformers import AutoTokenizer, AutoModelForCausalLM
+import logging
 
 # 관리자용 로깅 설정 (콘솔에만 출력)
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')

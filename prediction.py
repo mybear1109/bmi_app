@@ -8,8 +8,11 @@ import os
 import json
 from model_loader import model_exercise, model_food  # 모델 로더에서 모델 불러오기
 from user_data_utils import load_user_data, save_user_data
+import logging
 
-# UI 스타일 설정
+# 관리자용 로깅 설정 (콘솔에만 출력)
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+
 st.markdown(
     """
     <style>
@@ -50,7 +53,7 @@ st.markdown(
 # 예측 데이터 저장 경로
 PREDICTION_FILE = "data/predictions.csv"
 
-# 모델을 평가 모드로 설정
+# 모델 평가 모드 설정
 if model_exercise:
     model_exercise.eval()
 if model_food:
@@ -58,11 +61,12 @@ if model_food:
 
 def preprocess_input(user_data):
     """
-    입력 데이터 전처리: 필수 키 값들을 숫자형 데이터로 변환하여 Tensor로 반환합니다.
+    입력 데이터 전처리:
+    필수 키 값들을 숫자형 데이터로 변환하여 Tensor로 반환합니다.
     """
     required_keys = [
         "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)",
-        "혈압 차이", "콜레스테롤", "고혈당 위험", "간 지표",
+        "혈압 차이", "총콜레스테롤", "고혈당 위험", "간 지표",
         "성별", "연령대", "비만 위험 지수", "흡연상태", "음주여부"
     ]
     processed_data = []
@@ -80,21 +84,27 @@ def preprocess_input(user_data):
             except ValueError:
                 value = 0
         processed_data.append(value)
+    # [processed_data]를 텐서로 변환 (shape: [1, n_features])
     return torch.tensor([processed_data], dtype=torch.float32)
 
 def predict_health_score(model, input_data):
     """
     모델을 사용하여 예측 점수를 산출합니다.
-    모델이 없을 경우 기본 점수 50을 반환합니다.
+    만약 모델의 출력이 스칼라가 아니라면 평균값을 사용합니다.
     """
     if model is None:
-        return 50
+        return 50  # 모델이 없으면 기본 점수 50
     try:
         input_tensor = preprocess_input(input_data)
         with torch.no_grad():
             output = model(input_tensor)
-        # 모델 출력값을 0~100 사이의 점수로 변환 (출력값에 60을 곱함)
-        base_score = output.item() * 60
+        # 출력이 스칼라가 아니면 평균값을 취합니다.
+        if output.numel() > 1:
+            base_value = output.mean().item()
+        else:
+            base_value = output.item()
+        # 모델 출력값에 60을 곱하여 0~100 사이의 점수로 보정
+        base_score = base_value * 60
         base_score = max(25, min(100, base_score))
         return int(base_score)
     except Exception as e:
@@ -104,13 +114,13 @@ def predict_health_score(model, input_data):
 def calculate_health_score(user_info):
     """
     건강 정보 기반 점수 계산:
-      - 예를 들어 BMI가 18.5 ~ 23이면 10점, 그 외에는 6점 등 정상 범위에 있을 경우 높은 점수를 부여합니다.
+      - 예를 들어, BMI가 18.5~23이면 10점, 그렇지 않으면 6점 등 정상 범위일 경우 높은 점수를 부여합니다.
     """
     score_components = {
         "BMI": 10 if 18.5 <= user_info.get("BMI", 0) <= 23 else 6,
         "허리둘레": 8 if user_info.get("허리둘레", 0) <= 85 else 5,
         "혈압": 10 if 90 <= user_info.get("수축기혈압(최고 혈압)", 0) <= 120 and 60 <= user_info.get("이완기혈압(최저 혈압)", 0) <= 80 else 7,
-        "콜레스테롤": 10 if user_info.get("콜레스테롤", 0) < 200 else 6,
+        "총 콜레스테롤": 10 if user_info.get("총콜레스테롤", 0) < 200 else 6,
         "고혈당 위험": 8 if user_info.get("고혈당 위험", "낮음") == "낮음" else 5,
         "간 지표": 10 if user_info.get("간 지표", "정상") == "정상" else 7,
         "흡연/음주": 10 if user_info.get("흡연상태", "비흡연") == "비흡연" and user_info.get("음주여부", "비음주") == "비음주" else 6,
@@ -122,21 +132,21 @@ def get_final_health_score(model, user_info, rec_type):
     """
     최종 건강 점수를 산출합니다.
     rec_type에 따라 모델 예측 점수와 건강 정보 점수의 가중치를 다르게 적용합니다.
-      - 운동: 모델 예측 30%, 건강 정보 70% (보정 계수 0.8 적용)
-      - 식단: 모델 예측 20%, 건강 정보 80% (보정 계수 0.9 적용)
+      - 운동: 모델 예측 30%, 건강 정보 70%
+      - 식단: 모델 예측 20%, 건강 정보 80%
+    또한, calibration_factor를 적용하여 모델 예측 점수를 보정합니다.
     """
     predicted = predict_health_score(model, user_info)
     health = calculate_health_score(user_info)
+    calibration_factor = 1.0  # 보정 계수 (필요 시 조정)
+    calibrated_predicted = predicted * calibration_factor
     
     if rec_type == "운동":
-        calibration_factor = 0.8
-        final = int((predicted * calibration_factor * 0.3) + (health * 0.7))
+        final = int((calibrated_predicted * 0.3) + (health * 0.7))
     elif rec_type == "식단":
-        calibration_factor = 0.9
-        final = int((predicted * calibration_factor * 0.2) + (health * 0.8))
+        final = int((calibrated_predicted * 0.2) + (health * 0.8))
     else:
-        calibration_factor = 0.8
-        final = int((predicted * calibration_factor * 0.3) + (health * 0.7))
+        final = int((calibrated_predicted * 0.3) + (health * 0.7))
     return final
 
 def generate_recommendation(final_score, recommendation_type):
@@ -185,25 +195,32 @@ def generate_recommendation(final_score, recommendation_type):
 def display_prediction_page():
     st.header("🔍 AI 기반 운동 및 식단 예측")
     user_id = st.session_state.get("nickname", "게스트")
+    # load_user_data()는 이미 세션 데이터를 파싱합니다.
     user_data = load_user_data(user_id)
     
     if user_data:
         st.subheader("📌 사용자 정보")
-        display_columns = ["user_id", "성별", "연령대", "허리둘레", "BMI", "콜레스테롤", "혈압 차이", "식전혈당(공복혈당)", "간 지표", "비만 위험 지수", "활동 수준"]
+        display_columns = [
+            "user_id", "성별", "연령대", "허리둘레", "BMI", "총콜레스테롤",
+            "혈압 차이", "식전혈당(공복혈당)", "간 지표", "비만 위험 지수", "활동 수준"
+        ]
         column_descriptions = {
             "user_id": "사용자 ID",
             "성별": "성별",
             "연령대": "연령대",
             "허리둘레": "허리둘레 (cm)",
             "BMI": "체질량지수 (kg/m^2)",
-            "콜레스테롤": "콜레스테롤 (mg/dL)",
+            "총콜레스테롤": "총 콜레스테롤 (mg/dL)",
             "혈압 차이": "혈압 차이 (mmHg)",
             "식전혈당(공복혈당)": "식전혈당 (mg/dL)",
             "간 지표": "간 건강 지표",
             "비만 위험 지수": "비만 위험 지수",
             "활동 수준": "활동 수준"
         }
-        user_info_df = pd.DataFrame([{column_descriptions.get(col, col): user_data.get(col, 'N/A') for col in display_columns}])
+        user_info_df = pd.DataFrame([{
+            column_descriptions.get(col, col): user_data.get(col, 'N/A')
+            for col in display_columns
+        }])
         st.markdown(user_info_df.to_html(index=False, classes=['dataframe'], escape=False), unsafe_allow_html=True)
     
     if st.button("🔮 AI 예측 실행", help="클릭하여 AI 기반 운동 및 식단 예측을 시작합니다."):
@@ -238,8 +255,8 @@ def display_prediction_page():
         st.error("사용자 정보가 없어 예측을 실행할 수 없습니다. 먼저 사용자 정보를 입력해주세요.")
 
 def save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food):
-    user_data["운동 점수"] = prob_exercise
-    user_data["식단 점수"] = prob_food
+    user_data["운동 확률"] = prob_exercise
+    user_data["식단 확률"] = prob_food
     user_data["예측 날짜"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
     new_data = pd.DataFrame([user_data])
     if os.path.exists(PREDICTION_FILE):
