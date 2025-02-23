@@ -1,7 +1,7 @@
 import json
 import streamlit as st
 import pandas as pd
-from gemma2_recommender import get_gemma_recommendation
+from kogpt2_recommender import get_gemma_recommendation
 
 # 사용자 데이터 불러오기 함수
 def load_user_data():
@@ -29,15 +29,43 @@ def display_raw_markdown(raw_text):
     st.markdown("**원시 응답 (마크다운):**")
     st.markdown(raw_text)
 
-# 식단 추천 결과 표시 함수
+# 식단 추천 결과 표시 함수 (변환 로직 포함)
 def display_diet_plan(diet_plan):
+    # 만약 AI 응답에 오류 메시지가 있다면 원시 응답을 그대로 표시
     if isinstance(diet_plan, dict) and "메시지" in diet_plan:
         st.error(f"🚨 식단 추천 생성 중 문제가 발생했습니다: {diet_plan['메시지']}")
         st.markdown("**원시 응답:**")
         st.code(json.dumps(diet_plan, indent=4, ensure_ascii=False))
         return
+
+    # 만약 응답이 dict인데 '식단 계획' 키가 있으면 이를 변환합니다.
+    if isinstance(diet_plan, dict) and "식단 계획" in diet_plan:
+        plan = diet_plan["식단 계획"]
+        transformed = []
+        # 각 요일에 대해 아침, 점심, 저녁 및 총칼로리를 계산
+        for day, items in plan.items():
+            day_dict = {"요일": day, "아침": "", "점심": "", "저녁": "", "총칼로리 (kcal)": 0}
+            for item in items:
+                try:
+                    cal = float(item.get("칼로리", 0))
+                except ValueError:
+                    cal = 0
+                day_dict["총칼로리 (kcal)"] += cal
+                remark = item.get("비고", "").strip()
+                if "아침" in remark:
+                    day_dict["아침"] = item.get("음식", "")
+                elif "점심" in remark:
+                    day_dict["점심"] = item.get("음식", "")
+                elif "저녁" in remark:
+                    day_dict["저녁"] = item.get("음식", "")
+            transformed.append(day_dict)
+        diet_plan = transformed
+
+    # 만약 dict 형태라면 리스트로 감싸기
     if isinstance(diet_plan, dict):
         diet_plan = [diet_plan]
+
+    # 리스트 형태 응답 처리
     if isinstance(diet_plan, list):
         df = pd.DataFrame(diet_plan)
         required_cols = ["요일", "아침", "점심", "저녁", "총칼로리 (kcal)"]
@@ -86,7 +114,7 @@ def display_exercise_plan(exercise_plan):
                 "칼로리 소모량(kcal)": "정보 없음"
             })
         exercise_plan = transformed
-    
+
     if isinstance(exercise_plan, list):
         df = pd.DataFrame(exercise_plan)
         required_cols = ["요일", "운동", "시간(분)", "칼로리 소모량(kcal)"]

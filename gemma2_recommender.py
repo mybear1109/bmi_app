@@ -4,7 +4,6 @@ import requests
 from huggingface_hub import InferenceClient
 import os
 import streamlit as st
-import pandas as pd
 
 # 환경 변수 또는 secrets.toml에서 API 키를 가져옵니다.
 HF_API_KEY = os.getenv("HF_API_KEY")
@@ -17,7 +16,7 @@ client = InferenceClient(
 
 def generate_text_via_api(prompt, model_name="google/gemma-2-9b-it"):
     """
-    Hugging Face API의 chat completions를 사용하여 텍스트 생성.
+    Hugging Face API의 chat completions를 사용하여 텍스트를 생성합니다.
     prompt를 메시지 리스트로 변환하여 API 호출 후 응답을 파싱합니다.
     """
     messages = [{"role": "user", "content": prompt}]
@@ -46,7 +45,7 @@ def extract_json_from_message(message):
 def parse_json_response(response_json):
     """
     API 응답 객체에서 choices -> message -> content를 추출하여,
-    JSON 형식의 블록이 있으면 해당 부분만 파싱하여 반환합니다.
+    JSON 블록이 있으면 해당 부분만 파싱하여 반환합니다.
     """
     try:
         if isinstance(response_json, dict):
@@ -77,7 +76,7 @@ def parse_json_response(response_json):
 
 def get_user_info_with_default(user_data):
     """
-    사용자 정보에 대해 미측정된 항목은 기본값으로 채워 반환합니다.
+    사용자 정보 중 '미측정' 항목을 기본값으로 채워 반환합니다.
     """
     default_info = {
         "BMI": 24.5,
@@ -154,30 +153,13 @@ def get_exercise_recommendation(user_info):
     prompt = f"사용자의 건강 상태와 목표에 맞는 7일 운동 계획을 JSON 형식으로 제공해 주세요.\n"
     prompt += f"사용자 정보: {json.dumps(user_info, ensure_ascii=False)}\n\n"
     prompt += (
-        "- 모든 대답은 반드시 한국어로 해주세요.\n"
-        "- 식단과 운동은 유저의 선택에 따라 각각 결과로 작성해주세요.\n"
-        "- 당신은 전문적인 AI 피트니스 코치이며, 개인 맞춤형 건강 관리 전문가입니다.\n"
-        "- 사용자의 건강 정보를 기반으로 최적의 운동 계획을 작성해 주세요.\n"
-        "- 일반적인 조언이 아니라, 사용자의 현재 건강 상태와 목표에 맞춘 상세한 가이드를 제공해야 합니다.\n"
-        "- 예측결과의 점수에 따라 사용자에게 운동을 추천해 주세요.\n"
-        "- 운동 추천 점수가 높을수록 사용자의 운동 습관이 좋다는 의미입니다.\n"
-        "- 사용자의 신체 상태(BMI, 체중, 활동 수준 등)에 따라 운동 강도를 조정하세요.\n"
-        "- 매일 수행할 운동을 추천하고, 각 운동의 시간(분)과 예상 소모 칼로리를 포함하세요.\n"
-        "- 운동 부위(상체, 하체, 코어 등)를 균형 있게 고려하세요.\n"
-        "- 사용자가 피해야 할 운동(부상 위험, 건강 상태 고려)을 주의하세요.\n"
-        "- 아프거나 불편한 부위가 있는 경우, 해당 부위를 피하도록 운동을 추천하세요.\n"
-        "- 운동의 이점과 권장 이유를 간략히 설명하세요.\n"
-        "- 운동 전후 스트레칭과 근력 운동을 포함하여 다양한 운동을 추천하세요.\n"
-        "- 운동을 처음 하시는 유저를 위해 운동 방법에 대한 첨부자료나 링크를 제공해주세요.\n"
-        "- 운동의 경우 목표체중을 위해 계산해서 작성해주세요.\n"
-        "- 스트레칭만 하는 날과 휴식하는 날도 포함하여 운동 계획을 제공하세요.\n"
+        "- 모든 대답은 반드시 한국어로 작성해주세요.\n"
         "- 운동 계획은 구체적이어야 하며, 매일의 운동 내용과 소요 시간(분)을 포함해야 합니다.\n"
         "- 아래 예시를 참고하여 한국어로 7일치 운동 계획을 제공해 주세요.\n"
         "- 운동 예시:\n"
         "[{'요일': ['월', '화', '수', '목', '금', '토', '일'], '운동': ['달리기 30분', '자전거 45분', '수영 30분', '휴식', '웨이트 60분', '달리기 45분', '휴식'], '칼로리 소모': [300, 400, 350, 0, 500, 450, 0]}]\n"
     )
     return generate_text_via_api(prompt)
-
 
 def get_diet_recommendation(user_info, excluded_foods):
     """
@@ -188,14 +170,7 @@ def get_diet_recommendation(user_info, excluded_foods):
     prompt += f"사용자 정보: {json.dumps(user_info, ensure_ascii=False)}\n"
     prompt += f"제외할 음식: {', '.join(excluded_foods)}\n"
     prompt += (
-        "- 모든 대답은 반드시 한국어로 해주세요.\n"
-        "- 식단과 운동은 유저의 선택에 따라 각각 결과로 작성해주세요.\n"
-        "- 당신은 전문적인 영양사입니다. 사용자의 건강 정보를 기반으로 최적의 다이어트 식단 계획을 작성해 주세요.\n"
-        "- 음식의 영양적 이점과 섭취 이유를 간략히 설명하세요.\n"
-        "- 다이어트를 할 경우 칼로리 및 영양소 함량을 고려하여 작성해주세요.\n"
-        "- 목표 설정에 따라 식단을 작성하고, 사용자가 섭취해야 하는 칼로리를 계산하여 제공하세요.\n"
-        "- 식단의 경우 목표체중을 위해 계산해서 작성해주세요.\n"
-        "- 최대한 다양한 식재료를 활용하여, 맛있고 건강한 다이어트 식단을 추천하세요.\n"
+        "- 모든 대답은 반드시 한국어로 작성해주세요.\n"
         "- 다이어트를 위한 식단은 칼로리 조절과 균형 잡힌 영양소(단백질, 탄수화물, 지방 비율)가 반영되어야 합니다.\n"
         "- 아침, 점심, 저녁 3끼 식단을 구체적으로 작성해 주세요.\n"
         "- 아래 예시를 참고하여 한국어로 7일 식단 계획을 제공해 주세요.\n"
