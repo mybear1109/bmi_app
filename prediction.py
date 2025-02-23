@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import pandas as pd
 import os
 import json
-from model_loader import model_exercise, model_food
+from model_loader import model_exercise, model_food  # 모델 로더에서 모델 불러오기
 from user_data_utils import load_user_data, save_user_data
 
 
@@ -15,12 +15,9 @@ PREDICTION_FILE = "data/predictions.csv"
 
 # 모델을 평가 모드로 설정
 
-# 모델 평가 모드 설정
-if model_exercise:
-    model_exercise.eval()
-if model_food:
-    model_food.eval()
-    
+model_exercise.eval()
+model_food.eval()
+
 def preprocess_input(user_data):
     """
     입력 데이터 전처리:
@@ -29,7 +26,7 @@ def preprocess_input(user_data):
     required_keys = [
         "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)",
         "혈압 차이", "총콜레스테롤", "고혈당 위험", "간 지표",
-        "성별", "나이", "비만 위험 지수", "흡연상태", "음주여부"
+        "성별", "연령대", "비만 위험 지수", "흡연상태", "음주여부"
     ]
     processed_data = []
     for key in required_keys:
@@ -65,7 +62,7 @@ def predict_health_score(model, input_data):
         else:
             base_value = output.item()
         # 모델 출력값에 60을 곱하여 0~100 사이의 점수로 보정
-        base_score = base_value 
+        base_score = base_value
         base_score = max(25, min(100, base_score))
         return int(base_score)
     except Exception as e:
@@ -158,36 +155,16 @@ def display_prediction_page():
     st.header("🔍 AI 기반 운동 및 식단 예측")
     user_id = st.session_state.get("nickname", "게스트")
     user_data = load_user_data(user_id)
-def calculate_age_group(age):
-    """
-    나이를 10단위 연령대로 변환하는 함수
-    """
-    if age < 10:
-        return "0-9세"
-    elif age < 20:
-        return "10대"
-    elif age < 30:
-        return "20대"
-    elif age < 40:
-        return "30대"
-    elif age < 50:
-        return "40대"
-    elif age < 60:
-        return "50대"
-    elif age < 70:
-        return "60대"
-    else:
-        return "70대 이상"    
+    
     if user_data:
         st.subheader("📌 사용자 정보")
         display_columns = [
-            "user_id", "성별", "연령대","나이", "허리둘레", "BMI", "총콜레스테롤",
+            "user_id", "성별", "연령대", "허리둘레", "BMI", "총콜레스테롤",
             "혈압 차이", "식전혈당(공복혈당)", "간 지표", "비만 위험 지수", "활동 수준"
         ]
         column_descriptions = {
             "user_id": "사용자 ID",
             "성별": "성별",
-            "나이": "나이",
             "연령대": "연령대",
             "허리둘레": "허리둘레 (cm)",
             "BMI": "체질량지수 (kg/m^2)",
@@ -199,7 +176,7 @@ def calculate_age_group(age):
             "활동 수준": "활동 수준"
         }
         user_info_df = pd.DataFrame([{column_descriptions.get(col, col): user_data.get(col, 'N/A') for col in display_columns}])
-
+        
     else:
         st.error("사용자 정보가 없어 예측을 실행할 수 없습니다. 먼저 사용자 정보를 입력해주세요.")
     
@@ -234,12 +211,38 @@ def calculate_age_group(age):
     else:
         st.error("사용자 정보가 없어 예측을 실행할 수 없습니다. 먼저 사용자 정보를 입력해주세요.")
 
+def calculate_age_group(age):
+    """
+    나이를 10년 단위의 연령대로 변환하는 함수입니다.
+    """
+    try:
+        age = int(age)
+    except ValueError:
+        return "알 수 없음"
+    if age < 10:
+        return "0-9세"
+    elif age < 20:
+        return "10대"
+    elif age < 30:
+        return "20대"
+    elif age < 40:
+        return "30대"
+    elif age < 50:
+        return "40대"
+    elif age < 60:
+        return "50대"
+    elif age < 70:
+        return "60대"
+    else:
+        return "70대 이상"        
+
 def save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food):
     """
     예측 결과를 CSV 파일에 저장합니다.
     """
     user_data["운동 점수"] = prob_exercise
     user_data["식단 점수"] = prob_food
+    user_data["연령대"] = calculate_age_group(user_data.get("나이", 0))
     user_data["예측 날짜"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
     new_data = pd.DataFrame([user_data])
     PREDICTION_FILE = "data/predictions.csv"

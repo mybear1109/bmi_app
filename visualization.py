@@ -17,7 +17,7 @@ df = pd.read_csv(uploaded_file)
 # 데이터 전처리
 numeric_columns = ['나이', '키', '현재 체중', '목표 체중', 'BMI', '허리둘레',
                    '수축기혈압(최고 혈압)', '이완기혈압(최저 혈압)', '혈압 차이', '총콜레스테롤', 'HDL콜레스테롤',
-                   'LDL콜레스테롤', '트리글리세라이드', '식전혈당(공복혈당)', '운동 가능성', '운동 점수', 
+                   'LDL콜레스테롤', '트리글리세라이드', '식전혈당(공복혈당)', '운동 개선 필요성', '운동 점수', 
                    '식단 개선 필요성', '식단 점수', '비만 위험 지수']
 
 df[numeric_columns] = df[numeric_columns].apply(pd.to_numeric, errors='coerce')
@@ -57,7 +57,7 @@ def display_visualization_page():
     
     st.markdown("""
     이 2D 히스토그램은 BMI와 연령대의 관계를 보여줍니다:
-    - x축: BMI 값을 나타냅니다. 일반적으로 18.5-24.9가 정상 범위입니다.
+    - x축: BMI 값을 나타냅니다. 일반적으로 18.5-23.9가 정상 범위입니다.
     - y축: 연령대를 나타냅니다.
     - 색상 강도: 각 BMI와 연령대 조합의 빈도를 나타냅니다. 진할수록 빈도가 높습니다.
     - 이를 통해 연령대별 BMI 분포의 차이를 파악할 수 있습니다.
@@ -95,7 +95,7 @@ def display_visualization_page():
                                               hover_data=["성별", "흡연상태"],
                                               title="활동 수준과 콜레스테롤의 관계",
                                               labels={"활동 수준": "활동 수준", "총콜레스테롤": "총 콜레스테롤 (mg/dL)"},
-                                              category_orders={"활동 수준": ["낮음", "보통", "높음"]})
+                                              category_orders={"활동 수준": ["저활동", "중간활동", "고활동"]})
         fig_activity_cholesterol.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')))
         st.plotly_chart(fig_activity_cholesterol, use_container_width=True)
     except Exception as e:
@@ -103,7 +103,7 @@ def display_visualization_page():
     
     st.markdown("""
     이 산점도는 활동 수준과 콜레스테롤의 관계를 보여줍니다:
-    - x축: 활동 수준을 나타냅니다 (낮음, 보통, 높음).
+    - x축: 활동 수준을 나타냅니다 (저활동,중간활동,고활동).
     - y축: 총 콜레스테롤 수치를 나타냅니다. 200mg/dL 이하가 바람직한 수준입니다.
     - 점 크기: BMI 값을 나타냅니다. 크기가 클수록 BMI가 높습니다.
     - 색상: 연령대를 나타냅니다.
@@ -116,7 +116,7 @@ def display_visualization_page():
     st.header("🩸 고혈당 위험과 BMI의 관계")
     try:
         df['BMI_범주'] = pd.cut(df['BMI'], bins=[0, 18.5, 25, 30, 100], labels=['저체중', '정상', '과체중', '비만'])
-        heatmap_data = df.groupby(['고혈당 위험', 'BMI_범주']).size().unstack(fill_value=0)
+        heatmap_data = df.groupby(['고혈당 위험', 'BMI_범주'], observed=True).size().unstack()
         fig_glucose_bmi = px.imshow(heatmap_data, x=heatmap_data.columns, y=heatmap_data.index,
                                     color_continuous_scale="Agsunset", 
                                     labels=dict(x="BMI 범주", y="고혈당 위험", color="빈도"),
@@ -141,7 +141,7 @@ def display_visualization_page():
     try:
         fig_drinking_liver = px.histogram(df, x="간 지표", color="음주여부", barmode="group",
                                           title="음주 여부와 간 지표의 관계",
-                                          labels={"간 지표": "간 지표", "음주여부": "음주 여부", "빈도": "빈도"},
+                                          labels={"간 지표": "간 지표", "음주여부": "음주 여부"},
                                           category_orders={"간 지표": ["정상", "경계", "위험"]})
         fig_drinking_liver.update_layout(legend_title_text='음주 여부')
         st.plotly_chart(fig_drinking_liver, use_container_width=True)

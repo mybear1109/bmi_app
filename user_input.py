@@ -118,8 +118,8 @@ def get_user_input(existing_data, user_id):
             gender = st.radio("성별", ["남성", "여성"], 
                               index=0 if existing_data.get("성별", "남성") == "남성" else 1)
         with col2:
-            age = st.slider("연령", min_value=10, max_value=150, 
-                            value=existing_data.get("연령대", 30))
+            age = st.slider("나이", min_value=10, max_value=150, 
+                            value=existing_data.get("나이", 30))
 
     st.markdown("---")  # 구분선 추가
 
@@ -181,12 +181,12 @@ def get_user_input(existing_data, user_id):
     with st.container():
             col1, col2 = st.columns(2)
             with col1:
-                smoking_status = st.selectbox(" 흡연 상태", ["비흡연", "흡연"],
-                                              index=["비흡연", "흡연"].index(
+                smoking_status = st.selectbox(" 흡연 상태", ['비흡연', '과거 흡연', '현재 흡연'],
+                                              index=['비흡연', '과거 흡연', '현재 흡연'].index(
                                                   existing_data.get("흡연상태", "비흡연")))
             with col2:
-                alcohol_status = st.selectbox("음주 여부", ["비음주", "음주"],
-                                              index=["비음주", "음주"].index(existing_data.get("음주여부", "비음주")))
+                alcohol_status = st.selectbox("음주 여부", ['비음주', '가끔', '자주'],
+                                              index=['비음주', '가끔', '자주'].index(existing_data.get("음주여부", "비음주")))
             
             st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
             with st.container():
@@ -208,7 +208,8 @@ def get_user_input(existing_data, user_id):
     user_data = {
         "user_id": user_id,
         "성별": gender,
-        "연령대": age,
+        "나이": age,
+        "키": height,
         "허리둘레": waist,
         "현재 체중": weight,
         "목표 체중": goal_weight,
@@ -231,7 +232,7 @@ def get_user_input(existing_data, user_id):
     # ✅ 입력한 데이터 미리보기
     st.markdown("<h4 style='text-align: center; color: #1f618d;'>🔍 입력한 데이터 미리보기</h4>", unsafe_allow_html=True)
     
-    selected_columns = ["user_id", "성별", "연령대", "허리둘레", "BMI", "총콜레스테롤", "혈압 차이", "식전혈당(공복혈당)", "간 지표", "비만 위험 지수", "활동 수준"]
+    selected_columns = ["user_id", "성별", "나이", "허리둘레", "BMI", "총콜레스테롤", "혈압 차이", "식전혈당(공복혈당)", "간 지표", "비만 위험 지수", "활동 수준"]
     # 컬럼 이름 변경 (줄 바꿈 추가)
  
 
@@ -247,7 +248,7 @@ def get_user_input(existing_data, user_id):
 
     # 컬럼 이름 변경 (줄 바꿈 추가)
     selected_columns = [
-        "user_id", "성별", "연령대", "허리둘레", "BMI", "총콜레스테롤", "혈압 차이", 
+        "user_id", "성별", "나이", "허리둘레", "BMI", "총콜레스테롤", "혈압 차이", 
         "식전혈당\n(공복혈당)", "간 지표", "비만 위험\n지수", "활동 수준"
 ]
 
