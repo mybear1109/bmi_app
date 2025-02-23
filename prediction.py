@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import pandas as pd
 import os
 import json
-from model_loader import model_exercise, model_food  # 모델 로더에서 모델 불러오기
+from model_loader import model_exercise, model_food
 from user_data_utils import load_user_data, save_user_data
 
 
@@ -15,9 +15,12 @@ PREDICTION_FILE = "data/predictions.csv"
 
 # 모델을 평가 모드로 설정
 
-model_exercise.eval()
-model_food.eval()
-
+# 모델 평가 모드 설정
+if model_exercise:
+    model_exercise.eval()
+if model_food:
+    model_food.eval()
+    
 def preprocess_input(user_data):
     """
     입력 데이터 전처리:
@@ -62,7 +65,7 @@ def predict_health_score(model, input_data):
         else:
             base_value = output.item()
         # 모델 출력값에 60을 곱하여 0~100 사이의 점수로 보정
-        base_score = base_value * 60
+        base_score = base_value 
         base_score = max(25, min(100, base_score))
         return int(base_score)
     except Exception as e:
@@ -176,7 +179,7 @@ def display_prediction_page():
             "활동 수준": "활동 수준"
         }
         user_info_df = pd.DataFrame([{column_descriptions.get(col, col): user_data.get(col, 'N/A') for col in display_columns}])
-        
+
     else:
         st.error("사용자 정보가 없어 예측을 실행할 수 없습니다. 먼저 사용자 정보를 입력해주세요.")
     

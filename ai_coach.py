@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 from gemma2_recommender import get_gemma_recommendation
 from user_data_utils import load_user_data
+import os
 
 # 사용자 데이터 불러오기 함수
 def load_user_data():
