@@ -3,19 +3,9 @@ import re
 import streamlit as st
 import pandas as pd
 from gemma2_recommender import get_gemma_recommendation
-from user_data_utils import load_user_data
+from user_data_utils import load_user_data  # 사용자 데이터 로드 함수
 
-# 사용자 데이터 불러오기 함수
-def load_user_data():
-    user_data = st.session_state.get("user_data", {})
-    if isinstance(user_data, str):
-        try:
-            return json.loads(user_data)
-        except json.JSONDecodeError:
-            return {}
-    return user_data
-
-# 사용자 건강 정보 처리 함수
+# 사용자 데이터 불러오기 및 건강 정보 처리
 def process_user_info(user_data):
     keys = [
         "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)",
@@ -24,7 +14,7 @@ def process_user_info(user_data):
     ]
     return { key: user_data.get(key, "미측정") for key in keys }
 
-# 원시 응답을 깔끔한 마크다운 형식으로 출력하는 함수 (디버깅용)
+# 원시 응답을 마크다운 형식으로 깔끔하게 출력 (디버깅용)
 def display_raw_markdown(raw_text):
     st.markdown("---")
     st.markdown("**원시 응답 (마크다운):**")
@@ -53,7 +43,7 @@ def display_diet_plan(diet_plan):
         )
         st.dataframe(styled_df, use_container_width=True)
     else:
-        # 대체 구조 (예: meals 배열) 변환 시도
+        # 만약 예상하는 구조가 없으면 대체 구조 감지 시도 (예: "meals" 키가 있는 경우)
         if df.columns.str.contains("meals").any():
             transformed = []
             for item in diet_plan:
@@ -100,7 +90,7 @@ def display_exercise_plan(exercise_plan):
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
     
-    # 만약 "weekly_exercise_plan" 구조가 있으면 변환 처리
+    # 만약 응답 데이터에 "weekly_exercise_plan" 키가 있으면 변환
     if (isinstance(exercise_plan, list) and exercise_plan and 
         isinstance(exercise_plan[0], dict) and "weekly_exercise_plan" in exercise_plan[0]):
         weekly_plan = exercise_plan[0].get("weekly_exercise_plan", [])
@@ -141,6 +131,7 @@ def display_ai_coach_page():
     st.header("🏋️‍♂️ AI 건강 코치")
     st.markdown("<br>", unsafe_allow_html=True)
     
+    # 사용자 데이터 불러오기 및 처리
     user_data = load_user_data()
     user_info = process_user_info(user_data)
     
@@ -204,4 +195,3 @@ def display_ai_coach_page():
                     additional_exercises.append(("제한된 운동", restricted_exercises))
                 exercise_plan = get_gemma_recommendation("운동", user_info, additional_exercises)
             display_exercise_plan(exercise_plan)
-
