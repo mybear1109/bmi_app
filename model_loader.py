@@ -71,7 +71,7 @@ def load_gemma_model():
             logging.error("🚨 HF_API_KEY가 설정되지 않았습니다!")
             return None, None
         # 최신 transformers에서는 token 매개변수와 trust_remote_code 옵션을 사용합니다.
-        tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token, trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained("google/gemma-2b-it", token=HF_API_KEY)
         model_instance = AutoModelForCausalLM.from_pretrained(
             model_name,
             device_map="auto",
