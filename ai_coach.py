@@ -5,8 +5,8 @@ import pandas as pd
 from gemma2_recommender import get_gemma_recommendation
 from user_data_utils import load_user_data
 
-# 사용자 데이터 불러오기 함수
-def load_user_data():
+# 사용자 데이터 불러오기 함수 (user_data_utils에 정의된 함수와 동일한 이름 사용 시 충돌 주의)
+def load_user_data_local():
     user_data = st.session_state.get("user_data", {})
     if isinstance(user_data, str):
         try:
@@ -24,7 +24,7 @@ def process_user_info(user_data):
     ]
     return { key: user_data.get(key, "미측정") for key in keys }
 
-# 원시 응답을 깔끔한 마크다운 형식으로 출력하는 함수 (디버깅용)
+# 원시 응답을 깔끔한 마크다운 형식으로 출력 (디버깅용)
 def display_raw_markdown(raw_text):
     st.markdown("---")
     st.markdown("**원시 응답 (마크다운):**")
@@ -53,7 +53,7 @@ def display_diet_plan(diet_plan):
         )
         st.dataframe(styled_df, use_container_width=True)
     else:
-        # 대체 구조 (예: meals 배열) 변환 시도
+        # meals 구조가 있으면 대체 구조로 변환
         if df.columns.str.contains("meals").any():
             transformed = []
             for item in diet_plan:
@@ -100,7 +100,7 @@ def display_exercise_plan(exercise_plan):
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
     
-    # 만약 "weekly_exercise_plan" 구조가 있으면 변환 처리
+    # weekly_exercise_plan 구조가 있으면 변환 처리
     if (isinstance(exercise_plan, list) and exercise_plan and 
         isinstance(exercise_plan[0], dict) and "weekly_exercise_plan" in exercise_plan[0]):
         weekly_plan = exercise_plan[0].get("weekly_exercise_plan", [])
@@ -141,7 +141,7 @@ def display_ai_coach_page():
     st.header("🏋️‍♂️ AI 건강 코치")
     st.markdown("<br>", unsafe_allow_html=True)
     
-    user_data = load_user_data()
+    user_data = load_user_data_local()  # user_data_utils의 load_user_data와 구분하기 위해 로컬 함수 사용
     user_info = process_user_info(user_data)
     
     st.subheader("🎛️ 맞춤 건강 프로필 설정")
@@ -170,6 +170,7 @@ def display_ai_coach_page():
                                               "고강도 인터벌 트레이닝", "요가", "필라테스"])
         st.markdown("<br>", unsafe_allow_html=True)
     
+    # 사용자 정보 업데이트
     user_info.update({
         "allergen_foods": allergen_foods,
         "preferred_foods": preferred_foods,
@@ -189,7 +190,7 @@ def display_ai_coach_page():
                 if preferred_foods:
                     additional_foods.append(("선호하는 음식", preferred_foods))
                 if diet_restriction != "선택 안함":
-                    additional_foods.append(("식이 요법", diet_restriction))
+                    additional_foods.append(("식이 요법", [diet_restriction]))
                 diet_plan = get_gemma_recommendation("식단", user_info, additional_foods)
             display_diet_plan(diet_plan)
     with col2:
@@ -197,7 +198,7 @@ def display_ai_coach_page():
             with st.spinner("AI가 운동을 추천하는 중...⏳"):
                 additional_exercises = []
                 if fitness_level != "선택 안함":
-                    additional_exercises.append(("체력 수준", fitness_level))
+                    additional_exercises.append(("체력 수준", [fitness_level]))
                 if exercise_preference:
                     additional_exercises.append(("선호하는 운동 유형", exercise_preference))
                 if restricted_exercises:
@@ -205,3 +206,22 @@ def display_ai_coach_page():
                 exercise_plan = get_gemma_recommendation("운동", user_info, additional_exercises)
             display_exercise_plan(exercise_plan)
 
+# 최종 예측 결과를 CSV 파일에 저장하는 함수
+def save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food):
+    user_data["운동 확률"] = prob_exercise
+    user_data["식단 확률"] = prob_food
+    user_data["예측 날짜"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+    new_data = pd.DataFrame([user_data])
+    PREDICTION_FILE = "data/predictions.csv"
+    if os.path.exists(PREDICTION_FILE):
+        df = pd.read_csv(PREDICTION_FILE)
+        df = pd.concat([df, new_data], ignore_index=True)
+    else:
+        df = new_data
+    df.to_csv(PREDICTION_FILE, index=False)
+    st.success("🎉 분석이 완료되었습니다! 아래 버튼을 클릭하여 상세한 맞춤 계획을 받아보세요.")
+    if st.button("📋 맞춤 건강 계획 받기"):
+        st.balloons()
+        st.info("🚀 축하합니다! 당신만의 맞춤 건강 여정이 시작되었습니다. 함께 건강해져 봐요!")
+    else:
+        st.error("⚠️ 사용자 정보가 없습니다. 먼저 기본 정보를 입력해주세요.")
