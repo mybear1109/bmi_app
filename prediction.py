@@ -50,8 +50,10 @@ st.markdown(
 PREDICTION_FILE = "data/predictions.csv"
 
 # ✅ 모델을 평가 모드로 설정
-model_exercise.eval()
-model_food.eval()
+if model_exercise:
+    model_exercise.eval()
+if model_food:
+    model_food.eval()
 
 
 

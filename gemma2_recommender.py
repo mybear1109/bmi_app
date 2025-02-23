@@ -16,8 +16,7 @@ client = InferenceClient(
     api_key=HF_API_KEY
 )
 
-# 로깅 설정 (관리자용 로그는 콘솔에 출력되고, 사용자에게는 보이지 않음)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 def generate_text_via_api(prompt: str, model_name: str = "google/gemma-2b-it"):
     """
     Hugging Face API의 chat completions를 사용하여 텍스트를 생성합니다.
@@ -109,6 +108,9 @@ def get_user_info_with_default(user_data):
         if value == "미측정":
             user_data[key] = default_info.get(key, "미측정")
     return user_data
+
+# 로깅 설정 (관리자용 로그는 콘솔에 출력되고, 사용자에게는 보이지 않음)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def expand_allergies(allergies: List[str]) -> Set[str]:
     """
