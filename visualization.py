@@ -16,7 +16,7 @@ df = pd.read_csv(uploaded_file)
 
 # 데이터 전처리
 numeric_columns = ['나이', '키', '현재 체중', '목표 체중', 'BMI', '허리둘레',
-                   '수축기혈압(최고 혈압)', '이완기혈압(최저 혈압)', '혈압 차이', '콜레스테롤', 'HDL콜레스테롤',
+                   '수축기혈압(최고 혈압)', '이완기혈압(최저 혈압)', '혈압 차이', '총콜레스테롤', 'HDL콜레스테롤',
                    'LDL콜레스테롤', '트리글리세라이드', '식전혈당(공복혈당)', '운동 가능성', '운동 점수', 
                    '식단 개선 필요성', '식단 점수', '비만 위험 지수']
 
@@ -91,10 +91,10 @@ def display_visualization_page():
     # 3. 활동 수준과 콜레스테롤의 관계 (산점도)
     st.header("❤️ 활동 수준과 콜레스테롤의 관계")
     try:
-        fig_activity_cholesterol = px.scatter(df, x="활동 수준", y="콜레스테롤", color="연령대", size="BMI",
+        fig_activity_cholesterol = px.scatter(df, x="활동 수준", y="총콜레스테롤", color="연령대", size="BMI",
                                               hover_data=["성별", "흡연상태"],
                                               title="활동 수준과 콜레스테롤의 관계",
-                                              labels={"활동 수준": "활동 수준", "콜레스테롤": "총 콜레스테롤 (mg/dL)"},
+                                              labels={"활동 수준": "활동 수준", "총콜레스테롤": "총 콜레스테롤 (mg/dL)"},
                                               category_orders={"활동 수준": ["낮음", "보통", "높음"]})
         fig_activity_cholesterol.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')))
         st.plotly_chart(fig_activity_cholesterol, use_container_width=True)
