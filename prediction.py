@@ -9,52 +9,14 @@ import json
 from model_loader import model_exercise, model_food  # 모델 로더에서 모델 불러오기
 from user_data_utils import load_user_data, save_user_data
 
-# UI 스타일 설정
-st.markdown(
-    """
-    <style>
-    .big-font {
-        font-size:30px !important;
-        font-weight: bold;
-    }
-    .stButton>button {
-        color: #4F8BF9;
-        border-radius: 50px;
-        height: 3em;
-        width: 100%;
-    }
-    .user-info {
-        margin-bottom: 15px;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-    }
-    .health-score {
-        font-size: 48px;
-        font-weight: bold;
-    }
-    .recommendation {
-        font-size: 18px;
-        margin-top: 15px;
-        padding: 12px;
-        background-color: rgba(255,255,255,0.1);
-        border-radius: 10px;
-        text-align: center;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 
 # 예측 결과 저장 경로
 PREDICTION_FILE = "data/predictions.csv"
 
 # 모델을 평가 모드로 설정
-if model_exercise:
-    model_exercise.eval()
-if model_food:
-    model_food.eval()
+
+model_exercise.eval()
+model_food.eval()
 
 def preprocess_input(user_data):
     """
