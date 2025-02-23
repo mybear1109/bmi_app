@@ -176,7 +176,7 @@ def display_prediction_page():
             "활동 수준": "활동 수준"
         }
         user_info_df = pd.DataFrame([{column_descriptions.get(col, col): user_data.get(col, 'N/A') for col in display_columns}])
-        st.markdown(user_info_df.to_html(index=False, classes=['dataframe'], escape=False), unsafe_allow_html=True)
+        
     else:
         st.error("사용자 정보가 없어 예측을 실행할 수 없습니다. 먼저 사용자 정보를 입력해주세요.")
     
