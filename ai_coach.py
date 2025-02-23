@@ -1,8 +1,7 @@
 import json
-import re
 import streamlit as st
 import pandas as pd
-from gemma2_recommender import get_gemma_recommendation
+from kogpt2_recommender import get_gemma_recommendation  # 모델 추천 함수 호출 (파일명이 kogpt2_recommender.py라고 가정)
 
 # 사용자 데이터 불러오기 함수
 def load_user_data():
@@ -24,58 +23,13 @@ def process_user_info(user_data):
         ]
     }
 
-# 원시 응답 텍스트에서 JSON 부분을 재추출하는 함수
-def extract_json_from_message(message):
-    # 만약 메시지가 "🚨 JSON 변환 오류:"로 시작하면 이를 제거하고 시도
-    prefix = "🚨 JSON 변환 오류:"
-    if message.startswith(prefix):
-        message = message[len(prefix):].strip()
-    # 만약 백틱 블록이 있다면 그 내부만 추출
-    if "```json" in message:
-        message = message.split("```json")[-1].split("```")[0].strip()
-    return message
-
-def parse_json_response(response_json):
-    """
-    API 응답 객체에서 choices -> message -> content를 추출하여,
-    JSON 형식의 블록이 있으면 해당 부분만 파싱하여 반환합니다.
-    """
-    try:
-        if isinstance(response_json, dict):
-            content = response_json['choices'][0]['message']['content']
-        else:
-            content = response_json.choices[0].message.content
-
-        content = content.strip()
-        if not content:
-            st.error("🚨 응답 내용이 비어 있습니다.")
-            return {"메시지": "응답 내용이 비어 있습니다."}
-        
-        # JSON 블록이 있으면 해당 부분만 사용
-        if "```json" in content:
-            json_text = content.split("```json")[-1].split("```")[0].strip()
-        else:
-            json_text = content
-        
-        # 만약 변환 오류 메시지가 포함되어 있다면 접두사를 제거하고 재시도
-        json_text = extract_json_from_message(json_text)
-        
-        try:
-            # 작은따옴표를 큰따옴표로 치환 후 파싱
-            json_text = json_text.replace("'", '"')
-            return json.loads(json_text)
-        except json.JSONDecodeError as e:
-            st.error(f"🚨 JSON 변환 오류 발생:\n{json_text}\n오류: {e}")
-            return {"메시지": f"🚨 JSON 변환 오류: {json_text}"}
-    except (json.JSONDecodeError, KeyError) as e:
-        st.error(f"🚨 응답 처리 오류: {e}")
-        return {"메시지": "🚨 응답 처리 오류"}
-
+# 원시 응답을 마크다운 텍스트로 출력하는 함수
 def display_raw_markdown(raw_text):
     st.markdown("---")
     st.markdown("**원시 응답 (마크다운):**")
     st.markdown(raw_text)
 
+# 식단 추천 결과 표시 함수
 def display_diet_plan(diet_plan):
     if isinstance(diet_plan, dict) and "메시지" in diet_plan:
         st.error(f"🚨 식단 추천 생성 중 문제가 발생했습니다: {diet_plan['메시지']}")
@@ -110,6 +64,7 @@ def display_diet_plan(diet_plan):
     else:
         st.error("🚨 응답 형식 오류: 식단 추천 결과가 리스트 형식이 아닙니다.")
 
+# 운동 추천 결과 표시 함수
 def display_exercise_plan(exercise_plan):
     if isinstance(exercise_plan, dict) and "메시지" in exercise_plan:
         st.error(f"🚨 운동 추천 생성 중 문제가 발생했습니다: {exercise_plan['메시지']}")
@@ -140,13 +95,11 @@ def display_exercise_plan(exercise_plan):
             st.error("🚨 응답에 필요한 열이 없습니다. (요일, 운동, 시간(분), 칼로리 소모량(kcal))")
             st.markdown("**원시 응답 데이터:**")
             st.json(exercise_plan)
-            # 원시 응답을 마크다운으로 출력
             if isinstance(exercise_plan, list) and len(exercise_plan) > 0 and isinstance(exercise_plan[0], dict):
                 raw_md = exercise_plan[0].get("메시지", "")
                 if raw_md:
                     display_raw_markdown(raw_md)
             return
-        
         styled_df = (
             df[required_cols]
             .style
@@ -159,11 +112,6 @@ def display_exercise_plan(exercise_plan):
         st.dataframe(styled_df, use_container_width=True)
     else:
         st.error("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
-
-def display_raw_markdown(raw_text):
-    st.markdown("---")
-    st.markdown("**원시 응답 (마크다운):**")
-    st.markdown(raw_text)
 
 # 메인 페이지 표시 함수
 def display_ai_coach_page():
