@@ -4,6 +4,7 @@ import requests
 from huggingface_hub import InferenceClient
 import os
 import streamlit as st
+import pandas as pd
 
 # 환경 변수 또는 secrets.toml에서 API 키를 가져옵니다.
 HF_API_KEY = os.getenv("HF_API_KEY")
@@ -35,7 +36,7 @@ def extract_json_from_message(message):
 def parse_json_response(response_json):
     """
     API 응답 객체에서 choices -> message -> content를 추출하여,
-    백틱 블록이 있으면 해당 부분만 파싱하고 문제가 있으면 원시 텍스트를 반환합니다.
+    백틱 블록이 있으면 해당 부분만 파싱하고, 문제가 있으면 원시 텍스트를 반환합니다.
     """
     try:
         if isinstance(response_json, dict):
@@ -43,22 +44,26 @@ def parse_json_response(response_json):
         else:
             content = response_json.choices[0].message.content
 
+        # 제어문자 제거 및 좌우 공백 정리
         content = clean_control_characters(content.strip())
         if not content:
             st.error("🚨 응답 내용이 비어 있습니다.")
             return {"메시지": "응답 내용이 비어 있습니다."}
-        
+
+        # 백틱 블록이 있으면 내부만 사용
         if "```json" in content:
             json_text = content.split("```json")[-1].split("```")[0].strip()
         else:
             json_text = content
-        
+
         json_text = extract_json_from_message(json_text)
         try:
+            # 작은따옴표를 큰따옴표로 치환 후 JSON 파싱
             json_text = json_text.replace("'", '"')
             return json.loads(json_text)
         except json.JSONDecodeError as e:
             st.error(f"🚨 JSON 변환 오류 발생:\n{json_text}\n오류: {e}")
+            # 파싱 오류가 발생해도 원시 텍스트를 반환하여 디버깅에 활용
             return {"메시지": json_text}
     except (json.JSONDecodeError, KeyError) as e:
         st.error(f"🚨 응답 처리 오류: {e}")
@@ -132,7 +137,7 @@ def generate_text_via_api(prompt, model_name="google/gemma-2b-it"):
 def get_gemma_recommendation(category, user_info, allergies=[], excluded_foods=[]):
     """
     카테고리에 따라 운동 또는 식단 추천 요청 프롬프트를 구성하여 API 호출을 수행합니다.
-    식단의 경우, 다이어트 목표와 저탄수화물 식단 등을 명시하고 기피 음식 정보를 추가합니다.
+    식단의 경우 다이어트 및 저탄수화물 목표를 강조하며, 기피 음식 정보를 추가합니다.
     """
     user_info_text = json.dumps(user_info, ensure_ascii=False) if isinstance(user_info, dict) else str(user_info)
     prompt = f"사용자 건강 상태: {user_info_text}\n"

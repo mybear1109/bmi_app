@@ -1,5 +1,4 @@
 import json
-import re
 import streamlit as st
 import pandas as pd
 from gemma2_recommender import get_gemma_recommendation
@@ -40,7 +39,6 @@ def display_diet_plan(diet_plan):
         diet_plan = [diet_plan]
     
     df = pd.DataFrame(diet_plan)
-    # 예상하는 열 구조
     expected_cols = ["요일", "아침", "점심", "저녁", "총칼로리 (kcal)"]
     if all(col in df.columns for col in expected_cols):
         styled_df = (
@@ -53,48 +51,34 @@ def display_diet_plan(diet_plan):
             ])
         )
         st.dataframe(styled_df, use_container_width=True)
-        return
-    # meals 구조가 있을 경우 변환 시도 (예: 대체 구조)
-    if df.columns.str.contains("meals").any():
-        transformed = []
-        for item in diet_plan:
-            if "meals" in item and isinstance(item["meals"], list):
-                for meal in item["meals"]:
-                    meal_time = meal.get("time", "")
-                    meal_food = meal.get("food", "")
-                    if isinstance(meal_food, list):
-                        meal_food = ", ".join(map(str, meal_food))
-                    desc = meal.get("description", "")
-                    if desc:
-                        meal_food += f" / {desc}"
-                    # 한글, 숫자, 기본 구두점만 남기기
-                    meal_time = re.sub(r'[^가-힣0-9\s\.,:\(\)\[\]\-]+', '', meal_time)
-                    meal_food = re.sub(r'[^가-힣0-9\s\.,:\(\)\[\]\-]+', '', meal_food)
-                    transformed.append({
-                        "시간": meal_time if meal_time else "(미정)",
-                        "음식": meal_food if meal_food else "(내용 없음)"
-                    })
-        if transformed:
-            st.markdown("### 식단 추천 (대체 구조로 변환)")
-            df2 = pd.DataFrame(transformed)
-            df2.reset_index(drop=True, inplace=True)
-            styled_df2 = (
-                df2.style
-                .set_properties(**{'text-align': 'center', 'font-size': '16px'})
-                .set_table_styles([
-                    {'selector': 'th', 'props': [('background-color', '#1976D2'), ('color', 'white')]}
-                ])
-            )
-            st.dataframe(styled_df2, use_container_width=True)
-            return
-        st.warning("meals 키를 감지했지만 변환에 실패했습니다. 원시 데이터를 확인하세요.")
+    else:
+        # meals 구조를 감지하여 변환 시도
+        if df.columns.str.contains("meals").any():
+            transformed = []
+            for item in diet_plan:
+                if "meals" in item and isinstance(item["meals"], list):
+                    for meal in item["meals"]:
+                        transformed.append({
+                            "시간": meal.get("time", "(미정)"),
+                            "음식": meal.get("food", "(내용 없음)")
+                        })
+            if transformed:
+                st.markdown("### 식단 추천 (대체 구조로 변환)")
+                df2 = pd.DataFrame(transformed)
+                df2.reset_index(drop=True, inplace=True)
+                styled_df2 = (
+                    df2.style
+                    .set_properties(**{'text-align': 'center', 'font-size': '16px'})
+                    .set_table_styles([
+                        {'selector': 'th', 'props': [('background-color', '#1976D2'), ('color', 'white')]}
+                    ])
+                )
+                st.dataframe(styled_df2, use_container_width=True)
+                return
+        st.warning("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
         st.json(diet_plan)
-        return
-    
-    st.warning("예상 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
-    st.json(diet_plan)
-    if len(diet_plan) > 0:
-        display_raw_markdown(str(diet_plan[0]))
+        if len(diet_plan) > 0:
+            display_raw_markdown(str(diet_plan[0]))
 
 # 운동 추천 결과 표시 함수
 def display_exercise_plan(exercise_plan):
@@ -134,7 +118,7 @@ def display_exercise_plan(exercise_plan):
             )
             st.dataframe(styled_df, use_container_width=True)
         else:
-            st.warning("예상 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
+            st.warning("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
             st.json(exercise_plan)
             if len(exercise_plan) > 0:
                 display_raw_markdown(str(exercise_plan[0]))
