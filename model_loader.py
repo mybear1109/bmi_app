@@ -20,6 +20,7 @@ def load_model(model_path, model_class, input_dim=13):
         model.load_state_dict(checkpoint, strict=False)
         model.eval()
         st.success(f"✅ 모델 로드 성공: {model_path}")
+        print(f"✅ 모델 로드 성공: {model_path}")
         return model
     except Exception as e:
         st.error(f"🚨 모델 로드 중 오류 발생: {e}")
@@ -50,6 +51,7 @@ def load_gemma_model():
             use_auth_token=hf_token
         )
         st.success("✅ Gemma 모델 로드 성공")
+        print("✅ Gemma 모델 로드 성공")
         return tokenizer, model
     except Exception as e:
         st.error(f"🚨 Gemma 모델 로딩 중 오류 발생: {e}")
