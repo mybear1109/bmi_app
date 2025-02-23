@@ -17,7 +17,7 @@ client = InferenceClient(
 
 def generate_text_via_api(prompt, model_name="google/gemma-2b-it"):
     """
-    Hugging Face API의 chat completions를 사용하여 텍스트 생성.
+    Hugging Face API의 chat completions를 사용하여 텍스트를 생성합니다.
     prompt를 메시지 리스트로 변환하여 API 호출 후 응답을 파싱합니다.
     """
     messages = [{"role": "user", "content": prompt}]
@@ -59,7 +59,7 @@ def parse_json_response(response_json):
             st.error("🚨 응답 내용이 비어 있습니다.")
             return {"메시지": "응답 내용이 비어 있습니다."}
         
-        # 백틱으로 감싼 JSON 블록이 있으면 그 내부만 추출
+        # 백틱으로 감싼 JSON 블록이 있으면 내부만 추출
         if "```json" in content:
             json_text = content.split("```json")[-1].split("```")[0].strip()
         else:
@@ -71,7 +71,7 @@ def parse_json_response(response_json):
             return json.loads(json_text)
         except json.JSONDecodeError as e:
             st.error(f"🚨 JSON 변환 오류 발생:\n{json_text}\n오류: {e}")
-            # 변환 오류가 발생해도 원시 텍스트를 반환하여 사용자에게 보여줌
+            # 변환 오류 발생 시, 원시 텍스트를 그대로 반환해 사용자에게 보여줌
             return {"메시지": json_text}
     except (json.JSONDecodeError, KeyError) as e:
         st.error(f"🚨 응답 처리 오류: {e}")
@@ -135,8 +135,8 @@ def get_gemma_recommendation(category, user_info, allergies=[], excluded_foods=[
     prompt = f"사용자 건강 상태: {user_info_text}\n"
     
     if category == "운동":
-        prompt += "사용자의 건강 상태와 목표에 맞는 7일 운동 계획을 JSON 형식으로 제공해 주세요. 모든 대답은 반드시 한국어로 작성해 주세요. " \
-                  "한국어 외의 다른 언어는 사용하지 마세요.\n"
+        prompt += ("사용자의 건강 상태와 목표에 맞는 7일 운동 계획을 JSON 형식으로 제공해 주세요. "
+                   "모든 대답은 반드시 한국어로 작성해 주세요. 한국어 외의 다른 언어는 사용하지 마세요.\n")
     elif category == "식단":
         prompt += ("사용자의 건강 상태와 체중 감량, 저탄수화물, 다이어트 목표에 맞는 7일 식단 계획을 JSON 형식으로 제공해 주세요. "
                    "모든 대답은 반드시 한국어로 작성해 주세요. 다이어트 식단은 칼로리 조절과 균형 잡힌 영양소 구성이 반영되어야 합니다.")
