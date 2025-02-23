@@ -4,7 +4,6 @@ import requests
 from huggingface_hub import InferenceClient
 import os
 import streamlit as st
-import pandas as pd
 
 # 환경 변수 또는 secrets.toml에서 API 키를 가져옵니다.
 HF_API_KEY = os.getenv("HF_API_KEY")
@@ -15,21 +14,11 @@ client = InferenceClient(
     api_key=HF_API_KEY
 )
 
-def generate_text_via_api(prompt, model_name="google/gemma-2b-it"):
+def clean_control_characters(text):
     """
-    Hugging Face API의 chat completions를 사용하여 텍스트를 생성합니다.
-    prompt를 메시지 리스트로 변환하여 API 호출 후 응답을 파싱합니다.
+    텍스트 내의 제어문자(ASCII 0~31 등)를 제거합니다.
     """
-    messages = [{"role": "user", "content": prompt}]
-    try:
-        response_json = client.chat.completions.create(
-            model=model_name,
-            messages=messages
-        )
-        return parse_json_response(response_json)
-    except requests.exceptions.RequestException as e:
-        st.error(f"🚨 API 호출 오류: {e}")
-        return {"메시지": "🚨 API 호출 오류 발생"}
+    return re.sub(r'[\x00-\x1F]+', ' ', text)
 
 def extract_json_from_message(message):
     """
@@ -46,7 +35,7 @@ def extract_json_from_message(message):
 def parse_json_response(response_json):
     """
     API 응답 객체에서 choices -> message -> content를 추출하여,
-    JSON 형식의 블록이 있으면 해당 부분만 파싱하여 반환합니다.
+    백틱 블록이 있으면 해당 부분만 파싱하고 문제가 있으면 원시 텍스트를 반환합니다.
     """
     try:
         if isinstance(response_json, dict):
@@ -54,12 +43,11 @@ def parse_json_response(response_json):
         else:
             content = response_json.choices[0].message.content
 
-        content = content.strip()
+        content = clean_control_characters(content.strip())
         if not content:
             st.error("🚨 응답 내용이 비어 있습니다.")
             return {"메시지": "응답 내용이 비어 있습니다."}
         
-        # 백틱 블록으로 감싼 JSON이 있으면 내부만 추출
         if "```json" in content:
             json_text = content.split("```json")[-1].split("```")[0].strip()
         else:
@@ -124,6 +112,22 @@ def expand_allergies(allergies):
         else:
             expanded.add(allergy)
     return list(expanded)
+
+def generate_text_via_api(prompt, model_name="google/gemma-2b-it"):
+    """
+    Hugging Face API의 chat completions를 사용하여 텍스트를 생성합니다.
+    prompt를 메시지 리스트로 변환하여 API 호출 후 응답을 파싱합니다.
+    """
+    messages = [{"role": "user", "content": prompt}]
+    try:
+        response_json = client.chat.completions.create(
+            model=model_name,
+            messages=messages
+        )
+        return parse_json_response(response_json)
+    except requests.exceptions.RequestException as e:
+        st.error(f"🚨 API 호출 오류: {e}")
+        return {"메시지": "🚨 API 호출 오류 발생"}
 
 def get_gemma_recommendation(category, user_info, allergies=[], excluded_foods=[]):
     """
