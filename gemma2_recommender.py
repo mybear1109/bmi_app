@@ -1,59 +1,77 @@
 from openai import OpenAI
 import json
+import re
 import os
+import streamlit as st
+import pandas as pd
+import logging
+from typing import List, Dict, Set
 
 # 환경 변수 또는 secrets.toml에서 API 키를 가져옵니다.
 HF_API_KEY = os.getenv("HF_API_KEY")
 
-def get_recommendations(user_data):
+def get_gemma2_recommender(prompt: str):
     """
-    사용자의 건강 데이터를 바탕으로 AI 모델을 활용하여 맞춤형 운동 및 식단을 추천합니다.
+    AI 모델을 활용하여 운동 또는 식단을 추천합니다.
     """
     client = OpenAI(
         base_url="https://router.huggingface.co/novita",
         api_key=HF_API_KEY
     )
-
-    prompt = f"""
-    다음은 사용자의 건강 데이터입니다:
-    {json.dumps(user_data, ensure_ascii=False, indent=4)}
-    
-    이 데이터를 바탕으로 다음 형식에 맞추어 일주일간의 운동 및 식단을 추천하세요:
-    
-    운동 추천 예시:
-    [
-        {{
-            "요일": "월",
-            "운동": [
-                {{"종류": "달리기", "시간(분)": 30, "칼로리 소모": 300}},
-                {{"종류": "스트레칭", "시간(분)": 15, "칼로리 소모": 50}}
-            ],
-            "일일 칼로리 소모량(kcal)": 350,
-            "설명": "유산소 운동으로 체지방 감소, 스트레칭으로 유연성 향상"
-        }}
-    ]
-    
-    식단 추천 예시:
-    [
-        {{
-            "요일": "월",
-            "아침": {{"메뉴": "계란 + 오트밀", "칼로리": 300}},
-            "점심": {{"메뉴": "닭가슴살 샐러드", "칼로리": 400}},
-            "저녁": {{"메뉴": "구운 채소 + 연어", "칼로리": 450}},
-            "간식": {{"메뉴": "그릭 요거트", "칼로리": 150}},
-            "일일 총칼로리": 1300,
-            "설명": "고단백 저탄수화물 식단으로 체지방 감소 도움"
-        }}
-    ]
-    """
     
     messages = [{"role": "user", "content": prompt}]
     completion = client.chat.completions.create(
         model="google/gemma-2-9b-it",
         messages=messages,
-        max_tokens=1000,
     )
     
-    response_text = completion.choices[0].message.content
+    return completion.choices[0].message.content
+
+def extract_json_from_message(message: str) -> str:
+    """메시지에서 JSON 부분을 추출합니다."""
+    match = re.search(r'```json\n(.*?)\n```', message, re.DOTALL)
+    return match.group(1) if match else message
+
+def get_exercise_recommendation(user_info: dict):
+    """
+    운동 추천 프롬프트를 생성하고 AI 응답을 받습니다.
+    """
+    prompt = f"사용자 건강 상태: {json.dumps(user_info, ensure_ascii=False)}\n\n"
+    prompt += "운동 계획을 위한 7일 맞춤형 일정을 제공해 주세요.\n"
+    prompt += "각 날짜마다 운동 종류, 시간(분), 예상 소모 칼로리를 포함해야 합니다."
     
-    return response_text
+    return get_gemma2_recommender(prompt)
+
+def get_meal_recommendation(user_info: dict, allergies: List[str] = []):
+    """
+    식단 추천 프롬프트를 생성하고 AI 응답을 받습니다.
+    """
+    expanded_allergies = expand_allergies(allergies)
+    prompt = f"사용자 건강 상태: {json.dumps(user_info, ensure_ascii=False)}\n\n"
+    prompt += f"알러지 고려: {', '.join(expanded_allergies)}\n"
+    prompt += "식단 계획을 위한 7일 맞춤형 일정을 제공해 주세요.\n"
+    prompt += "각 날짜마다 아침, 점심, 저녁, 간식과 예상 칼로리를 포함해야 합니다."
+    
+    return get_gemma2_recommender(prompt)
+
+def load_allergy_mapping() -> Dict[str, List[str]]:
+    """알러지 매핑 데이터를 로드합니다."""
+    return {
+        '계란': ['계란', '계란노른자', '계란흰자', '달걀', '마요네즈'],
+        '생선': ['생선', '연어', '참치', '고등어', '멸치'],
+        '우유': ['우유', '유제품', '치즈', '요구르트', '버터'],
+        '밀': ['밀', '밀가루', '글루텐', '파스타', '빵'],
+        '콩': ['콩', '두부', '된장', '간장'],
+        '견과류': ['아몬드', '호두', '땅콩', '캐슈넛'],
+        '갑각류': ['새우', '게', '랍스터'],
+        '과일': ['복숭아', '사과', '배', '키위'],
+        '육류': ['닭고기', '소고기', '돼지고기'],
+    }
+
+def expand_allergies(allergies: List[str]) -> Set[str]:
+    """입력된 알러지 목록을 확장하여 관련 모든 식품 목록을 반환합니다."""
+    allergy_mapping = load_allergy_mapping()
+    expanded_allergies: Set[str] = set()
+    for allergy in allergies:
+        expanded_allergies.update(allergy_mapping.get(allergy, [allergy]))
+    return expanded_allergies
