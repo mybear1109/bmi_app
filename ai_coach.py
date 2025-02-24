@@ -5,10 +5,6 @@ import pandas as pd
 from gemma2_recommender import get_gemma_recommendation
 from user_data_utils import load_user_data
 import os
-import logging
-
-# 로깅 설정 (관리자용 로그)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # 사용자 데이터 불러오기 함수
 def load_user_data():
@@ -38,27 +34,27 @@ def display_raw_markdown(raw_text):
 # 식단 추천 결과 표시 함수
 def display_diet_plan(diet_plan):
     if isinstance(diet_plan, dict) and "메시지" in diet_plan:
-        logging.info("🚨 식단 추천 생성 중 문제가 발생했습니다. (관리자 로그 참조)")
+        st.error("🚨 식단 추천 생성 중 문제가 발생했습니다. (관리자 로그 참조)")
         st.code(json.dumps(diet_plan, indent=4, ensure_ascii=False))
         return
     if isinstance(diet_plan, dict):
         diet_plan = [diet_plan]
     
     df = pd.DataFrame(diet_plan)
-    expected_cols = ["요일", "아침", "점심", "저녁", "총칼로리 (kcal)"]
+    expected_cols = ["요일", "아침", "점심","간식", "저녁","일일 총칼로리(kcal)","설명", "주간 총칼로리 (kcal)"]
     if all(col in df.columns for col in expected_cols):
         styled_df = (
             df[expected_cols]
             .style
             .set_properties(**{'text-align': 'center', 'font-size': '16px'})
-            .background_gradient(cmap='Blues', subset=["총칼로리 (kcal)"])
+            .background_gradient(cmap='Blues', subset=["주간 총칼로리 (kcal)"])
             .set_table_styles([
                 {'selector': 'th', 'props': [('background-color', '#4CAF50'), ('color', 'white')]}
             ])
         )
         st.dataframe(styled_df, use_container_width=True)
     else:
-        # 대체 구조(예: meals 배열)가 있을 경우 처리
+        # 대체 구조 (예: meals 배열) 처리
         if df.columns.str.contains("meals").any():
             transformed = []
             for item in diet_plan:
@@ -99,13 +95,13 @@ def display_diet_plan(diet_plan):
 # 운동 추천 결과 표시 함수
 def display_exercise_plan(exercise_plan):
     if isinstance(exercise_plan, dict) and "메시지" in exercise_plan:
-        logging.info(f"🚨 운동 추천 생성 중 문제가 발생했습니다.")
+        st.error("🚨 운동 추천 생성 중 문제가 발생했습니다. (관리자 로그 참조)")
         st.code(json.dumps(exercise_plan, indent=4, ensure_ascii=False))
         return
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
     
-    # "weekly_exercise_plan" 구조가 있다면 변환 처리
+    # "weekly_exercise_plan" 구조가 있다면 처리
     if (isinstance(exercise_plan, list) and exercise_plan and 
         isinstance(exercise_plan[0], dict) and "weekly_exercise_plan" in exercise_plan[0]):
         weekly_plan = exercise_plan[0].get("weekly_exercise_plan", [])
@@ -121,13 +117,13 @@ def display_exercise_plan(exercise_plan):
     
     if isinstance(exercise_plan, list):
         df = pd.DataFrame(exercise_plan)
-        expected_cols = ["요일", "운동", "시간(분)", "칼로리 소모량(kcal)"]
+        expected_cols = ["요일", "운동", "종류","시간(분)", "일일 칼로리 소모량(kcal)","설명","주간 총소모 칼로리(kcal)"]
         if all(col in df.columns for col in expected_cols):
             styled_df = (
                 df[expected_cols]
                 .style
                 .set_properties(**{'text-align': 'center', 'font-size': '16px'})
-                .background_gradient(cmap='Oranges', subset=["칼로리 소모량(kcal)"])
+                .background_gradient(cmap='Oranges', subset=["주간 총소모 칼로리(kcal)"])
                 .set_table_styles([
                     {'selector': 'th', 'props': [('background-color', '#FF5722'), ('color', 'white')]}
                 ])
@@ -139,9 +135,33 @@ def display_exercise_plan(exercise_plan):
             if len(exercise_plan) > 0:
                 display_raw_markdown(str(exercise_plan[0]))
     else:
-        logging.info("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
+        st.error("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
 
-# --- 메인 페이지 표시 함수 ---
+def calculate_age_group(age):
+    """
+    나이를 10년 단위의 연령대로 변환하는 함수입니다.
+    """
+    try:
+        age = int(age)
+    except ValueError:
+        return "알 수 없음"
+    if age < 10:
+        return "0-9세"
+    elif age < 20:
+        return "10대"
+    elif age < 30:
+        return "20대"
+    elif age < 40:
+        return "30대"
+    elif age < 50:
+        return "40대"
+    elif age < 60:
+        return "50대"
+    elif age < 70:
+        return "60대"
+    else:
+        return "70대 이상"
+
 def display_ai_coach_page():
     st.header("🏋️‍♂️ AI 건강 코치")
     st.markdown("<br>", unsafe_allow_html=True)
@@ -210,7 +230,6 @@ def display_ai_coach_page():
                 exercise_plan = get_gemma_recommendation("운동", user_info, additional_exercises)
             display_exercise_plan(exercise_plan)
 
-# 예측 결과 저장 함수
 def save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food):
     user_data["운동 점수"] = prob_exercise
     user_data["식단 점수"] = prob_food
@@ -231,27 +250,3 @@ def save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_fo
     else:
         st.error("⚠️ 사용자 정보가 없습니다. 먼저 기본 정보를 입력해주세요.")
 
-def calculate_age_group(age):
-    """
-    나이를 10년 단위의 연령대로 변환하는 함수입니다.
-    """
-    try:
-        age = int(age)
-    except ValueError:
-        return "알 수 없음"
-    if age < 10:
-        return "0-9세"
-    elif age < 20:
-        return "10대"
-    elif age < 30:
-        return "20대"
-    elif age < 40:
-        return "30대"
-    elif age < 50:
-        return "40대"
-    elif age < 60:
-        return "50대"
-    elif age < 70:
-        return "60대"
-    else:
-        return "70대 이상"
