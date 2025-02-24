@@ -36,16 +36,37 @@ def display_info_page():
     """)
 
     st.markdown("""
-    본 프로젝트에서는 `google/gemma-2-9b-it`모델을 기반으로 맞춤형 건강 관리 솔루션을 제공합니다.\n 
-    이 모델은 `google/gemma-2-9b-it`아키텍처를 사용하여 더 빠른 처리 속도와 향상된 성능을 제공합니다.\n 
-    특히 알레르기 매핑 데이터와 사용자 정보를 활용한 프롬프트 엔지니어링을 통해 개인화된 운동 계획과 식단 추천을 생성합니다.\n 
-    알레르기 정보 처리 시스템은 14개의 주요 알레르기 카테고리를 포함하며, 각 카테고리별로 관련 식품을 자세히 매핑하고 있습니다.\n  
-    이를 통해 사용자의 알레르기 정보를 정확히 파악하고, 안전한 식단 추천이 가능합니다.\n 
-    `google/gemma-2-9b-it`모델은 RoPE(Rotary Positioning Embeddings)와 근사적인 GeGLU 비선형성을 구현하여 더욱 정확한 문맥 이해와 생성 능력을 보여줍니다.\n  
-    또한 GQA(Grouped Query Attention)를 도입하여 추론 시간을 단축하고 매개변수 효율성을 높였습니다.\n 
-    이 모델은 건강 관련 대규모 데이터셋으로 사전 학습되었으며, 국민건강보험공단의 건강검진정보와 같은 실제 데이터를 활용하여 파인튜닝되었습니다.\n  
-    이를 통해 한국인의 건강 특성과 생활 습관을 잘 반영한 추천이 가능해졌습니다.\n 
-    """)
+        # 🏥 맞춤형 건강 관리 AI 솔루션
+
+        본 프로젝트에서는 `google/gemma-2-9b-it` 모델을 기반으로 맞춤형 건강 관리 솔루션을 제공합니다.
+
+        ## 🚀 주요 특징
+
+        - **빠른 처리 속도와 향상된 성능**
+        - **개인화된 운동 계획 및 식단 추천**
+        - **14개의 주요 알레르기 카테고리 처리**
+
+        ## 💻 모델 아키텍처
+
+        ```
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+
+        model_name = "google/gemma-2-9b-it"
+        model = AutoModelForCausalLM.from_pretrained(model_name)
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        ```
+
+        ### 🧠 고급 기술 구현
+        - RoPE (Rotary Positioning Embeddings)
+        - GeGLU 비선형성
+        - GQA (Grouped Query Attention)
+
+        ## 📊 데이터 활용
+        - 건강 관련 대규모 데이터셋으로 사전 학습
+        - 국민건강보험공단 건강검진정보로 파인튜닝
+
+        > 이를 통해 한국인의 건강 특성과 생활 습관을 잘 반영한 추천이 가능해졌습니다.
+        """)
     st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
     st.header("🧬 알레르기 및 식품 제한 처리 시스템")
     st.markdown("""
