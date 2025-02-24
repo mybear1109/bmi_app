@@ -181,8 +181,7 @@ def get_gemma_recommendation(category: str, user_info: dict, additional_info: Li
                 if info_value:
                     diet_restriction = info_value[0]
         if allergen_foods:
-            expanded_allergies = expand_allergies(allergen_foods)
-            prompt += f"\n🚨 **다음 음식은 제외해주세요: {', '.join(expanded_allergies)}**"
+            prompt += f"\n🚨 **다음 음식은 제외해주세요: {', '.join(allergen_foods)}**"
         if preferred_foods:
             prompt += f"\n🚨 **선호하는 음식: {', '.join(preferred_foods)}**"
         if diet_restriction:
