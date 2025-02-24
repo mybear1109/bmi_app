@@ -54,7 +54,7 @@ def load_gemma_model():
     Gemma 모델과 토크나이저 로드 함수.
     `token` 인자를 사용하여 인증 토큰을 전달합니다.
     """
-    model_name = "google/gemma-2b-it"
+    model_name = "google/gemma-2-9b-it"
     try:
         hf_token = HF_API_KEY
         if not hf_token:
