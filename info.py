@@ -34,7 +34,7 @@ def display_info_page():
         - 건강 전문가가 검증한 운동 계획 및 식단 데이터로 파인튜닝
         - 다양한 건강 상태와 목표에 대한 시나리오로 프롬프트 엔지니어링 최적화
     """)
-
+    st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
     st.markdown("""
         ### 🏥 맞춤형 건강 관리 AI 솔루션
 
