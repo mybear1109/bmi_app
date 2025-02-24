@@ -57,7 +57,7 @@ def display_diet_plan(diet_plan):
                 {'selector': 'th', 'props': [('background-color', '#4CAF50'), ('color', 'white')]}
             ])
         )
-        st.dataframe(styled_df, use_container_width=True)
+        st.write(styled_df, use_container_width=True)
     else:
         # 대체 구조 (예: meals 배열) 처리
         if df.columns.str.contains("meals").any():
