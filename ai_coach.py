@@ -6,8 +6,9 @@ import os
 import streamlit as st
 import logging
 from typing import List, Dict, Set
+import pandas as pd
 
-# 로깅 설정 (관리자용 로그는 콘솔에 출력되고, 사용자에게는 보이지 않음)
+# 로깅 설정 (개발자용, 사용자에게는 노출되지 않음)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # 환경 변수 또는 secrets.toml에서 API 키를 가져옵니다.
@@ -16,7 +17,7 @@ HF_API_KEY = os.getenv("HF_API_KEY")
 # InferenceClient 객체 생성 (provider: hf-inference)
 client = InferenceClient(
     provider="hf-inference",
-    token=HF_API_KEY
+    api_key=HF_API_KEY
 )
 
 def clean_control_characters(text: str) -> str:
@@ -38,8 +39,8 @@ def extract_json_from_message(message: str) -> str:
 def parse_json_response(response_json):
     """
     API 응답 객체에서 choices -> message -> content를 추출하여,
-    백틱 블록 내의 JSON이 있으면 해당 부분만 파싱합니다.
-    제어문자 제거와 후처리를 수행하여 JSON 데이터를 반환합니다.
+    백틱 블록 내의 JSON이 있으면 해당 부분만 파싱하고,
+    제어문자 제거 및 후처리를 수행하여 JSON 데이터를 반환합니다.
     """
     try:
         # ChatML 형식 응답 처리
@@ -53,7 +54,6 @@ def parse_json_response(response_json):
             st.error("🚨 응답 내용이 비어 있습니다.")
             return {"메시지": "응답 내용이 비어 있습니다."}
         
-        # 백틱 블록이 있으면 그 내부만 사용, 없으면 전체 사용
         if "```json" in content:
             json_text = content.split("```json")[-1].split("```")[0].strip()
         else:
@@ -65,60 +65,71 @@ def parse_json_response(response_json):
             return json.loads(json_text)
         except json.JSONDecodeError as e:
             st.error(f"🚨 JSON 변환 오류 발생:\n{json_text}\n오류: {e}")
-            # 변환 오류 발생 시 원시 텍스트를 반환하여 디버깅 정보를 함께 제공
             return {"메시지": json_text}
     except (json.JSONDecodeError, KeyError) as e:
         st.error(f"🚨 응답 처리 오류: {e}")
         return {"메시지": "🚨 응답 처리 오류"}
 
-def get_user_info_with_default(user_data):
-    """
-    사용자 정보 중 '미측정' 항목은 기본값으로 채워 반환합니다.
-    """
-    default_info = {
-        "BMI": 24.5,
-        "허리둘레": "80cm",
-        "수축기혈압(최고 혈압)": 120,
-        "이완기혈압(최저 혈압)": 80,
-        "혈압 차이": 40,
-        "총콜레스테롤": 190,
-        "고혈당 위험": "낮음",
-        "간 지표": "정상",
-        "성별": "남성",
-        "연령대": "30대",
-        "비만 위험 지수": "보통",
-        "흡연상태": "비흡연",
-        "음주여부": "비음주"
+def load_allergy_mapping() -> Dict[str, List[str]]:
+    """알러지 매핑 데이터를 로드합니다."""
+    return {
+        '계란': ['계란', '계란노른자', '계란흰자', '달걀', '노른자', '흰자', '마요네즈', '메렝게', '타르타르 소스'],
+        '생선': ['생선', '연어', '참치', '광어', '고등어', '멸치', '오징어', '문어', '조개', '굴', '홍합'],
+        '우유': ['우유', '유제품', '우유단백질', '우유당', '치즈', '요구르트', '버터', '크림', '아이스크림', '카제인'],
+        '밀': ['밀', '밀가루', '글루텐', '파스타', '빵', '과자', '케이크', '시리얼', '맥주'],
+        '콩': ['콩', '두부', '콩나물', '된장', '간장', '미소', '템페', '에다마메'],
+        '견과류': ['아몬드', '호두', '땅콩', '캐슈넛', '피스타치오', '마카다미아', '헤이즐넛', '피칸'],
+        '갑각류': ['새우', '게', '랍스터', '가재', '크랩스틱'],
+        '과일': ['복숭아', '사과', '배', '키위', '망고', '파인애플', '딸기', '오렌지'],
+        '육류': ['닭고기', '소고기', '돼지고기', '양고기', '오리고기'],
+        '해산물': ['조개류', '굴', '홍합', '전복', '오징어', '문어'],
+        '견과류 및 씨앗': ['참깨', '들깨', '해바라기씨', '호박씨', '아마씨'],
+        '채소': ['셀러리', '당근', '토마토', '시금치', '브로콜리'],
+        '향신료': ['마늘', '양파', '생강', '고추', '후추'],
+        '기타': ['초콜릿', '카카오', '커피', '알코올', '알콜','인공감미료', '방부제']
     }
-    for key, value in user_data.items():
-        if value == "미측정":
-            user_data[key] = default_info.get(key, "미측정")
-    return user_data
+
+def validate_allergy(allergy: str) -> str:
+    """알러지 입력값을 검증하고 표준화합니다."""
+    return allergy.lower().strip()
 
 def expand_allergies(allergies: List[str]) -> Set[str]:
-    """
-    입력된 알레르기 목록을 미리 정의된 매핑을 통해 확장하여,
-    관련 모든 식품 목록을 반환합니다.
-    """
-    allergy_mapping = {
-        '계란': ['계란', '계란노른자', '계란흰자', '달걀', '노른자', '흰자'],
-        '생선': ['생선', '연어', '참치', '광어'],
-        '우유': ['우유', '요구르트', '치즈'],
-        '콩': ['콩', '두부', '콩나물'],
-        '밀가루': ['밀가루', '빵', '면'],
-        '아몬드': ['아몬드', '호두', '땅콩'],
-        '닭고기': ['닭고기', '닭가슴살', '닭날개'],
-        '소고기': ['소고기', '소불고기', '소양지'],
-        '돼지고기': ['돼지고기', '삼겹살', '목살'],
-        '새우': ['새우', '게', '랍스터']
-    }
-    expanded = set()
+    """입력된 알러지 목록을 확장하여 관련 모든 식품 목록을 반환합니다."""
+    allergy_mapping = load_allergy_mapping()
+    expanded_allergies: Set[str] = set()
+    unknown_allergies: Set[str] = set()
+
     for allergy in allergies:
-        if allergy in allergy_mapping:
-            expanded.update(allergy_mapping[allergy])
+        validated_allergy = validate_allergy(allergy)
+        if validated_allergy in allergy_mapping:
+            expanded_allergies.update(allergy_mapping[validated_allergy])
         else:
-            expanded.add(allergy)
-    return expanded
+            unknown_allergies.add(validated_allergy)
+            expanded_allergies.add(validated_allergy)
+    
+    if unknown_allergies:
+        logging.warning(f"알 수 없는 알러지 항목: {', '.join(unknown_allergies)}")
+    
+    return expanded_allergies
+
+def get_allergy_info(allergies: List[str]) -> Dict[str, Set[str]]:
+    """알러지 정보를 확장하고 카테고리별로 분류합니다."""
+    allergy_mapping = load_allergy_mapping()
+    expanded = expand_allergies(allergies)
+    categorized: Dict[str, Set[str]] = {category: set() for category in allergy_mapping.keys()}
+    
+    for item in expanded:
+        categorized_flag = False
+        for category, items in allergy_mapping.items():
+            if item in items:
+                categorized[category].add(item)
+                categorized_flag = True
+        if not categorized_flag:
+            if '기타' not in categorized:
+                categorized['기타'] = set()
+            categorized['기타'].add(item)
+    
+    return {k: v for k, v in categorized.items() if v}
 
 def generate_text_via_api(prompt: str, model_name: str = "google/gemma-2-9b-it"):
     """
