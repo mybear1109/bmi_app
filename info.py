@@ -36,11 +36,11 @@ def display_info_page():
     """)
 
     st.markdown("""
-        # 🏥 맞춤형 건강 관리 AI 솔루션
+        ### 🏥 맞춤형 건강 관리 AI 솔루션
 
         본 프로젝트에서는 `google/gemma-2-9b-it` 모델을 기반으로 맞춤형 건강 관리 솔루션을 제공합니다.
 
-        ## 🚀 주요 특징
+        ### 🚀 주요 특징
 
         - **빠른 처리 속도와 향상된 성능**
         - **개인화된 운동 계획 및 식단 추천**
@@ -53,7 +53,7 @@ def display_info_page():
             '식단 개선 필요성', '식단 점수']  *'user_id'포함하여 총 28종으로 학습진행 처리
         ```
                 
-        ## 💻 모델 아키텍처
+        ### 💻 모델 아키텍처
 
         ```
         from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -68,7 +68,7 @@ def display_info_page():
         - GeGLU 비선형성
         - GQA (Grouped Query Attention)
 
-        ## 📊 데이터 활용
+        ### 📊 데이터 활용
         - 건강 관련 대규모 데이터셋으로 사전 학습
         - 국민건강보험공단 건강검진정보로 파인튜닝
 
