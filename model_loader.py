@@ -3,7 +3,7 @@ import os
 import streamlit as st
 import logging
 from model import ExercisePredictionModel, FoodPredictionModel  # 반드시 model.py에서 가져옴
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM,GemmaTokenizer
 
 # 관리자용 로깅 설정 (콘솔 또는 파일에 기록)
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -60,7 +60,8 @@ def load_gemma_model():
         if not hf_token:
             logging.error("🚨 HF_API_KEY가 설정되지 않았습니다!")
             return None, None
-        token= AutoTokenizer.from_pretrained(model_name, token=hf_token)
+        token= AutoTokenizer.from_pretrained("google/gemma-2-9b-it", token=HF_API_KEY)
+        print("✅ GemmaTokenizer 정상 로딩 완료!")
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
             device_map="auto",
