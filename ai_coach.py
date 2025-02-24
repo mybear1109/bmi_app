@@ -88,9 +88,9 @@ def display_diet_plan(diet_plan):
                 st.dataframe(styled_df2, use_container_width=True)
                 return
         st.warning("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
-        st.json(diet_plan)
-        if len(diet_plan) > 0:
-            display_raw_markdown(str(diet_plan[0]))
+        # JSON 형식으로 보기 좋게 들여쓰기를 적용한 문자열 생성
+        formatted_json = json.dumps(diet_plan, indent=4, ensure_ascii=False)
+        st.code(formatted_json, language="json")
 
 # 운동 추천 결과 표시 함수
 def display_exercise_plan(exercise_plan):
