@@ -77,13 +77,13 @@ def display_ai_coach_page():
         if st.button("🥗 식단 계획 추천", key="diet_button"):
             with st.spinner("AI가 식단을 추천하는 중...⏳"):
                 diet_plan = get_gemma_recommendation("식단", user_data, allergen_foods)
-            st.write(diet_plan, "식단")
+            display_recommendation(diet_plan, "식단")
  
 
     with col2:
         if st.button("🏋️ 운동 계획 추천", key="workout_button"):
             with st.spinner("AI가 운동을 추천하는 중...⏳"):
                 exercise_plan = get_gemma_recommendation("운동", user_data)
-            st.write(exercise_plan, "운동")
+            display_recommendation(exercise_plan, "운동")
         
   
