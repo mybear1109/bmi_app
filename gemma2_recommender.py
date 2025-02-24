@@ -44,7 +44,9 @@ def extract_json_from_message(message: str) -> str:
 def parse_json_response(response_json):
     """
     API 응답 객체에서 choices -> message -> content를 추출하여,
-    백틱 블록 내의 JSON이 있으면 해당 부분만 파싱하고, 최종적으로 한글만 남도록 후처리합니다.
+    백틱 블록 내의 JSON이 있으면 해당 부분만 파싱하고,제어문자 제거와 후처리를 수행하여 JSON 데이터를 반환합니다.
+    메시지가 "🚨 JSON 변환 오류:"로 시작하면 접두사를 제거하고, 백틱 블록이 있으면 그 내부만 추출합니다.
+    최종적으로 한글만 남도록 후처리합니다.
     """
     try:
         # ChatML 형식 응답 처리: choices는 리스트여야 합니다.
