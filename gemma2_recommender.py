@@ -5,8 +5,8 @@ from huggingface_hub import InferenceClient
 import os
 import streamlit as st
 import pandas as pd
-import logging
 from typing import List, Dict, Set, Tuple
+import logging
 
 # 로깅 설정 (관리자용 로그)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

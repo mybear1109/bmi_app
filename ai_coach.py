@@ -5,6 +5,10 @@ import pandas as pd
 from gemma2_recommender import get_gemma_recommendation
 from user_data_utils import load_user_data
 import os
+import logging
+
+# 로깅 설정 (관리자용 로그)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # 사용자 데이터 불러오기 함수
 def load_user_data():
@@ -34,7 +38,8 @@ def display_raw_markdown(raw_text):
 # 식단 추천 결과 표시 함수
 def display_diet_plan(diet_plan):
     if isinstance(diet_plan, dict) and "메시지" in diet_plan:
-        st.error("🚨 식단 추천 생성 중 문제가 발생했습니다. (관리자 로그 참조)")
+        logging.info("식단 추천 생성 중 문제가 발생했습니다. (관리자 로그 참조)")
+        print("🚨 식단 추천 생성 중 문제가 발생했습니다. ")
         st.code(json.dumps(diet_plan, indent=4, ensure_ascii=False))
         return
     if isinstance(diet_plan, dict):
@@ -87,7 +92,8 @@ def display_diet_plan(diet_plan):
                 )
                 st.dataframe(styled_df2, use_container_width=True)
                 return
-        st.warning("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
+        logging.info("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
+        print("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
         
         # JSON 형식으로 보기 좋게 들여쓰기를 적용한 문자열 생성
         formatted_json = json.dumps(diet_plan, indent=4, ensure_ascii=False)
@@ -97,7 +103,8 @@ def display_diet_plan(diet_plan):
 # 운동 추천 결과 표시 함수
 def display_exercise_plan(exercise_plan):
     if isinstance(exercise_plan, dict) and "메시지" in exercise_plan:
-        st.error("🚨 운동 추천 생성 중 문제가 발생했습니다. (관리자 로그 참조)")
+        logging.info("🚨 운동 추천 생성 중 문제가 발생했습니다.")
+        print("🚨 운동 추천 생성 중 문제가 발생했습니다.")
         st.code(json.dumps(exercise_plan, indent=4, ensure_ascii=False))
         return
     if isinstance(exercise_plan, dict):
@@ -146,7 +153,8 @@ def display_exercise_plan(exercise_plan):
         exercise_plan = [exercise_plan]
     
     else:
-        st.error("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
+        logging.info("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
+        print("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
 
 def calculate_age_group(age):
     """
