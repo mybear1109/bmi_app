@@ -60,7 +60,7 @@ def load_gemma_model():
         if not hf_token:
             logging.error("🚨 HF_API_KEY가 설정되지 않았습니다!")
             return None, None
-        tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token)
+        token= AutoTokenizer.from_pretrained(model_name, token=hf_token)
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
             device_map="auto",
@@ -69,10 +69,11 @@ def load_gemma_model():
         )
         logging.info("✅ Gemma 모델 로드 성공")
         print("✅ Gemma 모델 로드 성공")
-        return tokenizer, model
+        return token, model
     except Exception as e:
         logging.error(f"🚨 Gemma 모델 로딩 중 오류 발생: {e}")
         return None, None
 
 # Gemma 모델과 토크나이저 로드 (UI에 메시지 표시 X)
-gemma_tokenizer, gemma_model = load_gemma_model()
+gemma_token, gemma_model = load_gemma_model()
+
