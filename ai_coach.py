@@ -98,7 +98,7 @@ def display_diet_plan(diet_plan):
         # JSON 형식으로 보기 좋게 들여쓰기를 적용한 문자열 생성
         formatted_json = json.dumps(diet_plan, indent=4, ensure_ascii=False)
         st.code(formatted_json, language="json")
-        st.table(formatted_json)
+
 
 # 운동 추천 결과 표시 함수
 def display_exercise_plan(exercise_plan):
