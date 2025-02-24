@@ -2,7 +2,7 @@ import streamlit as st
 
 def display_info_page():
     st.title("💪 AI 기반 개인 맞춤형 건강 관리 웹 애플리케이션 🍎")
-
+    st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
     st.markdown("""
     ### 📌 프로젝트 개요
     본 프로젝트는 개인의 건강 데이터를 기반으로 AI 모델이 맞춤형 운동 계획과 식단 추천을 제공하는 Streamlit 웹 애플리케이션입니다. 
@@ -11,7 +11,7 @@ def display_info_page():
 
     ✨ **핵심 목표:** 기존 KoGPT2 모델의 한계를 극복하고, 딥러닝 기반으로 더욱 정확하고 개인화된 건강 관리 솔루션을 제공하는 것입니다.
     """)
-
+    st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
     st.header("🌟 주요 기능")
     st.markdown("""
     1. 📝 **건강 데이터 입력:** 사용자 친화적인 인터페이스를 통해 기본 정보, 신체 측정, 혈압/혈당/콜레스테롤, 생활 습관 등 건강 정보를 입력합니다.
@@ -20,7 +20,7 @@ def display_info_page():
     4. 📊 **데이터 시각화:** 사용자의 건강 데이터를 다양한 그래프와 차트로 시각화하여 건강 상태 변화를 직관적으로 파악할 수 있습니다.
     5. 🔑 **사용자 계정 관리:** 회원가입 및 로그인 기능을 통해 개인별 건강 데이터를 안전하게 관리합니다.
     """)
-
+    st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
     st.header("🧠 AI 모델 및 알고리즘")
     st.subheader("1. Gemini Pro (Gemma-2) 모델")
     st.markdown("""
@@ -49,7 +49,7 @@ def display_info_page():
     이 모델은 건강 관련 대규모 데이터셋으로 사전 학습되었으며, 국민건강보험공단의 건강검진정보와 같은 실제 데이터를 활용하여 파인튜닝되었습니다. 
     이를 통해 한국인의 건강 특성과 생활 습관을 잘 반영한 추천이 가능해졌습니다.
     """)
-
+    st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
     st.header("🧬 알레르기 및 식품 제한 처리 시스템")
     st.markdown("""
     - **목적:** 사용자의 알레르기 정보를 고려한 안전한 식단 추천
@@ -60,7 +60,7 @@ def display_info_page():
     - **데이터베이스:** 광범위한 알레르기-식품 매핑 정보 포함
     - **지속적 업데이트:** 새로운 알레르기 정보 및 식품 데이터로 주기적 갱신
     """)
-
+    st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
     st.header("🚀 기술 스택")
     st.markdown("""
     - 🐍 **Python:** 웹 애플리케이션 개발의 핵심 언어
@@ -68,7 +68,7 @@ def display_info_page():
     - 🤗 **Hugging Face Transformers:** Gemini Pro (Gemma-2) 모델 통합
     - 📈 **Plotly:** 인터랙티브 데이터 시각화
     """)
-
+    st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
     st.header("🎯 성능 지표")
     st.markdown("""
     - 운동 여부 예측 정확도: 95.78%
