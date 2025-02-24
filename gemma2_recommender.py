@@ -24,15 +24,28 @@ def clean_control_characters(text: str) -> str:
     """텍스트 내의 제어문자(ASCII 0~31 등)를 제거합니다."""
     return re.sub(r'[\x00-\x1F]+', ' ', text)
 
+def fix_json_format(text: str) -> str:
+    """
+    모델 출력이 유사 JSON 형태일 때, 키에 따옴표가 빠진 문제를 보완합니다.
+    (예: { 요일: 월, 운동: [...] } → { "요일": "월", "운동": [...] } )
+    """
+    # 먼저, 배열의 인덱스 표시 등 불필요한 부분을 제거 (예: 0:"월" → "월")
+    text = re.sub(r'\b\d+\s*:', '', text)
+    # 키를 감싸지 않은 경우 따옴표를 추가합니다.
+    text = re.sub(r'([{,]\s*)([^\s"{]+)(\s*:)', r'\1"\2"\3', text)
+    return text
+
 def keep_only_korean(text: str) -> str:
     """
-    텍스트에서 한글, 숫자, 공백 및 기본 구두점(.,:()-[])를 제외한 나머지 문자를 제거합니다.
+    값에서 한글, 숫자, 공백, 기본 구두점(.,:()-[])를 제외한 나머지 문자를 제거합니다.
+    (키는 이미 올바른 JSON 구조를 유지하도록 fix_json_format()에서 처리하므로, 주로 값에 적용)
     """
-    return re.sub(r'[^가-힣0-9\s\.,:\(\)\[\]\-]+', '', text)
+    return re.sub(r'(?<=:)"?([^"]+)"?', lambda m: '"' + re.sub(r'[^가-힣0-9\s\.,:\(\)\[\]\-]', '', m.group(1)) + '"', text)
 
 def extract_json_from_message(message: str) -> str:
     """
-    메시지가 "🚨 JSON 변환 오류:"로 시작하면 접두사를 제거하고, 백틱 블록이 있으면 그 내부만 추출합니다.
+    메시지가 "🚨 JSON 변환 오류:"로 시작하면 접두사를 제거하고,
+    백틱 블록이 있으면 그 내부만 추출합니다.
     """
     prefix = "🚨 JSON 변환 오류:"
     if message.startswith(prefix):
@@ -44,12 +57,9 @@ def extract_json_from_message(message: str) -> str:
 def parse_json_response(response_json):
     """
     API 응답 객체에서 choices -> message -> content를 추출하여,
-    백틱 블록 내의 JSON이 있으면 해당 부분만 파싱하고,제어문자 제거와 후처리를 수행하여 JSON 데이터를 반환합니다.
-    메시지가 "🚨 JSON 변환 오류:"로 시작하면 접두사를 제거하고, 백틱 블록이 있으면 그 내부만 추출합니다.
-    최종적으로 한글만 남도록 후처리합니다.
+    유사 JSON 형식을 고치고(키에 따옴표 추가 등) 제어문자 제거, 한글만 남도록 후처리하여 JSON 데이터를 반환합니다.
     """
     try:
-        # ChatML 형식 응답 처리: choices는 리스트여야 합니다.
         if isinstance(response_json, dict):
             content = response_json['choices'][0]['message']['content']
         else:
@@ -59,21 +69,23 @@ def parse_json_response(response_json):
         if not content:
             st.error("🚨 응답 내용이 비어 있습니다.")
             return {"메시지": "응답 내용이 비어 있습니다."}
-
+        
+        # 백틱 블록이 있으면 그 내부만 사용
         if "```json" in content:
             json_text = content.split("```json")[-1].split("```")[0].strip()
         else:
             json_text = content
 
         json_text = extract_json_from_message(json_text)
-        # 한글 외의 문자는 제거 (키와 값 모두)
-        json_text = keep_only_korean(json_text)
+        # 먼저 JSON 형식으로 고칩니다.
+        json_text_fixed = fix_json_format(json_text)
+        # (옵션) 값에서 한글 이외의 문자를 제거하려면 아래 함수를 적용할 수 있음.
+        # json_text_fixed = keep_only_korean(json_text_fixed)
         try:
-            json_text = json_text.replace("'", '"')
-            return json.loads(json_text)
+            return json.loads(json_text_fixed)
         except json.JSONDecodeError as e:
-            st.error(f"🚨 JSON 변환 오류 발생:\n{json_text}\n오류: {e}")
-            return {"메시지": json_text}
+            st.error(f"🚨 JSON 변환 오류 발생:\n{json_text_fixed}\n오류: {e}")
+            return {"메시지": json_text_fixed}
     except (json.JSONDecodeError, KeyError) as e:
         st.error(f"🚨 응답 처리 오류: {e}")
         return {"메시지": "🚨 응답 처리 오류"}
