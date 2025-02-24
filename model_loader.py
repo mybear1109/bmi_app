@@ -3,7 +3,7 @@ import os
 import streamlit as st
 import logging
 from model import ExercisePredictionModel, FoodPredictionModel  # 반드시 model.py에서 가져옴
-from transformers import AutoTokenizer, AutoModelForCausalLM,GemmaTokenizer
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # 관리자용 로깅 설정 (콘솔 또는 파일에 기록)
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
