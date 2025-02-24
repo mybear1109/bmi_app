@@ -92,6 +92,7 @@ def display_diet_plan(diet_plan):
         # JSON 형식으로 보기 좋게 들여쓰기를 적용한 문자열 생성
         formatted_json = json.dumps(diet_plan, indent=4, ensure_ascii=False)
         st.code(formatted_json, language="json")
+        st.table(formatted_json)
 
 # 운동 추천 결과 표시 함수
 def display_exercise_plan(exercise_plan):
@@ -101,6 +102,7 @@ def display_exercise_plan(exercise_plan):
         return
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
+        st.table(exercise_plan)
     
     # "weekly_exercise_plan" 구조가 있다면 처리
     if (isinstance(exercise_plan, list) and exercise_plan and 
@@ -112,7 +114,10 @@ def display_exercise_plan(exercise_plan):
                 "요일": day.get("day", ""),
                 "운동": day.get("focus", ""),
                 "시간(분)": day.get("duration", ""),
-                "칼로리 소모량(kcal)": "정보 없음"
+                "종류": day.get("type", ""),
+                "일일 칼로리 소모량(kcal)": day.get("daily_calories", ""),
+                "설명": day.get("description", ""),
+                "주간 총소모 칼로리(kcal)": day.get("weekly_calories", "")
             })
         exercise_plan = transformed
     
@@ -135,6 +140,11 @@ def display_exercise_plan(exercise_plan):
             st.json(exercise_plan)
             if len(exercise_plan) > 0:
                 display_raw_markdown(str(exercise_plan[0]))
+            st.code(json.dumps(exercise_plan, indent=4, ensure_ascii=False))
+        return
+    if isinstance(exercise_plan, dict):
+        exercise_plan = [exercise_plan]
+    
     else:
         st.error("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
 

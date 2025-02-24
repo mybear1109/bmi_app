@@ -1,7 +1,7 @@
 import json
 import re
 import requests
-from huggingface_hub import InferenceClient
+from openai import OpenAI
 import os
 import streamlit as st
 import pandas as pd
@@ -14,9 +14,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # 환경 변수 또는 secrets.toml에서 API 키를 가져옵니다.
 HF_API_KEY = os.getenv("HF_API_KEY")
 
-# InferenceClient 객체 생성 (provider: hf-inference)
-client = InferenceClient(
-    provider="hf-inference",
+#  OpenAI객체 생성 (provider: hf-inference)
+client =  OpenAI(
+    base_url="https://router.huggingface.co/hf-inference/v1",
     api_key=HF_API_KEY
 )
 
