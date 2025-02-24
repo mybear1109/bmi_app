@@ -1,7 +1,7 @@
 import json
 import re
 import requests
-from openai import OpenAI
+from huggingface_hub import InferenceClient
 import os
 import streamlit as st
 import pandas as pd
@@ -14,9 +14,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # 환경 변수 또는 secrets.toml에서 API 키를 가져옵니다.
 HF_API_KEY = os.getenv("HF_API_KEY")
 
-#  OpenAI객체 생성 (provider: hf-inference)
-client =  OpenAI(
-    base_url="https://router.huggingface.co/hf-inference/v1",
+# InferenceClient 객체 생성 (provider: hf-inference)
+client = InferenceClient(
+    provider="hf-inference",
     api_key=HF_API_KEY
 )
 
@@ -197,7 +197,7 @@ def get_gemma_recommendation(category: str, user_info: dict, additional_info: Li
                 "일일 칼로리 소모량(kcal)": 300,
                 "설명": "요가로 근력과 유연성 향상, 가벼운 산책으로 회복 촉진"
               },
-              {"주간 총소모 칼로리(kcal)": 2450}
+              {"일일 칼로리 소모량(kcal)": 2450}
             ]
             """
         )
