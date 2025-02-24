@@ -20,7 +20,7 @@ def process_user_info(user_data):
     keys = [
         "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)",
         "혈압 차이", "총콜레스테롤", "고혈당 위험", "간 지표",
-        "성별", "연령대", "비만 위험 지수", "흡연상태", "음주여부"
+        "성별", "나이", "비만 위험 지수", "흡연상태", "음주여부"
     ]
     return { key: user_data.get(key, "미측정") for key in keys }
 
@@ -53,7 +53,7 @@ def display_diet_plan(diet_plan):
         )
         st.dataframe(styled_df, use_container_width=True)
     else:
-        # 대체 구조 (예: meals 배열) 변환 시도
+        # 대체 구조(예: meals 배열)가 있을 경우 처리
         if df.columns.str.contains("meals").any():
             transformed = []
             for item in diet_plan:
@@ -100,7 +100,7 @@ def display_exercise_plan(exercise_plan):
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
     
-    # 만약 "weekly_exercise_plan" 구조가 있으면 변환 처리
+    # "weekly_exercise_plan" 구조가 있다면 변환 처리
     if (isinstance(exercise_plan, list) and exercise_plan and 
         isinstance(exercise_plan[0], dict) and "weekly_exercise_plan" in exercise_plan[0]):
         weekly_plan = exercise_plan[0].get("weekly_exercise_plan", [])
@@ -189,7 +189,7 @@ def display_ai_coach_page():
                 if preferred_foods:
                     additional_foods.append(("선호하는 음식", preferred_foods))
                 if diet_restriction != "선택 안함":
-                    additional_foods.append(("식이 요법", diet_restriction))
+                    additional_foods.append(("식이 요법", [diet_restriction]))
                 diet_plan = get_gemma_recommendation("식단", user_info, additional_foods)
             display_diet_plan(diet_plan)
     with col2:
@@ -197,7 +197,7 @@ def display_ai_coach_page():
             with st.spinner("AI가 운동을 추천하는 중...⏳"):
                 additional_exercises = []
                 if fitness_level != "선택 안함":
-                    additional_exercises.append(("체력 수준", fitness_level))
+                    additional_exercises.append(("체력 수준", [fitness_level]))
                 if exercise_preference:
                     additional_exercises.append(("선호하는 운동 유형", exercise_preference))
                 if restricted_exercises:
@@ -205,3 +205,48 @@ def display_ai_coach_page():
                 exercise_plan = get_gemma_recommendation("운동", user_info, additional_exercises)
             display_exercise_plan(exercise_plan)
 
+# 예측 결과 저장 함수
+def save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food):
+    user_data["운동 점수"] = prob_exercise
+    user_data["식단 점수"] = prob_food
+    user_data["연령대"] = calculate_age_group(user_data.get("나이", 0))
+    user_data["예측 날짜"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+    new_data = pd.DataFrame([user_data])
+    PREDICTION_FILE = "data/predictions.csv"
+    if os.path.exists(PREDICTION_FILE):
+        df = pd.read_csv(PREDICTION_FILE)
+        df = pd.concat([df, new_data], ignore_index=True)
+    else:
+        df = new_data
+    df.to_csv(PREDICTION_FILE, index=False)
+    st.success("🎉 분석이 완료되었습니다! 아래 버튼을 클릭하여 상세한 맞춤 계획을 받아보세요.")
+    if st.button("📋 맞춤 건강 계획 받기"):
+        st.balloons()
+        st.info("🚀 축하합니다! 당신만의 맞춤 건강 여정이 시작되었습니다. 함께 건강해져 봐요!")
+    else:
+        st.error("⚠️ 사용자 정보가 없습니다. 먼저 기본 정보를 입력해주세요.")
+
+def calculate_age_group(age):
+    """
+    나이를 10년 단위의 연령대로 변환하는 함수입니다.
+    """
+    try:
+        age = int(age)
+    except ValueError:
+        return "알 수 없음"
+    if age < 10:
+        return "0-9세"
+    elif age < 20:
+        return "10대"
+    elif age < 30:
+        return "20대"
+    elif age < 40:
+        return "30대"
+    elif age < 50:
+        return "40대"
+    elif age < 60:
+        return "50대"
+    elif age < 70:
+        return "60대"
+    else:
+        return "70대 이상"
