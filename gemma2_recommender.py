@@ -20,7 +20,7 @@ def generate_text_via_api(prompt: str, model_name: str = "google/gemma-2-9b-it")
     """Hugging Face API를 사용하여 텍스트를 생성합니다."""
     token = get_huggingface_token()
     client = InferenceClient(model=model_name, api_key=token)
-    response = client.text_generation(prompt=prompt, max_new_tokens=520)
+    response = client.text_generation(prompt=prompt)
     return response
 
 def get_user_info_with_default(user_data: Dict[str, str]) -> Dict[str, str]:
