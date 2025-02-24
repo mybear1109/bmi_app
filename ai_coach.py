@@ -40,7 +40,7 @@ def display_diet_plan(diet_plan):
     if isinstance(diet_plan, dict) and "메시지" in diet_plan:
         logging.info("식단 추천 생성 중 문제가 발생했습니다. (관리자 로그 참조)")
         print("🚨 식단 추천 생성 중 문제가 발생했습니다. ")
-        st.code(json.dumps(diet_plan, indent=4, ensure_ascii=False))
+        st.write(json.dumps(diet_plan, indent=8, ensure_ascii=False))
         return
     if isinstance(diet_plan, dict):
         diet_plan = [diet_plan]
@@ -151,6 +151,7 @@ def display_exercise_plan(exercise_plan):
         return
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
+        st.write(exercise_plan)
     
     else:
         logging.info("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
