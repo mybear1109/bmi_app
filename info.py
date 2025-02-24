@@ -2,6 +2,7 @@ import streamlit as st
 
 def display_info_page():
     st.title("💪 AI 기반 개인 맞춤형 건강 관리 웹 애플리케이션 🍎")
+    
     st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
     st.markdown("""
     ### 📌 프로젝트 개요
