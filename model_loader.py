@@ -73,6 +73,7 @@ def load_gemma_model():
         return token, model
     except Exception as e:
         logging.error(f"🚨 Gemma 모델 로딩 중 오류 발생: {e}")
+        print (f"🚨 Gemma 모델 로딩 중 오류 발생: {e}")
         return None, None
 
 # Gemma 모델과 토크나이저 로드 (UI에 메시지 표시 X)
