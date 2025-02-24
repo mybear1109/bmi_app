@@ -120,7 +120,7 @@ def expand_allergies(allergies: List[str]) -> Set[str]:
             expanded.add(allergy)
     return expanded
 
-def generate_text_via_api(prompt: str, model_name: str = "google/gemma-2b-it"):
+def generate_text_via_api(prompt: str, model_name: str = "google/gemma-2-9b-it"):
     """
     Hugging Face API의 chat completions를 사용하여 텍스트를 생성합니다.
     prompt를 메시지 리스트로 변환하여 API 호출 후 응답을 파싱합니다.
