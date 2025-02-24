@@ -2,8 +2,9 @@ import streamlit as st
 
 def display_info_page():
     st.title("💪 AI 기반 개인 맞춤형 건강 관리 웹 애플리케이션 🍎")
+    st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
+    st.header("📌 프로젝트 개요")
     st.markdown("""
-    ### 📌 프로젝트 개요
     본 프로젝트는 개인의 건강 데이터를 기반으로 AI 모델이 맞춤형 운동 계획과 식단 추천을 제공하는 Streamlit 웹 애플리케이션입니다. 
     국민건강보험공단의 100만 명 건강검진정보 데이터셋을 활용하여 사용자의 건강 상태를 정확하게 분석하고, 
     최신 Gemini Pro (Gemma-2) 모델을 통해 개인에게 최적화된 솔루션을 제공합니다.
