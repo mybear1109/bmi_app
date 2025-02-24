@@ -135,7 +135,7 @@ def generate_text_via_api(prompt: str, model_name: str = "google/gemma-2-9b-it")
         st.error(f"🚨 API 호출 오류: {e}")
         return {"메시지": "🚨 API 호출 오류 발생"}
 
-def get_gemma_recommendation(category, user_info, allergies=[], excluded_foods=[]):
+def get_gemma_recommendation(category, user_info, additional_info=[]):
     """
     카테고리에 따라 운동 또는 식단 추천 요청 프롬프트를 구성하여 API 호출을 수행합니다.
     """
@@ -163,6 +163,18 @@ def get_gemma_recommendation(category, user_info, allergies=[], excluded_foods=[
             "- 운동의 이점과 권장 이유를 간략히 설명하세요.\n"
             "- 목표 체중 달성을 위한 권장 운동량을 계산하여 제시하세요.\n"
             "- 각 운동의 소모 칼로리, 일일 총소모 칼로리, 주간 총소모 칼로리를 포함하세요.\n"
+        )
+        
+        # 추가 운동 정보 처리
+        for info_type, info_value in additional_info:
+            if info_type == "체력 수준":
+                prompt += f"- 사용자의 체력 수준은 {info_value}입니다. 이에 맞는 운동 강도를 제안해주세요.\n"
+            elif info_type == "선호하는 운동 유형":
+                prompt += f"- 사용자가 선호하는 운동 유형은 {', '.join(info_value)}입니다. 이를 고려하여 계획을 세워주세요.\n"
+            elif info_type == "제한된 운동":
+                prompt += f"- 다음 운동은 제외해주세요: {', '.join(info_value)}\n"
+        
+        prompt += (
             "예시 형식:\n"
             """
             [
@@ -190,10 +202,6 @@ def get_gemma_recommendation(category, user_info, allergies=[], excluded_foods=[
             """
         )
     elif category == "식단":
-        expanded_allergies = expand_allergies(allergies)
-        all_excluded_foods = set(expanded_allergies + excluded_foods)
-        excluded_foods_str = ', '.join(all_excluded_foods) if all_excluded_foods else "없음"
-        
         prompt += (
             "당신은 전문 영양사입니다. 다음 지침을 따라 7일 식단 계획을 작성해 주세요:\n"
             f"{common_instructions}"
@@ -204,8 +212,19 @@ def get_gemma_recommendation(category, user_info, allergies=[], excluded_foods=[
             "- 식사 간 간식이나 야식에 대한 제안도 포함할 수 있습니다.\n"
             "- 각 음식의 영양적 이점을 간략히 설명하세요.\n"
             "- 목표 체중 달성을 위한 일일 권장 칼로리를 계산하여 제시하세요.\n"
-            f"- 다음 음식은 제외해주세요: {excluded_foods_str}\n"
             "- 각 끼니별 칼로리, 일일 총칼로리, 주간 총칼로리를 포함하세요.\n"
+        )
+        
+        # 추가 식단 정보 처리
+        for info_type, info_value in additional_info:
+            if info_type == "알레르기 및 기피 음식":
+                prompt += f"- 다음 음식은 제외해주세요: {', '.join(info_value)}\n"
+            elif info_type == "선호하는 음식":
+                prompt += f"- 사용자가 선호하는 음식은 {', '.join(info_value)}입니다. 이를 고려하여 계획을 세워주세요.\n"
+            elif info_type == "식이 요법":
+                prompt += f"- 사용자의 식이 요법은 {info_value}입니다. 이에 맞는 식단을 구성해주세요.\n"
+        
+        prompt += (
             "예시 형식:\n"
             """
             [
@@ -236,5 +255,4 @@ def get_gemma_recommendation(category, user_info, allergies=[], excluded_foods=[
         return {"메시지": "🚨 올바른 카테고리를 입력하세요: '운동' 또는 '식단'"}
     
     return generate_text_via_api(prompt)
-
 
