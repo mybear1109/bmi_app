@@ -220,7 +220,6 @@ def get_gemma_recommendation(category: str, user_info: dict, additional_info: Li
             "- 각 음식의 영양적 이점을 간략히 설명하세요.\n"
             "- 목표 체중 달성을 위한 일일 권장 칼로리를 계산하여 제시하세요.\n"
             "- 각 끼니별 칼로리, 일일 총칼로리, 주간 총칼로리를 포함하세요.\n"
-            "- 각 끼니별 칼로리, 일일 총칼로리, 주간 총칼로리를 포함하세요.\n"
             "예시 형식:\n"
             """
             [
