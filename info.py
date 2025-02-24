@@ -83,7 +83,26 @@ def display_info_page():
     사용자의 건강 상태와 목표에 최적화된 운동 계획과 식단 추천을 제공할 수 있게 되었습니다.
     """)
 
-    st.markdown("---")
 
+    st.markdown("---")  # 구분선 추가
+    
     github_url = "https://github.com/mybear1109/bmi_app/blob/main/README.md"
-    st.markdown(f"[🚀 자세한 정보 보기]({github_url})")
+    
+    st.markdown(f"""
+    <a href="{github_url}" target="_blank">
+        <button style="
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 12px;">
+            🚀 자세한 정보 보기
+        </button>
+    </a>
+    """, unsafe_allow_html=True)
