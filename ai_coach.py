@@ -1,89 +1,71 @@
-import streamlit as st
 import json
+import re
+import requests
+import os
+import streamlit as st
+import logging
+from typing import List, Dict, Set, Tuple
 import pandas as pd
-from gemma2_recommender import get_gemma_recommendation
+from huggingface_hub import InferenceClient
 
-def load_user_data():
-    user_data = st.session_state.get("user_data", {})
-    if isinstance(user_data, str):
-        try:
-            return json.loads(user_data)
-        except json.JSONDecodeError:
-            return {}
-    return user_data
+def get_huggingface_token():
+    """환경 변수 또는 Streamlit secrets에서 Hugging Face API 토큰을 가져옵니다."""
+    return st.secrets.get("HUGGINGFACE_API_TOKEN")
 
-def display_recommendation(recommendation, title):
-    if not recommendation:
-        st.error(f"🚨 {title} 추천 생성 중 문제가 발생했습니다.")
-        st.text(recommendation)
-        return
-    
-    if isinstance(recommendation, str):
-        st.subheader(f"{title} 추천 결과")
-        st.text(recommendation)
-        return
-    
-    if isinstance(recommendation, list):
-        try:
-            df = pd.DataFrame(recommendation)
-            st.subheader(f"{title} 추천 결과")
-            st.dataframe(df, use_container_width=True)
-        except ValueError:
-            st.error(f"🚨 {title} 추천 데이터를 테이블로 변환하는 중 오류 발생")
-            st.text(recommendation)
-            return
+def clean_input(text: str) -> str:
+    """불필요한 단어(해줘, 알려줘 등)를 제거한 사용자 입력을 반환"""
+    return re.sub(r"\b(해줘|알려줘|설명해 줘|말해 줘)\b", "", text, flags=re.IGNORECASE).strip()
 
-def display_ai_coach_page():
-    st.header("🏋️‍♂️ AI 건강 코치")
-    user_data = load_user_data()
-    
-    st.subheader("맞춤 건강 프로필 설정")
-    goal = st.selectbox("🎯 건강 목표", ["체중 관리", "근력 증진", "심혈관 건강 개선", "전반적 웰빙 향상"])
-    user_data["목표"] = goal
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        allergen_foods = st.text_input("🚫 식품 알레르기 및 기피 항목 (쉼표로 구분)", "", key="allergen_foods")
-        allergen_foods = [food.strip() for food in allergen_foods.split(',') if food.strip()]
-        st.markdown("<br>", unsafe_allow_html=True)
-        preferred_foods = st.text_input("😋 선호하는 음식 (쉼표 구분)", "", key="preferred_foods")
-        preferred_foods = [food.strip() for food in preferred_foods.split(',') if food.strip()]
-        st.markdown("<br>", unsafe_allow_html=True)
-        diet_restriction = st.selectbox("🍽️ 식이 요법 유형", ["선택 안함", "일반식", "채식", "육류 중심", "저탄수화물", "저지방", "글루텐 프리"])
-    with col2:
-        fitness_level = st.select_slider("💪 현재 체력 수준", options=["선택 안함", "매우 낮음", "낮음", "보통", "높음", "매우 높음"])
-        st.markdown("<br>", unsafe_allow_html=True)
-        restricted_exercises = st.text_input("⚠️ 운동 제한 사항 (쉼표로 구분)", "", key="restricted_exercises")
-        restricted_exercises = [exercise.strip() for exercise in restricted_exercises.split(',') if exercise.strip()]
-        st.markdown("<br>", unsafe_allow_html=True)
-        exercise_preference = st.multiselect("🏃‍♀️ 선호하는 운동 유형", 
-                                             ["유산소 운동", "근력 트레이닝", "유연성 운동", "균형 및 코어", 
-                                              "고강도 인터벌 트레이닝", "요가", "필라테스"])
-        st.markdown("<br>", unsafe_allow_html=True)
-    
-    user_data.update({
-        "allergen_foods": allergen_foods,
-        "preferred_foods": preferred_foods,
-        "diet_restriction": diet_restriction,
-        "restricted_exercises": restricted_exercises,
-        "fitness_level": fitness_level,
-        "exercise_preference": exercise_preference
-    })
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🥗 식단 계획 추천", key="diet_button"):
-            with st.spinner("AI가 식단을 추천하는 중...⏳"):
-                diet_plan = get_gemma_recommendation("식단", user_data, allergen_foods)
-            display_recommendation(diet_plan, "식단")
-            st.write(diet_plan)
+def generate_text_via_api(prompt: str, model_name: str = "google/gemma-2-9b-it"):
+    """Hugging Face API를 사용하여 텍스트를 생성합니다."""
+    token = get_huggingface_token()
+    client = InferenceClient(model=model_name, api_key=token)
+    response = client.text_generation(prompt=prompt, max_new_tokens=520)
+    return response
 
-    with col2:
-        if st.button("🏋️ 운동 계획 추천", key="workout_button"):
-            with st.spinner("AI가 운동을 추천하는 중...⏳"):
-                exercise_plan = get_gemma_recommendation("운동", user_data)
-            display_recommendation(exercise_plan, "운동")
-            st.write(exercise_plan)
-  
+def get_user_info_with_default(user_data: Dict[str, str]) -> Dict[str, str]:
+    """사용자 정보 중 '미측정' 항목은 기본값으로 채워 반환합니다."""
+    default_info = {
+        "BMI": "23",
+        "허리둘레": "80cm",
+        "수축기혈압(최고 혈압)": "120",
+        "이완기혈압(최저 혈압)": "80",
+        "혈압 차이": "40",
+        "총콜레스테롤": "190",
+        "고혈당 위험": "낮음",
+        "간 지표": "정상",
+        "성별": "남성",
+        "연령대": "30대",
+        "비만 위험 지수": "보통",
+        "흡연상태": "비흡연",
+        "음주여부": "비음주"
+    }
+    return {key: user_data.get(key, default_info.get(key, "미측정")) for key in default_info}
+
+def get_gemma_recommendation(category: str, user_info: Dict[str, str], additional_info: List[Tuple[str, List[str]]] = []) -> str:
+    """
+    운동 또는 식단 추천을 위한 프롬프트를 구성하고 API를 호출합니다.
+    """
+    user_info_text = json.dumps(user_info, ensure_ascii=False)
+    prompt = f"사용자 건강 상태: {user_info_text}\n\n"
+    
+    if category == "운동":
+        prompt += (
+            "당신은 AI 피트니스 코치입니다. 사용자의 건강 상태를 고려한 7일 운동 계획을 작성해 주세요.\n"
+            "운동 예시:\n"
+            "[{'요일': '월', '운동': [{'종류': '달리기', '시간': 30, '칼로리 소모': 300}, {'종류': '스트레칭', '시간': 15, '칼로리 소모': 50}], '설명': '유산소 운동과 스트레칭으로 체지방 감소 및 유연성 향상'}]"
+        )
+    elif category == "식단":
+        prompt += (
+            "당신은 AI 영양사입니다. 사용자의 건강 상태를 고려한 7일 식단 계획을 작성해 주세요.\n"
+            "식단 예시:\n"
+            "[{'요일': '월', '아침': {'메뉴': '계란 + 오트밀', '칼로리': 300}, '점심': {'메뉴': '닭가슴살 샐러드', '칼로리': 400}, '저녁': {'메뉴': '구운 채소 + 연어', '칼로리': 450}, '설명': '고단백 저탄수화물 식단으로 체지방 감소 도움'}]"
+        )
+    else:
+        return "🚨 올바른 카테고리를 입력하세요: '운동' 또는 '식단'"
+    
+    for info_type, info_value in additional_info:
+        if info_value:
+            prompt += f"\n- {info_type}: {', '.join(info_value)}"
+    
+    return generate_text_via_api(prompt)
