@@ -202,3 +202,4 @@ def get_gemma_recommendation(category: str, user_info: Dict[str, str], additiona
             prompt += f"\n- {info_type}: {', '.join(info_value)}"
     
     return generate_text_via_api(prompt)
+    
