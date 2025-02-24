@@ -2,8 +2,6 @@ import streamlit as st
 
 def display_info_page():
     st.title("💪 AI 기반 개인 맞춤형 건강 관리 웹 애플리케이션 🍎")
-    
-    st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
     st.markdown("""
     ### 📌 프로젝트 개요
     본 프로젝트는 개인의 건강 데이터를 기반으로 AI 모델이 맞춤형 운동 계획과 식단 추천을 제공하는 Streamlit 웹 애플리케이션입니다. 
