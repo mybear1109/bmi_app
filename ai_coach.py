@@ -97,7 +97,7 @@ def display_diet_plan(diet_plan):
         
         # JSON 형식으로 보기 좋게 들여쓰기를 적용한 문자열 생성
         formatted_json = json.dumps(diet_plan, indent=4, ensure_ascii=False)
-        st.code(formatted_json, language="json")
+        st.write(formatted_json, language="json")
 
 
 # 운동 추천 결과 표시 함수
@@ -109,7 +109,7 @@ def display_exercise_plan(exercise_plan):
         return
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
-        st.table(exercise_plan)
+        st.write(exercise_plan)
     
     # "weekly_exercise_plan" 구조가 있다면 처리
     if (isinstance(exercise_plan, list) and exercise_plan and 
@@ -141,13 +141,13 @@ def display_exercise_plan(exercise_plan):
                     {'selector': 'th', 'props': [('background-color', '#FF5722'), ('color', 'white')]}
                 ])
             )
-            st.dataframe(styled_df, use_container_width=True)
+            st.write(styled_df, use_container_width=True)
         else:
             st.warning("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
             st.json(exercise_plan)
             if len(exercise_plan) > 0:
                 display_raw_markdown(str(exercise_plan[0]))
-            st.code(json.dumps(exercise_plan, indent=4, ensure_ascii=False))
+            st.write(json.dumps(exercise_plan, indent=4, ensure_ascii=False))
         return
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
