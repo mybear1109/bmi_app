@@ -228,6 +228,7 @@ def display_ai_coach_page():
                     additional_foods.append(("식이 요법", [diet_restriction]))
                 diet_plan = get_gemma_recommendation("식단", user_info, additional_foods)
             display_diet_plan(diet_plan)
+            st.write(user_info)
     with col2:
         if st.button("🏋️ 운동 계획 추천", key="workout_button"):
             with st.spinner("AI가 운동을 추천하는 중...⏳"):
@@ -240,6 +241,7 @@ def display_ai_coach_page():
                     additional_exercises.append(("제한된 운동", restricted_exercises))
                 exercise_plan = get_gemma_recommendation("운동", user_info, additional_exercises)
             display_exercise_plan(exercise_plan)
+            st.write(exercise_plan)
 
 def save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food):
     user_data["운동 점수"] = prob_exercise
