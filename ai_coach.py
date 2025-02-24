@@ -41,7 +41,9 @@ def display_diet_plan(diet_plan):
         diet_plan = [diet_plan]
     
     df = pd.DataFrame(diet_plan)
+    # 예상하는 열들을 정의합니다.
     expected_cols = ["요일", "아침", "점심","간식", "저녁","일일 총칼로리(kcal)","설명", "주간 총칼로리 (kcal)"]
+
     if all(col in df.columns for col in expected_cols):
         styled_df = (
             df[expected_cols]
@@ -54,46 +56,67 @@ def display_diet_plan(diet_plan):
         )
         st.dataframe(styled_df, use_container_width=True)
     else:
-        # 대체 구조 (예: meals 배열) 처리
-        if df.columns.str.contains("meals").any():
-            transformed = []
-            for item in diet_plan:
-                if "meals" in item and isinstance(item["meals"], list):
-                    for meal in item["meals"]:
-                        meal_time = meal.get("time", "")
-                        meal_food = meal.get("food", "")
-                        if isinstance(meal_food, list):
-                            meal_food = ", ".join(map(str, meal_food))
-                        desc = meal.get("description", "")
-                        if desc:
-                            meal_food += f" / {desc}"
-                        # 한글, 숫자, 기본 구두점만 남기기
-                        meal_time = re.sub(r'[^가-힣0-9\s\.,:\(\)\[\]\-]+', '', meal_time)
-                        meal_food = re.sub(r'[^가-힣0-9\s\.,:\(\)\[\]\-]+', '', meal_food)
-                        transformed.append({
-                            "시간": meal_time if meal_time else "(미정)",
-                            "음식": meal_food if meal_food else "(내용 없음)"
-                        })
-            if transformed:
-                st.markdown("### 식단 추천 (대체 구조로 변환)")
-                df2 = pd.DataFrame(transformed)
-                df2.reset_index(drop=True, inplace=True)
-                styled_df2 = (
-                    df2.style
-                    .set_properties(**{'text-align': 'center', 'font-size': '16px'})
-                    .set_table_styles([
-                        {'selector': 'th', 'props': [('background-color', '#1976D2'), ('color', 'white')]}
-                    ])
-                )
-                st.dataframe(styled_df2, use_container_width=True)
-                return
         st.warning("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
-        # JSON 형식으로 보기 좋게 들여쓰기를 적용한 문자열 생성
+        # 원시 JSON 데이터를 보기 좋게 들여쓰기로 포맷하여 출력
         formatted_json = json.dumps(diet_plan, indent=4, ensure_ascii=False)
         st.code(formatted_json, language="json")
+        
+        # 원시 JSON 데이터를 평탄화하여 DataFrame으로 재구성합니다.
+        try:
+            data = json.loads(formatted_json)
+        except json.JSONDecodeError:
+            data = []
+        
+        rows = []
+        for entry in data:
+            # 만약 주간 총칼로리 정보가 있다면 단일 행으로 추가
+            if "주간 총칼로리" in entry:
+                rows.append({"요일": "주간 총칼로리", "일일 총칼로리": entry["주간 총칼로리"]})
+            else:
+                row = {
+                    "요일": entry.get("요일", ""),
+                    "아침 메뉴": entry.get("아침", {}).get("메뉴", ""),
+                    "아침 칼로리": entry.get("아침", {}).get("칼로리", ""),
+                    "점심 메뉴": entry.get("점심", {}).get("메뉴", ""),
+                    "점심 칼로리": entry.get("점심", {}).get("칼로리", ""),
+                    "저녁 메뉴": entry.get("저녁", {}).get("메뉴", ""),
+                    "저녁 칼로리": entry.get("저녁", {}).get("칼로리", ""),
+                    "간식 메뉴": entry.get("간식", {}).get("메뉴", ""),
+                    "간식 칼로리": entry.get("간식", {}).get("칼로리", ""),
+                    "일일 총칼로리": entry.get("일일 총칼로리", ""),
+                    "설명": entry.get("설명", "")
+                }
+                rows.append(row)
+        if rows:
+            df_flat = pd.DataFrame(rows)
+            styled_df = (
+                df_flat.style
+                .set_properties(**{'text-align': 'center', 'font-size': '14px'})
+                .set_table_styles([
+                    {'selector': 'th', 'props': [('background-color', '#4CAF50'), ('color', 'white')]}
+                ])
+                .format({
+                    "아침 칼로리": "{:.0f}",
+                    "점심 칼로리": "{:.0f}",
+                    "저녁 칼로리": "{:.0f}",
+                    "간식 칼로리": "{:.0f}",
+                    "일일 총칼로리": "{:.0f}"
+                })
+            )
+            st.dataframe(styled_df, use_container_width=True)
+        else:
+            st.error("평탄화할 데이터가 없습니다.")
+
+        # 만약 변환이 어려운 경우, 원시 마크다운 형식으로 표시
+        display_raw_markdown(str(diet_plan[0]))
 
 # 운동 추천 결과 표시 함수
 def display_exercise_plan(exercise_plan):
+    """
+    운동 추천 결과를 DataFrame 형태로 예쁘게 표시합니다.
+    예상 열("요일", "운동", "시간(분)", "칼로리 소모량")이 존재하면 스타일링된 표로 출력하고,
+    그렇지 않으면 원시 응답 데이터를 JSON과 마크다운 형태로 표시합니다.
+    """
     if isinstance(exercise_plan, dict) and "메시지" in exercise_plan:
         st.error("🚨 운동 추천 생성 중 문제가 발생했습니다. (관리자 로그 참조)")
         st.code(json.dumps(exercise_plan, indent=4, ensure_ascii=False))
@@ -101,41 +124,53 @@ def display_exercise_plan(exercise_plan):
     if isinstance(exercise_plan, dict):
         exercise_plan = [exercise_plan]
     
-    # "weekly_exercise_plan" 구조가 있다면 처리
-    if (isinstance(exercise_plan, list) and exercise_plan and 
-        isinstance(exercise_plan[0], dict) and "weekly_exercise_plan" in exercise_plan[0]):
-        weekly_plan = exercise_plan[0].get("weekly_exercise_plan", [])
-        transformed = []
-        for day in weekly_plan:
-            transformed.append({
-                "요일": day.get("day", ""),
-                "운동": day.get("focus", ""),
-                "시간(분)": day.get("duration", ""),
-                "칼로리 소모량(kcal)": "정보 없음"
-            })
-        exercise_plan = transformed
+    df = pd.DataFrame(exercise_plan)
+    expected_cols = ["요일", "운동", "시간(분)", "칼로리 소모량"]
     
-    if isinstance(exercise_plan, list):
-        df = pd.DataFrame(exercise_plan)
-        expected_cols = ["요일", "운동", "종류","시간(분)", "일일 칼로리 소모량(kcal)","설명","주간 총소모 칼로리(kcal)"]
-        if all(col in df.columns for col in expected_cols):
-            styled_df = (
-                df[expected_cols]
-                .style
-                .set_properties(**{'text-align': 'center', 'font-size': '16px'})
-                .background_gradient(cmap='Oranges', subset=["주간 총소모 칼로리(kcal)"])
-                .set_table_styles([
-                    {'selector': 'th', 'props': [('background-color', '#FF5722'), ('color', 'white')]}
-                ])
-            )
-            st.dataframe(styled_df, use_container_width=True)
-        else:
-            st.warning("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
-            st.json(exercise_plan)
-            if len(exercise_plan) > 0:
-                display_raw_markdown(str(exercise_plan[0]))
+    # 만약 예상 열들이 모두 있다면 스타일링된 DataFrame으로 출력
+    if all(col in df.columns for col in expected_cols):
+        styled_df = (
+            df[expected_cols]
+            .style
+            .set_properties(**{'text-align': 'center', 'font-size': '16px'})
+            .background_gradient(cmap='Oranges', subset=["칼로리 소모량"])
+            .set_table_styles([
+                {'selector': 'th', 'props': [('background-color', '#FF5722'), ('color', 'white')]}
+            ])
+        )
+        st.dataframe(styled_df, use_container_width=True)
     else:
-        st.error("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
+        # 예상 열이 없을 경우, 원시 데이터를 보기 좋게 변환 시도
+        st.warning("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
+        st.json(exercise_plan)
+        if len(exercise_plan) > 0:
+            # 예시: 운동 정보가 weekly_exercise_plan 형태인 경우 평탄화하여 DataFrame으로 표시
+            if isinstance(exercise_plan[0], dict) and "weekly_exercise_plan" in exercise_plan[0]:
+                weekly_plan = exercise_plan[0].get("weekly_exercise_plan", [])
+                transformed = []
+                for day in weekly_plan:
+                    transformed.append({
+                        "요일": day.get("day", ""),
+                        "운동": day.get("focus", ""),
+                        "시간(분)": day.get("duration", ""),
+                        "칼로리 소모량": day.get("calories", "정보 없음"),
+                        "설명": day.get("description", "")
+                    })
+                if transformed:
+                    st.markdown("### 운동 추천 (평탄화된 대체 구조)")
+                    df2 = pd.DataFrame(transformed)
+                    df2.reset_index(drop=True, inplace=True)
+                    styled_df2 = (
+                        df2.style
+                        .set_properties(**{'text-align': 'center', 'font-size': '16px'})
+                        .set_table_styles([
+                            {'selector': 'th', 'props': [('background-color', '#1976D2'), ('color', 'white')]}
+                        ])
+                    )
+                    st.dataframe(styled_df2, use_container_width=True)
+                    return
+            # 만약 변환이 어려운 경우, 원시 마크다운 형식으로 표시
+            display_raw_markdown(str(exercise_plan[0]))
 
 def calculate_age_group(age):
     """
