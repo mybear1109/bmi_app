@@ -1,17 +1,8 @@
-from openai import OpenAI
-import json
-import re
-import os
 import streamlit as st
+import json
 import pandas as pd
-import logging
-from typing import List, Dict, Set
-from gemma2_recommender import get_gemma2_recommender, get_exercise_recommendation, get_meal_recommendation
+from gemma2_recommender import get_gemma_recommendation
 
-# 환경 변수 또는 secrets.toml에서 API 키를 가져옵니다.
-HF_API_KEY = os.getenv("HF_API_KEY")
-
-# 사용자 데이터 불러오기 함수
 def load_user_data():
     user_data = st.session_state.get("user_data", {})
     if isinstance(user_data, str):
@@ -21,50 +12,35 @@ def load_user_data():
             return {}
     return user_data
 
-# 사용자 건강 정보 처리 함수
-def process_user_info(user_data):
-    """
-    사용자 데이터에서 필요한 건강 정보를 추출합니다.
-    """
-    required_keys = [
-        "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)",
-        "혈압 차이", "총콜레스테롤", "간 지표", "성별", "나이", "비만 위험 지수", "흡연상태", "음주여부"
-    ]
-    
-    return {key: user_data.get(key, None) for key in required_keys}
-
-# 식단 추천 결과 표시 함수
-def display_diet_plan(diet_plan):
-    if isinstance(diet_plan, dict) and "메시지" in diet_plan:
-        st.error("🚨 식단 추천 생성 중 문제가 발생했습니다. (관리자 로그 참조)")
-        st.code(json.dumps(diet_plan, indent=4, ensure_ascii=False))
+def display_recommendation(recommendation, title):
+    if not recommendation:
+        st.error(f"🚨 {title} 추천 생성 중 문제가 발생했습니다.")
+        st.text(recommendation)
         return
     
-    df = pd.DataFrame(diet_plan)
-    st.dataframe(df, use_container_width=True)
-
-# 운동 추천 결과 표시 함수
-def display_exercise_plan(exercise_plan):
-    if isinstance(exercise_plan, dict) and "메시지" in exercise_plan:
-        st.error("🚨 운동 추천 생성 중 문제가 발생했습니다. (관리자 로그 참조)")
-        st.code(json.dumps(exercise_plan, indent=4, ensure_ascii=False))
+    if isinstance(recommendation, str):
+        st.subheader(f"{title} 추천 결과")
+        st.text(recommendation)
         return
     
-    df = pd.DataFrame(exercise_plan)
-    st.dataframe(df, use_container_width=True)
+    if isinstance(recommendation, list):
+        try:
+            df = pd.DataFrame(recommendation)
+            st.subheader(f"{title} 추천 결과")
+            st.dataframe(df, use_container_width=True)
+        except ValueError:
+            st.error(f"🚨 {title} 추천 데이터를 테이블로 변환하는 중 오류 발생")
+            st.text(recommendation)
+            return
 
-# Streamlit 메인 페이지
 def display_ai_coach_page():
     st.header("🏋️‍♂️ AI 건강 코치")
-    st.markdown("<br>", unsafe_allow_html=True)
-    
     user_data = load_user_data()
-    user_info = process_user_info(user_data)
     
-    st.subheader("🎛️ 맞춤 건강 프로필 설정")
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.subheader("맞춤 건강 프로필 설정")
     goal = st.selectbox("🎯 건강 목표", ["체중 관리", "근력 증진", "심혈관 건강 개선", "전반적 웰빙 향상"])
-    user_info["목표"] = goal
+    user_data["목표"] = goal
+    
     st.markdown("<br>", unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
@@ -75,24 +51,35 @@ def display_ai_coach_page():
         preferred_foods = st.text_input("😋 선호하는 음식 (쉼표 구분)", "", key="preferred_foods")
         preferred_foods = [food.strip() for food in preferred_foods.split(',') if food.strip()]
         st.markdown("<br>", unsafe_allow_html=True)
+        diet_restriction = st.selectbox("🍽️ 식이 요법 유형", ["선택 안함", "일반식", "채식", "육류 중심", "저탄수화물", "저지방", "글루텐 프리"])
     with col2:
         fitness_level = st.select_slider("💪 현재 체력 수준", options=["선택 안함", "매우 낮음", "낮음", "보통", "높음", "매우 높음"])
         st.markdown("<br>", unsafe_allow_html=True)
+        restricted_exercises = st.text_input("⚠️ 운동 제한 사항 (쉼표로 구분)", "", key="restricted_exercises")
+        restricted_exercises = [exercise.strip() for exercise in restricted_exercises.split(',') if exercise.strip()]
+        st.markdown("<br>", unsafe_allow_html=True)
+        exercise_preference = st.multiselect("🏃‍♀️ 선호하는 운동 유형", 
+                                             ["유산소 운동", "근력 트레이닝", "유연성 운동", "균형 및 코어", 
+                                              "고강도 인터벌 트레이닝", "요가", "필라테스"])
+        st.markdown("<br>", unsafe_allow_html=True)
     
-    user_info.update({
+    user_data.update({
         "allergen_foods": allergen_foods,
         "preferred_foods": preferred_foods,
-        "fitness_level": fitness_level
+        "diet_restriction": diet_restriction,
+        "restricted_exercises": restricted_exercises,
+        "fitness_level": fitness_level,
+        "exercise_preference": exercise_preference
     })
     
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🥗 식단 계획 추천", key="diet_button"):
             with st.spinner("AI가 식단을 추천하는 중...⏳"):
-                diet_plan = get_meal_recommendation(user_info, allergen_foods)
-            display_diet_plan(diet_plan)
+                diet_plan = get_gemma_recommendation("식단", user_data, allergen_foods)
+            display_recommendation(diet_plan, "식단")
     with col2:
         if st.button("🏋️ 운동 계획 추천", key="workout_button"):
             with st.spinner("AI가 운동을 추천하는 중...⏳"):
-                exercise_plan = get_exercise_recommendation(user_info)
-            display_exercise_plan(exercise_plan)
+                exercise_plan = get_gemma_recommendation("운동", user_data)
+            display_recommendation(exercise_plan, "운동")
