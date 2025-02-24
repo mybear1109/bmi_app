@@ -5,7 +5,7 @@
 
 <br> 
 
-### 🖥️ [홈페이지 바로가기](https://bmiapp-b9xwzi9qtcn9tivgznqbrm.streamlit.app/)
+### 🖥️ [홈페이지 바로가기](https://bmiapp-b8f7gzplqquawaid9efsrc.streamlit.app/)
 
 
 <br>
