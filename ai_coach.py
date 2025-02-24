@@ -1,256 +1,188 @@
 import json
 import re
-import streamlit as st
-import pandas as pd
-from gemma2_recommender import get_gemma_recommendation
-from user_data_utils import load_user_data
+import requests
+from huggingface_hub import InferenceClient
 import os
+import streamlit as st
+import logging
+from typing import List, Dict, Set
 
-# 사용자 데이터 불러오기 함수
-def load_user_data():
-    user_data = st.session_state.get("user_data", {})
-    if isinstance(user_data, str):
+# 로깅 설정 (관리자용 로그는 콘솔에 출력되고, 사용자에게는 보이지 않음)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# 환경 변수 또는 secrets.toml에서 API 키를 가져옵니다.
+HF_API_KEY = os.getenv("HF_API_KEY")
+
+# InferenceClient 객체 생성 (provider: hf-inference)
+client = InferenceClient(
+    provider="hf-inference",
+    token=HF_API_KEY
+)
+
+def clean_control_characters(text: str) -> str:
+    """텍스트 내의 제어문자(ASCII 0~31 등)를 제거합니다."""
+    return re.sub(r'[\x00-\x1F]+', ' ', text)
+
+def extract_json_from_message(message: str) -> str:
+    """
+    메시지가 "🚨 JSON 변환 오류:"로 시작하면 해당 접두사를 제거하고,
+    백틱 블록이 있으면 그 내부만 추출합니다.
+    """
+    prefix = "🚨 JSON 변환 오류:"
+    if message.startswith(prefix):
+        message = message[len(prefix):].strip()
+    if "```json" in message:
+        message = message.split("```json")[-1].split("```")[0].strip()
+    return message
+
+def parse_json_response(response_json):
+    """
+    API 응답 객체에서 choices -> message -> content를 추출하여,
+    백틱 블록 내의 JSON이 있으면 해당 부분만 파싱합니다.
+    제어문자 제거와 후처리를 수행하여 JSON 데이터를 반환합니다.
+    """
+    try:
+        # ChatML 형식 응답 처리
+        if isinstance(response_json, dict):
+            content = response_json['choices'][0]['message']['content']
+        else:
+            content = response_json.choices[0].message.content
+
+        content = clean_control_characters(content.strip())
+        if not content:
+            st.error("🚨 응답 내용이 비어 있습니다.")
+            return {"메시지": "응답 내용이 비어 있습니다."}
+        
+        # 백틱 블록이 있으면 그 내부만 사용, 없으면 전체 사용
+        if "```json" in content:
+            json_text = content.split("```json")[-1].split("```")[0].strip()
+        else:
+            json_text = content
+        
+        json_text = extract_json_from_message(json_text)
         try:
-            return json.loads(user_data)
-        except json.JSONDecodeError:
-            return {}
+            json_text = json_text.replace("'", '"')
+            return json.loads(json_text)
+        except json.JSONDecodeError as e:
+            st.error(f"🚨 JSON 변환 오류 발생:\n{json_text}\n오류: {e}")
+            # 변환 오류 발생 시 원시 텍스트를 반환하여 디버깅 정보를 함께 제공
+            return {"메시지": json_text}
+    except (json.JSONDecodeError, KeyError) as e:
+        st.error(f"🚨 응답 처리 오류: {e}")
+        return {"메시지": "🚨 응답 처리 오류"}
+
+def get_user_info_with_default(user_data):
+    """
+    사용자 정보 중 '미측정' 항목은 기본값으로 채워 반환합니다.
+    """
+    default_info = {
+        "BMI": 24.5,
+        "허리둘레": "80cm",
+        "수축기혈압(최고 혈압)": 120,
+        "이완기혈압(최저 혈압)": 80,
+        "혈압 차이": 40,
+        "총콜레스테롤": 190,
+        "고혈당 위험": "낮음",
+        "간 지표": "정상",
+        "성별": "남성",
+        "연령대": "30대",
+        "비만 위험 지수": "보통",
+        "흡연상태": "비흡연",
+        "음주여부": "비음주"
+    }
+    for key, value in user_data.items():
+        if value == "미측정":
+            user_data[key] = default_info.get(key, "미측정")
     return user_data
 
-# 사용자 건강 정보 처리 함수
-def process_user_info(user_data):
-    keys = [
-        "BMI", "허리둘레", "수축기혈압(최고 혈압)", "이완기혈압(최저 혈압)",
-        "혈압 차이", "총콜레스테롤", "고혈당 위험", "간 지표",
-        "성별", "연령대", "비만 위험 지수", "흡연상태", "음주여부"
-    ]
-    return { key: user_data.get(key, "미측정") for key in keys }
-
-# 원시 응답을 깔끔한 마크다운 형식으로 출력하는 함수 (디버깅용)
-def display_raw_markdown(raw_text):
-    st.markdown("---")
-    st.markdown("**원시 응답 (마크다운):**")
-    st.markdown(f"> {raw_text}")
-
-# 대체 구조(중첩된 식단 구조)를 평탄화하는 함수
-def flatten_diet_plan(plan: dict) -> dict:
+def expand_allergies(allergies: List[str]) -> Set[str]:
     """
-    plan 예시:
-    {
-      "일일 총칼로리": 1300,
-      "아침": {"메뉴": "계란 + 오트밀 (130g), 과일 1개, 생선 150g", "칼로리": 300},
-      "점심": {"메뉴": "닭가슴살 샐러드 (150g), 콩나물 150g", "칼로리": 400},
-      "저녁": {"메뉴": "구운 채소 + 연어 (150g), 랑치 150g, 주스 150ml", "칼로리": 450},
-      "간식": {"메뉴": "그릭 요거트 (150g)", "칼로리": 150},
-      "설명": "고단백 저탄수화물 식단으로 체지방 감소 도움"
-    }
-    평탄화 결과:
-    {
-      "일일 총칼로리": 1300,
-      "아침 메뉴": "계란 + 오트밀 (130g), 과일 1개, 생선 150g",
-      "아침 칼로리": 300,
-      "점심 메뉴": "닭가슴살 샐러드 (150g), 콩나물 150g",
-      "점심 칼로리": 400,
-      "저녁 메뉴": "구운 채소 + 연어 (150g), 랑치 150g, 주스 150ml",
-      "저녁 칼로리": 450,
-      "간식 메뉴": "그릭 요거트 (150g)",
-      "간식 칼로리": 150,
-      "설명": "고단백 저탄수화물 식단으로 체지방 감소 도움"
-    }
+    입력된 알레르기 목록을 미리 정의된 매핑을 통해 확장하여,
+    관련 모든 식품 목록을 반환합니다.
     """
-    flat = {}
-    for key, value in plan.items():
-        if isinstance(value, dict):
-            flat[f"{key} 메뉴"] = value.get("메뉴", "")
-            flat[f"{key} 칼로리"] = value.get("칼로리", "")
+    allergy_mapping = {
+        '계란': ['계란', '계란노른자', '계란흰자', '달걀', '노른자', '흰자'],
+        '생선': ['생선', '연어', '참치', '광어'],
+        '우유': ['우유', '요구르트', '치즈'],
+        '콩': ['콩', '두부', '콩나물'],
+        '밀가루': ['밀가루', '빵', '면'],
+        '아몬드': ['아몬드', '호두', '땅콩'],
+        '닭고기': ['닭고기', '닭가슴살', '닭날개'],
+        '소고기': ['소고기', '소불고기', '소양지'],
+        '돼지고기': ['돼지고기', '삼겹살', '목살'],
+        '새우': ['새우', '게', '랍스터']
+    }
+    expanded = set()
+    for allergy in allergies:
+        if allergy in allergy_mapping:
+            expanded.update(allergy_mapping[allergy])
         else:
-            flat[key] = value
-    return flat
+            expanded.add(allergy)
+    return expanded
 
-# 식단 추천 결과 표시 함수
-def display_diet_plan(diet_plan):
-    # 오류 응답 처리
-    if isinstance(diet_plan, dict) and "메시지" in diet_plan:
-        st.error("🚨 식단 추천 생성 중 문제가 발생했습니다. (관리자 로그 참조)")
-        st.code(json.dumps(diet_plan, indent=4, ensure_ascii=False))
-        return
-    if isinstance(diet_plan, dict):
-        diet_plan = [diet_plan]
-    
-    df = pd.DataFrame(diet_plan)
-    # 기본 예상 열 구조
-    expected_cols = ["요일", "아침", "점심", "저녁", "총칼로리 (kcal)"]
-    if all(col in df.columns for col in expected_cols):
-        styled_df = (
-            df[expected_cols]
-            .style
-            .set_properties(**{'text-align': 'center', 'font-size': '16px'})
-            .background_gradient(cmap='Blues', subset=["총칼로리 (kcal)"])
-            .set_table_styles([
-                {'selector': 'th', 'props': [('background-color', '#4CAF50'), ('color', 'white')]}
-            ])
+def generate_text_via_api(prompt: str, model_name: str = "google/gemma-2-9b-it"):
+    """
+    Hugging Face API의 chat completions를 사용하여 텍스트를 생성합니다.
+    prompt를 메시지 리스트로 변환하여 API 호출 후 응답을 파싱합니다.
+    """
+    messages = [{"role": "user", "content": prompt}]
+    try:
+        response_json = client.chat.completions.create(
+            model=model_name,
+            messages=messages
         )
-        st.dataframe(styled_df, use_container_width=True)
-    # 대체 구조 처리: 예를 들어 '일일 총칼로리' 키가 존재하는 경우
-    elif "일일 총칼로리" in df.columns:
-        # 평탄화하여 새로운 DataFrame 생성
-        flat_data = [flatten_diet_plan(item) for item in diet_plan if isinstance(item, dict)]
-        df2 = pd.DataFrame(flat_data)
-        # 예상 대체 열 구조
-        alt_expected = ["일일 총칼로리", "아침 메뉴", "아침 칼로리",
-                        "점심 메뉴", "점심 칼로리",
-                        "저녁 메뉴", "저녁 칼로리",
-                        "간식 메뉴", "간식 칼로리", "설명"]
-        missing = [col for col in alt_expected if col not in df2.columns]
-        if missing:
-            st.warning(f"대체 열 중 누락된 열: {', '.join(missing)}. 원시 응답 데이터를 확인하세요.")
-            st.json(diet_plan)
-            display_raw_markdown(str(diet_plan[0]))
-        else:
-            styled_df2 = (
-                df2[alt_expected]
-                .style
-                .set_properties(**{'text-align': 'center', 'font-size': '16px'})
-                .set_table_styles([
-                    {'selector': 'th', 'props': [('background-color', '#1976D2'), ('color', 'white')]}
-                ])
-            )
-            st.dataframe(styled_df2, use_container_width=True)
-    else:
-        st.warning("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
-        st.json(diet_plan)
-        if len(diet_plan) > 0:
-            display_raw_markdown(str(diet_plan[0]))
+        return parse_json_response(response_json)
+    except requests.exceptions.RequestException as e:
+        st.error(f"🚨 API 호출 오류: {e}")
+        return {"메시지": "🚨 API 호출 오류 발생"}
 
-# 운동 추천 결과 표시 함수
-def display_exercise_plan(exercise_plan):
-    if isinstance(exercise_plan, dict) and "메시지" in exercise_plan:
-        st.error("🚨 운동 추천 생성 중 문제가 발생했습니다. (관리자 로그 참조)")
-        st.code(json.dumps(exercise_plan, indent=4, ensure_ascii=False))
-        return
-    if isinstance(exercise_plan, dict):
-        exercise_plan = [exercise_plan]
+def get_gemma_recommendation(category, user_info, additional_info=[]):
+    """
+    카테고리에 따라 운동 또는 식단 추천 요청 프롬프트를 구성하여 API 호출을 수행합니다.
+    추가 정보(알레르기, 기호 등)는 튜플 리스트로 전달하며, 이를 프롬프트에 포함합니다.
+    """
+    user_info_text = json.dumps(user_info, ensure_ascii=False) if isinstance(user_info, dict) else str(user_info)
+    prompt = f"사용자 건강 상태: {user_info_text}\n\n"
     
-    # weekly_exercise_plan 구조가 있으면 변환 처리
-    if (isinstance(exercise_plan, list) and exercise_plan and 
-        isinstance(exercise_plan[0], dict) and "weekly_exercise_plan" in exercise_plan[0]):
-        weekly_plan = exercise_plan[0].get("weekly_exercise_plan", [])
-        transformed = []
-        for day in weekly_plan:
-            transformed.append({
-                "요일": day.get("day", ""),
-                "운동": day.get("focus", ""),
-                "시간(분)": day.get("duration", ""),
-                "칼로리 소모량(kcal)": "정보 없음"
-            })
-        exercise_plan = transformed
+    common_instructions = (
+        "- 모든 응답은 반드시 한국어로 작성해 주세요.\n"
+        "- 사용자의 건강 상태와 목표에 맞춘 상세한 7일 계획을 제공해야 합니다.\n"
+        "- 결과는 JSON 형식으로 제공해 주세요.\n"
+        "- 각 날짜별로 구체적인 계획을 포함해야 합니다.\n"
+        "- 개인화된 추천을 제공하세요.\n"
+    )
     
-    if isinstance(exercise_plan, list):
-        df = pd.DataFrame(exercise_plan)
-        expected_cols = ["요일", "운동", "시간(분)", "칼로리 소모량(kcal)"]
-        if all(col in df.columns for col in expected_cols):
-            styled_df = (
-                df[expected_cols]
-                .style
-                .set_properties(**{'text-align': 'center', 'font-size': '16px'})
-                .background_gradient(cmap='Oranges', subset=["칼로리 소모량(kcal)"])
-                .set_table_styles([
-                    {'selector': 'th', 'props': [('background-color', '#FF5722'), ('color', 'white')]}
-                ])
-            )
-            st.dataframe(styled_df, use_container_width=True)
-        else:
-            st.warning("예상하는 열이 모두 존재하지 않습니다. 아래는 원시 응답 데이터입니다.")
-            st.json(exercise_plan)
-            if len(exercise_plan) > 0:
-                display_raw_markdown(str(exercise_plan[0]))
+    if category == "운동":
+        prompt += (
+            "당신은 전문적인 AI 피트니스 코치입니다. 다음 지침을 따라 7일 운동 계획을 작성해 주세요:\n"
+            f"{common_instructions}"
+            "- 예시 형식:\n"
+            "[{'요일': ['월', '화', '수', '목', '금', '토', '일'], '운동': [{'종류': '달리기', '시간': 30, '칼로리 소모': 300}, {'종류': '스트레칭', '시간': 15, '칼로리 소모': 50}], '일일 총소모 칼로리': 350, '설명': '유산소 운동과 스트레칭으로 체지방 감소 및 유연성 향상'}]\n"
+        )
+        for info_type, info_value in additional_info:
+            if info_type == "체력 수준":
+                prompt += f"- 사용자의 체력 수준은 {info_value}입니다.\n"
+            elif info_type == "선호하는 운동 유형":
+                prompt += f"- 선호하는 운동 유형: {', '.join(info_value)}\n"
+            elif info_type == "제한된 운동":
+                prompt += f"- 다음 운동은 제외: {', '.join(info_value)}\n"
+    elif category == "식단":
+        prompt += (
+            "당신은 전문 영양사입니다. 다음 지침을 따라 7일 식단 계획을 작성해 주세요:\n"
+            f"{common_instructions}"
+            "- 다이어트를 위한 식단은 칼로리 조절과 균형 잡힌 영양소(단백질, 탄수화물, 지방 비율)가 반영되어야 합니다.\n"
+            "- 아침, 점심, 저녁 3끼 식단을 구체적으로 작성해 주세요.\n"
+            "- 예시 형식:\n"
+            "[{'요일': ['월', '화', '수', '목', '금', '토', '일'], '아침': {'메뉴': '계란 + 오트밀', '칼로리': 300}, '점심': {'메뉴': '닭가슴살 샐러드', '칼로리': 400}, '저녁': {'메뉴': '구운 채소 + 연어', '칼로리': 450}, '간식': {'메뉴': '그릭 요거트', '칼로리': 150}, '일일 총칼로리': 1300, '설명': '고단백 저탄수화물 식단으로 체지방 감소 도움'}]\n"
+        )
+        for info_type, info_value in additional_info:
+            if info_type == "알레르기 및 기피 음식":
+                prompt += f"- 제외할 음식: {', '.join(info_value)}\n"
+            elif info_type == "선호하는 음식":
+                prompt += f"- 선호하는 음식: {', '.join(info_value)}\n"
+            elif info_type == "식이 요법":
+                prompt += f"- 식이 요법: {info_value}\n"
     else:
-        st.error("🚨 응답 형식 오류: 운동 추천 결과가 리스트 형식이 아닙니다.")
-
-# --- 메인 페이지 표시 함수 ---
-def display_ai_coach_page():
-    st.header("🏋️‍♂️ AI 건강 코치")
-    st.markdown("<br>", unsafe_allow_html=True)
+        return {"메시지": "🚨 올바른 카테고리를 입력하세요: '운동' 또는 '식단'"}
     
-    user_data = load_user_data()
-    user_info = process_user_info(user_data)
-    
-    st.subheader("🎛️ 맞춤 건강 프로필 설정")
-    st.markdown("<br>", unsafe_allow_html=True)
-    goal = st.selectbox("🎯 건강 목표", ["체중 관리", "근력 증진", "심혈관 건강 개선", "전반적 웰빙 향상"])
-    user_info["목표"] = goal
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        allergen_foods = st.text_input("🚫 식품 알레르기 및 기피 항목 (쉼표로 구분)", "", key="allergen_foods")
-        allergen_foods = [food.strip() for food in allergen_foods.split(',') if food.strip()]
-        st.markdown("<br>", unsafe_allow_html=True)
-        preferred_foods = st.text_input("😋 선호하는 음식 (쉼표 구분)", "", key="preferred_foods")
-        preferred_foods = [food.strip() for food in preferred_foods.split(',') if food.strip()]
-        st.markdown("<br>", unsafe_allow_html=True)
-        diet_restriction = st.selectbox("🍽️ 식이 요법 유형", ["선택 안함", "일반식", "채식", "육류 중심", "저탄수화물", "저지방", "글루텐 프리"])
-    with col2:
-        fitness_level = st.select_slider("💪 현재 체력 수준", options=["선택 안함", "매우 낮음", "낮음", "보통", "높음", "매우 높음"])
-        st.markdown("<br>", unsafe_allow_html=True)
-        restricted_exercises = st.text_input("⚠️ 운동 제한 사항 (쉼표로 구분)", "", key="restricted_exercises")
-        restricted_exercises = [exercise.strip() for exercise in restricted_exercises.split(',') if exercise.strip()]
-        st.markdown("<br>", unsafe_allow_html=True)
-        exercise_preference = st.multiselect("🏃‍♀️ 선호하는 운동 유형", 
-                                             ["유산소 운동", "근력 트레이닝", "유연성 운동", "균형 및 코어", 
-                                              "고강도 인터벌 트레이닝", "요가", "필라테스"])
-        st.markdown("<br>", unsafe_allow_html=True)
-    
-    user_info.update({
-        "allergen_foods": allergen_foods,
-        "preferred_foods": preferred_foods,
-        "diet_restriction": diet_restriction,
-        "restricted_exercises": restricted_exercises,
-        "fitness_level": fitness_level,
-        "exercise_preference": exercise_preference
-    })
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🥗 식단 계획 추천", key="diet_button"):
-            with st.spinner("AI가 식단을 추천하는 중...⏳"):
-                additional_foods = []
-                if allergen_foods:
-                    additional_foods.append(("알레르기 및 기피 음식", allergen_foods))
-                if preferred_foods:
-                    additional_foods.append(("선호하는 음식", preferred_foods))
-                if diet_restriction != "선택 안함":
-                    additional_foods.append(("식이 요법", [diet_restriction]))
-                diet_plan = get_gemma_recommendation("식단", user_info, additional_foods)
-            display_diet_plan(diet_plan)
-    with col2:
-        if st.button("🏋️ 운동 계획 추천", key="workout_button"):
-            with st.spinner("AI가 운동을 추천하는 중...⏳"):
-                additional_exercises = []
-                if fitness_level != "선택 안함":
-                    additional_exercises.append(("체력 수준", [fitness_level]))
-                if exercise_preference:
-                    additional_exercises.append(("선호하는 운동 유형", exercise_preference))
-                if restricted_exercises:
-                    additional_exercises.append(("제한된 운동", restricted_exercises))
-                exercise_plan = get_gemma_recommendation("운동", user_info, additional_exercises)
-            display_exercise_plan(exercise_plan)
-
-# 최종 예측 결과를 CSV 파일에 저장하는 함수
-def save_prediction_for_visualization(user_id, user_data, prob_exercise, prob_food):
-    user_data["운동 확률"] = prob_exercise
-    user_data["식단 확률"] = prob_food
-    user_data["예측 날짜"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
-    new_data = pd.DataFrame([user_data])
-    PREDICTION_FILE = "data/predictions.csv"
-    if os.path.exists(PREDICTION_FILE):
-        df = pd.read_csv(PREDICTION_FILE)
-        df = pd.concat([df, new_data], ignore_index=True)
-    else:
-        df = new_data
-    df.to_csv(PREDICTION_FILE, index=False)
-    st.success("🎉 분석이 완료되었습니다! 아래 버튼을 클릭하여 상세한 맞춤 계획을 받아보세요.")
-    if st.button("📋 맞춤 건강 계획 받기"):
-        st.balloons()
-        st.info("🚀 축하합니다! 당신만의 맞춤 건강 여정이 시작되었습니다. 함께 건강해져 봐요!")
-    else:
-        st.error("⚠️ 사용자 정보가 없습니다. 먼저 기본 정보를 입력해주세요.")
+    return generate_text_via_api(prompt)
