@@ -62,7 +62,7 @@ def display_info_page():
     st.markdown("""
     - 🐍 **Python:** 웹 애플리케이션 개발의 핵심 언어
     - 🎈 **Streamlit:** 사용자 친화적인 인터페이스를 위한 웹 프레임워크
-    - 🤗 **Hugging Face Transformers:** Gemini Pro (Gemma-2) 모델 통합
+    - 🤗 **Hugging Face Transformers:** `google/gemma-2-9b-it`모델 통합
     - 📈 **Plotly:** 인터랙티브 데이터 시각화
     """)
     st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
