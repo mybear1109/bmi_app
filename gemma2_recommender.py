@@ -84,10 +84,10 @@ def parse_json_response(response_json):
         try:
             return json.loads(json_text_fixed)
         except json.JSONDecodeError as e:
-            st.error(f"🚨 JSON 변환 오류 발생:\n{json_text_fixed}\n오류: {e}")
+            logging.info(f"🚨 JSON 변환 오류 발생:\n{json_text_fixed}\n오류: {e}")
             return {"메시지": json_text_fixed}
     except (json.JSONDecodeError, KeyError) as e:
-        st.error(f"🚨 응답 처리 오류: {e}")
+        logging.info(f"🚨 응답 처리 오류: {e}")
         return {"메시지": "🚨 응답 처리 오류"}
 
 def load_allergy_mapping() -> Dict[str, List[str]]:
