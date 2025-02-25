@@ -191,18 +191,31 @@
 <br>
 
 def fill_missing_values(df_food):<br>
+
 df['칼로리'] = df['칼로리'].fillna(df['칼로리'].median())<br>
+
 df['지방'] = df['지방'].fillna(df['지방'].median())<br>
+
 df['포화지방'] = df['포화지방'].fillna(df['포화지방'].median())<br>
+
 df['단일불포화지방'] = df['단일불포화지방'].fillna(df['단일불포화지방'].median())<br>
+
 df['다중불포화지방'] = df['다중불포화지방'].fillna(df['다중불포화지방'].median())<br>
+
 df['탄수화물'] = df['탄수화물'].fillna(df['탄수화물'].median())<br>
+
 df['당류'] = df['당류'].fillna(df['당류'].median())<br>
+
 df['단백질'] = df['단백질'].fillna(df['단백질'].median())<br>
+
 df['식이섬유'] = df['식이섬유'].fillna(0)<br>
+
 df['콜레스테롤'] = df['콜레스테롤'].fillna(df['콜레스테롤'].median())<br>
+
 df['나트륨'] = df['나트륨'].fillna(df['나트륨'].median())<br>
+
 df['수분'] = df['수분'].fillna(df['수분'].mean())<br>
+
 return df_food
 
 <br>
@@ -246,7 +259,9 @@ def handle_missing_values(df):<br>
 <br>
     
 text_cols = ['운동 가능성', '식단 개선 필요성'])<br>
+
 for col in text_cols:)<br>
+
 df[col] = df[col].replace(['🔍 예측을 실행하세요'], '미실행'))<br>
 
 <br>
@@ -264,7 +279,9 @@ df[col] = df[col].replace(['🔍 예측을 실행하세요'], '미실행'))<br>
 
 numeric_cols = ['연령대', '현재 체중', '목표 체중', '연령대코드(5세단위)', '허리둘레 (cm)']<br>
 for col in numeric_cols:<br>
+
     df[col] = pd.to_numeric(df[col], errors='coerce')<br>
+    
     df[col] = df[col].fillna(df[col].median())<br>
 
 <br>
@@ -294,19 +311,51 @@ for col in numeric_cols:<br>
 <br>
     
 feature_columns = [<br>
-"BMI", # 비만 지수 (높을수록 비만 위험 증가)<br>
-"허리둘레", # 복부 비만 지표 (높을수록 건강 위험 증가)<br>
-"수축기혈압(최고 혈압)", # 고혈압 위험 평가<br>
-"이완기혈압(최저 혈압)", # 고혈압 위험 평가<br>
-"혈압 차이", # 수축기 - 이완기 혈압 차이 (높을수록 심혈관 질환 위험)<br>
-"총콜레스테롤", # LDL + HDL + 트리글리세라이드 (심혈관 건강)<br>
-"고혈당 위험", # 식전혈당(공복혈당)이 높은 경우 당뇨병 위험 증가<br>
-"간 지표", # (ALT, AST, 감마지티피) 간 건강 상태 반영<br>
-"성별", # 남성 / 여성 차이 반영 (운동 및 식단에 영향)<br>
-"연령대", # 연령대 (고령자 위험 증가)<br>
-"비만 위험 지수", # 허리둘레 / BMI (비만 위험 증가)<br>
-"흡연상태", # 흡연 여부 (흡연자는 건강 위험 증가)<br>
-"음주여부" # 음주 여부 (과음 시 건강 위험 증가)<br>
+
+       ## 기본 정보
+        - **`user_id`**: 사용자 고유 식별자
+        - **`성별`**: 남성/여성
+        - **`연령대`**: `나이`를 기반으로 분류 (예: 20대, 30대 등)
+        - **`나이`**: 사용자의 실제 나이
+
+        ## 신체 측정
+        - **`키`**: cm 단위
+        - **`현재 체중`**: kg 단위
+        - **`목표 체중`**: kg 단위
+        - **`허리둘레`**: cm 단위
+        - **`BMI`**: 체질량지수, 계산식: 체중(kg) / (키(m))²
+
+        ## 혈액 검사 결과<br>
+        - **`총콜레스테롤`**: mg/dL 단위
+        - **`HDL콜레스테롤`**: mg/dL 단위
+        - **`LDL콜레스테롤`**: mg/dL 단위
+        - **`트리글리세라이드`**: mg/dL 단위
+        - **`식전혈당(공복혈당)`**: mg/dL 단위
+
+        ## 혈압 관련<br>
+        - **`수축기혈압(최고 혈압)`**: mmHg 단위
+        - **`이완기혈압(최저 혈압)`**: mmHg 단위
+        - **`혈압 차이`**: 수축기혈압 - 이완기혈압
+        - **`고혈압 위험`**: 수축기혈압과 이완기혈압을 기반으로 평가
+
+        ## 생활 습관
+        - **`활동 수준`**: 저/중/고 활동
+        - **`흡연상태`**: 비흡연/과거 흡연/현재 흡연
+        - **`음주여부`**: 비음주/가끔/자주
+
+        ## 건강 위험 평가
+        - **`고혈당 위험`**: 식전혈당과 고혈압 위험을 고려하여 평가
+        - **`간 지표`**: BMI와 트리글리세라이드를 고려하여 평가
+        - **`비만 위험 지수`**: BMI, 허리둘레, 트리글리세라이드를 고려하여 계산
+
+        ## 건강 개선 지표
+        - **`운동 개선 필요성`**: 나이, BMI, 활동 수준 등을 고려하여 계산
+        - **`운동 점수`**: 활동 수준을 기반으로 계산
+        - **`식단 개선 필요성`**: BMI, 총콜레스테롤, 트리글리세라이드, 식전혈당 등을 고려하여 계산
+        - **`식단 점수`**: 식단 개선 필요성의 역수로 계산
+
+        ## 기타
+        - **`예측 날짜`**: 데이터 생성 또는 예측 날짜
 ]
 
 <br>
@@ -349,19 +398,39 @@ feature_columns = [<br>
 
 <br>
     
-class FoodPredictionModel(nn.Module):<br>
-def init(self, input_dim):<br>
-super(FoodPredictionModel, self).init()<br>
-self.layer1 = nn.Linear(input_dim, 64)<br>
-self.layer2 = nn.Linear(64, 32)<br>
-self.layer3 = nn.Linear(32, 2) # 이진 분류 (섭취 여부: 0 or 1)<br>
-self.relu = nn.ReLU()<br>
-self.softmax = nn.Softmax(dim=1)<br>
-def forward(self, x):<br>
-    x = self.relu(self.layer1(x))<br>
-    x = self.relu(self.layer2(x))<br>
-    x = self.softmax(self.layer3(x))<br>
-    return x<br>
+### ✅ 운동 예측 모델
+
+
+   
+       def __init__(self, input_dim):<br>
+           super(ExercisePredictionModel, self).__init__()<br>
+           self.layer1 = nn.Linear(input_dim, 64)<br>
+           self.layer2 = nn.Linear(64, 32)<br>
+           self.layer3 = nn.Linear(32, 1)<br>
+           self.relu = nn.ReLU()<br>
+        
+      def forward(self, x):<br>
+          x = self.relu(self.layer1(x))<br>
+          x = self.relu(self.layer2(x))<br>
+          x = self.layer3(x)<br>
+          return F.sigmoid(x) * 100  # ✅ 0~100 범위로 자동 변환<br>
+
+    
+### ✅ 식단 예측 모델
+
+  
+      def __init__(self, input_dim):
+          super(FoodPredictionModel, self).__init__()
+          self.layer1 = nn.Linear(input_dim, 64)
+          self.layer2 = nn.Linear(64, 32)
+          self.layer3 = nn.Linear(32, 1)  # 🔹 점수 예측을 위한 1개의 출력 뉴런 사용
+          self.relu = nn.ReLU()
+          
+      def forward(self, x):
+          x = self.relu(self.layer1(x))
+          x = self.relu(self.layer2(x))
+          x = self.layer3(x)
+          return F.sigmoid(x) * 100  # ✅ 0~100 범위로 자동 변환
 
 <br>
     
@@ -392,7 +461,7 @@ def forward(self, x):<br>
 <br>
 
 *   **Gemma-2 모델**을 활용한 텍스트 생성 기반 추천 시스템
-    *   **SKT KoGPT2 모델의 한계 극복**: KoGPT2 모델의 json 변환 문제로 인해**<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 로 변경하여 추천 시스템 구축 문제를 해결했습니다.
+    *   **SKT KoGPT2 모델의 한계 극복**: KoGPT2 모델의 json 변환 문제로 인해 **<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>**  로 변경하여 추천 시스템 구축 문제를 해결했습니다.
 
 *   **💪 사용자 정보 기반 추천**: 사용자 입력 데이터를 기반으로 **<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 이 최적의 추천 제공
 *   **🔮 핵심 기술**:Hugging Face Transformers, 텍스트 생성 모델
@@ -453,7 +522,7 @@ Name: count, dtype: int64
 
 <br>
 
-본 프로젝트는 다음과 같은 데이터 흐름을 가지고 있으며,**<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 을 활용하여 사용자에게 맞춤형 추천을 제공합니다.
+본 프로젝트는 다음과 같은 데이터 흐름을 가지고 있으며, **<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>**  을 활용하여 사용자에게 맞춤형 추천을 제공합니다.
 
 <br>
 
@@ -473,7 +542,7 @@ Name: count, dtype: int64
 <br>
 
 3.  **💡 Gemini Pro 모델 추론**:
-* Hugging Face Transformers 라이브러리를 사용하여**<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 을 로드하고 추론을 수행합니다.
+* Hugging Face Transformers 라이브러리를 사용하여 **<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 을 로드하고 추론을 수행합니다.
 
 <br>
 
@@ -493,7 +562,7 @@ Name: count, dtype: int64
 *   **🧠모델**: Gemini Pro 모델
         * ✅기능:사용자 맞춤형 운동 계획 및 식단 추천 제공
 *   **⚙️ 프롬프트 최적화**: 사용자에게 더욱 정확하고 유용한 추천을 제공
-*   **KoGPT2 -> Gemma Pro 모델 전환**:
+*   **<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** :
         *✨기존 KoGPT2 모델의 한계점을 극복
 
 <br>
