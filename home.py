@@ -30,7 +30,7 @@ def display_home_page():
             margin-bottom: 3rem;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             width: 100%;
-            max-width: wrap;
+            max-width: 90%;
         }
         .main-title {
             color: white;
@@ -55,16 +55,19 @@ def display_home_page():
             max-width: 100%;
         }
         .feature-card {
-            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
-            border-radius: 15px;
-            padding: 2.5rem;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            width: auto;
+            max-width: 350px; /* 박스 크기 제한 */
+            min-width: 250px;
             text-align: center;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-            border: 1px solid #ffffff;
-            color: white;
-            flex: 1 1 30%;
-            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            word-wrap: break-word;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
         }
         .feature-card:hover {
             transform: scale(1.05);
