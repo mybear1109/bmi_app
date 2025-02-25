@@ -1,5 +1,9 @@
 import streamlit as st
 
+
+def display_home_page():
+    """🏠 AI 건강 관리 홈 화면"""
+
 # ✅ 반응형 디자인 및 스타일 개선
 st.markdown(
     """
