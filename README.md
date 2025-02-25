@@ -171,7 +171,7 @@
 
 > 주의: 위의 통계 정보는 예시이며, 실제 데이터와 다를 수 있습니다.
 
-자세한 데이터 분석 결과는 [데이터 분석 보고서](https://github.com/user-attachments/assets/b57ddd17-5223-4a26-a9ff-863778dd2cd2)에서 확인하실 수 있습니다.
+자세한 데이터 분석 결과는 [데이터 분석 보고서](https://github.com/mybear1109/bmi_app/blob/main/data/predictions.csv)에서 확인하실 수 있습니다.
 
 ---
 
