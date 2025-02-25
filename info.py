@@ -185,11 +185,10 @@ def display_info_page():
     st.markdown("<br>", unsafe_allow_html=True)  # 간격 추가
     st.header("🎯 성능 지표")
     st.markdown("""
-    -
+    - XGBClassifier활용하여 운동 필요성과 식단 개선 필요성 예측
     - 운동 여부 예측 정확도: 95.78%
-    - 식단 개선 필요성 예측 정확도: 93.21%
+    - 식단 개선 필요성 예측 정확도: 84.74%
     - 사용자 만족도: 4.8/5.0 (베타 테스트 기준)
-    - 시스템 응답 시간: 평균 1.2초 (95% 신뢰 구간)
     """)
 
     st.markdown("""
