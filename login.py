@@ -60,6 +60,11 @@ def login():
         except KeyError:
             st.error("🚨 사용자 데이터에 문제가 있습니다. 관리자에게 문의하세요.")
 
+    # 🔹 회원가입 버튼 추가 (누르면 회원가입 화면으로 전환)
+    if st.button("🆕 회원가입"):
+        st.session_state["show_signup"] = True
+        st.experimental_rerun()
+
 # ✅ 로그아웃 기능
 def logout():
     st.session_state["logged_in"] = False
@@ -86,7 +91,15 @@ def signup():
             user_data[new_username] = {"password": hashed_password}
             save_user_data(user_data)
             st.success("✅ 회원가입이 완료되었습니다! 로그인 해주세요.")
+
+            # 회원가입 완료 후 로그인 화면으로 돌아가기
+            st.session_state["show_signup"] = False
             st.experimental_rerun()
+
+    # 🔹 로그인 화면으로 돌아가는 버튼 추가
+    if st.button("⬅️ 로그인으로 돌아가기"):
+        st.session_state["show_signup"] = False
+        st.experimental_rerun()
 
 # ✅ 로그인/회원가입 페이지 표시
 def display_auth_page():
