@@ -51,7 +51,7 @@ st.markdown(
         max-width: 100%;
     }
     .feature-card {
-        background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+        background: linear-gradient(135deg, #ff758c 0%, #FFFFFF 100%);
         border-radius: 15px;
         padding: 2.5rem;
         text-align: center;
