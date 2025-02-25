@@ -533,6 +533,8 @@ Name: count, dtype: int64
 3.  **💡 Gemini Pro 모델 추론**:
 * Hugging Face Transformers 라이브러리를 사용하여 **<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 을 로드하고 추론을 수행합니다.
 
+💡 참고  : **[Gemma 모델 사용 시 transformers를 활용하는 이유](https://danmi1109.tistory.com/219)**
+
 <br>
 
 4.  **✔️ 추천 결과 파싱 및 표시**:
