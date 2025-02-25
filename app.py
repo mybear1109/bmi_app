@@ -16,6 +16,11 @@ from login import display_auth_page, check_login_status, logout
 from info import display_info_page
 from login_visualization import display_login_visualization  
 
+# ✅ `home.py`를 안전하게 import
+try:
+    from home import display_home_page
+except ImportError as e:
+    st.error(f"🚨 `home.py`를 찾을 수 없습니다: {e}")
 
 # ✅ 세션 초기화
 def initialize_session():
