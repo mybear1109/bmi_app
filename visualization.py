@@ -19,15 +19,34 @@ def display_visualization_page():
 
     # 1. BMI 분포 히스토그램
     st.header("1. BMI 분포")
-    fig_bmi = px.histogram(df, x="BMI", nbins=30, marginal="box")
+
+    # 색상 선택 옵션
+    color_options = ['blue', 'red', 'green', 'purple', 'orange']
+    selected_color = st.selectbox("히스토그램 색상 선택", color_options)
+
+    # 막대 너비 조절 슬라이더
+    bar_width = st.slider("막대 너비 조절", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
+
+    # 빈(bin) 개수 조절 슬라이더
+    num_bins = st.slider("빈(구간) 개수 조절", min_value=10, max_value=50, value=30, step=5)
+
+    # 히스토그램 생성
+    fig_bmi = px.histogram(df, x="BMI", nbins=num_bins, marginal="box", 
+                        color_discrete_sequence=[selected_color])
+
+    # 막대 너비 조절
+    fig_bmi.update_traces(marker=dict(line=dict(width=bar_width)))
+
     fig_bmi.update_layout(title="BMI 분포", xaxis_title="BMI", yaxis_title="빈도")
     st.plotly_chart(fig_bmi)
+
     st.markdown("""
     이 히스토그램은 전체 사용자의 BMI 분포를 보여줍니다:
     - x축은 BMI 값을, y축은 각 BMI 값의 빈도를 나타냅니다.
     - 그래프 상단의 박스플롯은 BMI의 중앙값, 사분위수 범위, 이상치를 보여줍니다.
     - 대부분의 사용자가 어느 BMI 범위에 속하는지, 극단적인 값은 얼마나 있는지 파악할 수 있습니다.
     - 이 정보는 전반적인 사용자 건강 상태를 이해하고, 비만 관련 건강 정책을 수립하는 데 도움이 됩니다.
+    - 히스토그램의 색상, 막대 너비, 빈(구간) 개수를 조절하여 데이터를 다양한 방식으로 시각화할 수 있습니다.
     """)
 
     # 2. 연령대별 BMI 박스플롯
