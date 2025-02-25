@@ -63,11 +63,12 @@ def expand_allergies(allergen_foods: List[str]) -> Set[str]:
         '기타': ['초콜릿', '카카오', '커피', '알코올', '알콜','인공감미료', '방부제']
     }
     expanded = set()
-    for allergen_foods in allergen_foods:
-        if allergen_foods in allergen_foods_mapping:
-            expanded.update(allergen_foods_mapping[allergen_foods])
+    for allergen in allergen_foods:
+        allergen = allergen.lower().strip()
+        if allergen in allergen_foods_mapping:
+            expanded.update(allergen_foods_mapping[allergen])
         else:
-            expanded.add(allergen_foods)
+            expanded.add(allergen)
     return expanded
 
 def get_gemma_recommendation(category: str, user_info: Dict[str, str], additional_info: List[Tuple[str, List[str]]] = []) -> str:
@@ -82,15 +83,20 @@ def get_gemma_recommendation(category: str, user_info: Dict[str, str], additiona
     if category == "운동":
         prompt += (
             "당신은 AI 피트니스 코치입니다. 사용자의 건강 상태를 고려한 7일 운동 계획을 작성해 주세요.\n"
+            "- 상체, 하체, 코어 등 다양한 부위의 운동을 균형있게 포함하세요.\n"
+            "- 유산소 운동과 근력 운동을 적절히 조합하세요.\n"
+            "- 스트레칭과 휴식일도 계획에 포함하세요.\n"
+            "- 초보자를 위한 간단한 운동 방법 설명이나 주의사항을 포함하세요.\n"
+            "- 운동의 이점과 권장 이유를 간략히 설명하세요.\n"
             "운동 예시:\n"
             "[{'요일': '월', '운동': [{'종류': '달리기', '시간': 30, '칼로리 소모': 300}, {'종류': '스트레칭', '시간': 15, '칼로리 소모': 50}], '설명': '유산소 운동과 스트레칭으로 체지방 감소 및 유연성 향상'}]"
         )
         for info_type, info_value in additional_info:
             if info_type == "체력 수준":
-                prompt += f"- 사용자의 체력 수준은 {info_value}입니다.\n"
-            elif info_type == "선호하는 운동 유형":
+                prompt += f"- 사용자의 체력 수준은 {info_value[0]}입니다.\n"
+            elif info_type == "선호 운동":
                 prompt += f"- 선호하는 운동 유형: {', '.join(info_value)}\n"
-            elif info_type == "제한된 운동":
+            elif info_type == "운동 제한":
                 prompt += f"- 다음 운동은 제외: {', '.join(info_value)}\n"
 
     elif category == "식단":
@@ -107,17 +113,14 @@ def get_gemma_recommendation(category: str, user_info: Dict[str, str], additiona
             "[{'요일': '월', '아침': {'메뉴': '계란 + 오트밀', '칼로리': 300}, '점심': {'메뉴': '닭가슴살 샐러드', '칼로리': 400}, '저녁': {'메뉴': '구운 채소 + 연어', '칼로리': 450}, '설명': '고단백 저탄수화물 식단으로 체지방 감소 도움'}]"
         )
         for info_type, info_value in additional_info:
-            if info_type == "알레르기 및 기피 음식":
-                prompt += f"- 제외할 음식: {', '.join(info_value)}\n"
-            elif info_type == "선호하는 음식":
+            if info_type == "알레르기 식품":
+                expanded_allergies = expand_allergies(info_value)
+                prompt += f"- 제외할 음식: {', '.join(expanded_allergies)}\n"
+            elif info_type == "선호 식품":
                 prompt += f"- 선호하는 음식: {', '.join(info_value)}\n"
-            elif info_type == "식이 요법":
-                prompt += f"- 식이 요법: {info_value}\n"
+            elif info_type == "식이 제한":
+                prompt += f"- 식이 요법: {info_value[0]}\n"
     else:
         return "🚨 올바른 카테고리를 입력하세요: '운동' 또는 '식단'"
-    
-    for info_type, info_value in additional_info:
-        if info_value:
-            prompt += f"\n- {info_type}: {', '.join(info_value)}"
     
     return generate_text_via_api(prompt)
