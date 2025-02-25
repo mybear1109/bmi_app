@@ -30,7 +30,7 @@ def display_home_page():
             margin-bottom: 3rem;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             width: 100%;
-            max-width: 90%;
+            max-width: wrap;
         }
         .main-title {
             color: white;
@@ -47,13 +47,12 @@ def display_home_page():
 
         /* 기능 섹션 스타일 */
         .features-section {
-            display: flex; align-items: center;
-            justify-content: space-around; flex-wrap: wrap;
-            white-space: nowrap;
-            word-wrap: break-word; overflow-wrap: break-word;        
-            gap: 20px;
+            display: flex;
             flex-wrap: wrap;
-            padding: 20px 0;
+            gap: 2rem;
+            justify-content: center;
+            padding: 2rem;
+            max-width: 100%;
         }
         .feature-card {
             background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
