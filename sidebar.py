@@ -12,7 +12,7 @@ def get_selected_menu():
                 "예측하기", 
                 "AI 건강 코치", 
                 "데이터 시각화",
-                "개발과정",
+                "개발 과정",
             ],
             icons=[
                 "house-heart",  # 집 모양에 하트가 있는 아이콘

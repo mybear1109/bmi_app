@@ -90,12 +90,12 @@ def app():
     
     elif menu_option == "예측하기":
         display_prediction_page()
-    elif menu_option == "알면 좋은 정보":
-        display_info_page()
     elif menu_option == "데이터 시각화":
         display_visualization_page()
     elif menu_option == "AI 건강 코치":
         display_ai_coach_page()
+    elif menu_option == "개발 과정":
+        display_info_page()
 
 # ✅ 앱 실행
 if __name__ == "__main__":
