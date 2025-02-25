@@ -11,7 +11,7 @@ from model_loader import model_exercise, model_food
 from user_data_utils import save_user_data, load_user_data
 from login import display_auth_page, check_login_status, logout  
 from info import display_info_page
-from login_visualization import display_login_visualization  # ✅ 내 정보 페이지 추가
+from login_visualization import display_login_visualization  
 
 # ✅ 세션 초기화 함수
 def initialize_session():
@@ -71,7 +71,10 @@ def app():
         display_home_page()
 
     elif menu_option == "내 정보":  # ✅ 로그인한 사용자 전용 메뉴 추가
-        display_login_visualization()
+        if not st.session_state["logged_in"]:
+            st.warning("⚠️ 로그인 후 접근할 수 있습니다.")
+        else:
+            display_login_visualization()  # ✅ 문제 해결
 
     elif menu_option == "건강 정보 입력":
         existing_data = st.session_state.get("user_data", {})
@@ -97,7 +100,6 @@ def app():
         display_visualization_page()
 
     elif menu_option == "AI 건강 코치":
-        # ✅ AI 건강 코치가 로그인된 사용자의 데이터를 올바르게 가져오도록 개선
         if not st.session_state.get("user_data"):
             st.warning("⚠️ 건강 정보를 입력한 후 AI 코치를 이용해주세요.")
         else:
