@@ -2,9 +2,9 @@ import streamlit as st
 
 # ✅ 페이지 설정
 st.set_page_config(page_title=" AI 피트니스 코치", page_icon="🏠", layout="wide")
-
 import json
 import os
+from home import display_home_page
 from sidebar import get_selected_menu
 from prediction import display_prediction_page
 from visualization import display_visualization_page
@@ -16,42 +16,36 @@ from login import display_auth_page, check_login_status, logout
 from info import display_info_page
 from login_visualization import display_login_visualization  
 
-# ✅ `home.py`를 안전하게 import
-try:
-    from home import display_home_page
-except ImportError as e:
-    st.error(f"🚨 `home.py`를 찾을 수 없습니다: {e}")
-
 # ✅ 세션 초기화
 def initialize_session():
-    session_defaults = {
-        "logged_in": False,
-        "nickname": "게스트",
-        "user_info": None,
-        "show_signup": False,
-        "guest_mode": False,
-        "show_auth": False,
-        "show_user_input": False,
-        "user_data": None,
-    }
-    for key, value in session_defaults.items():
+    session_keys = [
+        "logged_in", "nickname", "user_info", "show_signup",
+        "guest_mode", "show_auth", "show_user_input", "user_data"
+    ]
+    for key in session_keys:
         if key not in st.session_state:
-            st.session_state[key] = value
+            st.session_state[key] = False if key not in ["nickname", "user_data"] else "게스트"
 
 initialize_session()
 
-# ✅ 메인 앱 실행 함수
+# ✅ 메인 앱 함수
 def app():
     with st.sidebar:
         st.markdown("<br>", unsafe_allow_html=True)
-
+        
         if st.session_state["logged_in"]:
             st.markdown(f"### 👋 환영합니다, **{st.session_state['nickname']}**님!")
             st.markdown("---")
 
+            # 🔓 로그아웃 버튼
             if st.button("🔓 로그아웃", key="logout_btn"):
                 logout()
-                initialize_session()
+                # 세션 초기화 후 rerun
+                st.session_state["logged_in"] = False
+                st.session_state["nickname"] = "게스트"
+                st.session_state["user_data"] = None
+                st.session_state["guest_mode"] = False
+                st.session_state["show_auth"] = False
                 st.rerun()
 
         else:
@@ -67,23 +61,16 @@ def app():
                 st.session_state["guest_mode"] = True
                 st.rerun()
 
-    # ✅ 로그인 페이지로 이동
+    # ✅ 로그인 상태 확인
     if not st.session_state["logged_in"] and st.session_state.get("show_auth", False):
         display_auth_page()
         return
 
-    # ✅ 메뉴 선택 및 페이지 이동
+    # ✅ 메뉴 선택 및 페이지 표시
     menu_option = get_selected_menu()
 
     if menu_option == "홈 화면":
-        display_home_page()  # 🔹 `home.py`가 정상적으로 import되지 않으면 에러 발생 가능
-
-    elif menu_option == "내 정보":
-        if not st.session_state["logged_in"]:
-            st.warning("⚠️ 로그인 후 접근할 수 있습니다.")
-        else:
-            display_login_visualization(st.session_state["nickname"])
-
+        display_home_page()
     elif menu_option == "건강 정보 입력":
         existing_data = st.session_state.get("user_data", {})
 
@@ -94,25 +81,22 @@ def app():
                 existing_data = {}
 
         user_id = st.session_state["nickname"]
+
         user_data = get_user_input(existing_data=existing_data, user_id=user_id)
 
         if user_data:
             st.session_state["user_data"] = json.dumps(user_data)
             save_user_data(user_id, user_data)
             st.success("✅ 사용자 정보가 저장되었습니다!")
-
+    
+    if menu_option == "홈 화면":
+        display_home_page()
     elif menu_option == "예측하기":
         display_prediction_page()
-
     elif menu_option == "데이터 시각화":
         display_visualization_page()
-
     elif menu_option == "AI 건강 코치":
-        if not st.session_state.get("user_data"):
-            st.warning("⚠️ 건강 정보를 입력한 후 AI 코치를 이용해주세요.")
-        else:
-            display_ai_coach_page()
-
+        display_ai_coach_page()
     elif menu_option == "개발 과정":
         display_info_page()
 
