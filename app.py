@@ -88,9 +88,7 @@ def app():
             st.session_state["user_data"] = json.dumps(user_data)
             save_user_data(user_id, user_data)
             st.success("✅ 사용자 정보가 저장되었습니다!")
-    
-    if menu_option == "홈 화면":
-        display_home_page()
+
     elif menu_option == "예측하기":
         display_prediction_page()
     elif menu_option == "데이터 시각화":
