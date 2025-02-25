@@ -20,6 +20,7 @@ def display_visualization_page():
     # 1. BMI 분포 히스토그램
     st.header("1. BMI 분포")
     fig_bmi = px.histogram(df, x="BMI", nbins=30, marginal="box")
+    fig_bmi = px.box(df, x="BMI", y="빈도")
     fig_bmi.update_layout(title="BMI 분포", xaxis_title="BMI", yaxis_title="빈도")
     st.plotly_chart(fig_bmi)
     st.markdown("""
