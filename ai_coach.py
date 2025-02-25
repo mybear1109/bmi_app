@@ -71,10 +71,8 @@ def display_ai_coach_page():
         "fitness_level": fitness_level,
         "exercise_preference": exercise_preference
     })
-
-    additional_info = {allergen_foods, preferred_foods, diet_restriction, restricted_exercises, fitness_level, exercise_preference}
-
- 
+   
+    
 # 두 개의 열을 생성하여 버튼을 나란히 배치
     col1, col2 = st.columns(2)
 
@@ -87,12 +85,12 @@ def display_ai_coach_page():
     # 선택된 계획을 표시
     if diet_button:
         with st.spinner("AI가 식단을 추천하는 중...⏳"):
-            diet_plan = get_gemma_recommendation("식단", user_data, additional_info)
+            diet_plan = get_gemma_recommendation("식단", user_data, allergen_foods)
         st.subheader("🥗 맞춤형 식단 계획")
         display_recommendation(diet_plan, "식단")
 
     elif exercise_button:
         with st.spinner("AI가 운동을 추천하는 중...⏳"):
-            exercise_plan = get_gemma_recommendation("운동", user_data,additional_info)
+            exercise_plan = get_gemma_recommendation("운동", user_data)
         st.subheader("🏋️ 맞춤형 운동 계획")
         display_recommendation(exercise_plan, "운동")
