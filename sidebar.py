@@ -14,7 +14,7 @@ def get_selected_menu():
     ]
 
     menu_icons = [
-        "house-fill",  # 홈 화면 아이콘
+        "house-heart",  # 홈 화면 아이콘
         "pencil-square",  # 건강 정보 입력 아이콘
         "graph-up",  # 예측하기 아이콘
         "robot",  # AI 건강 코치 아이콘
