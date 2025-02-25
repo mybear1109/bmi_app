@@ -5,18 +5,48 @@ def display_home_page():
     """🏠 AI 건강 관리 홈 화면"""
 
     # ✅ 반응형 디자인 및 스타일 개선
-
-    st.markdown("""
-    <style>
-        .title-container {
-            text-align: center;
-            background: linear-gradient(to right, #ff8c00, #ff5e62);
-            padding: 30px;
-            border-radius: 15px;
-            color: white;
+    st.markdown(
+        """
+        <style>
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
         }
-        /* 박스 스타일 */
-        .feature-container {
+        
+        /* 전체 레이아웃 컨테이너 */
+        .container {
+            max-width: 100%;
+            margin: auto;
+            padding: 20px;
+        }
+
+        /* 메인 타이틀 영역 */
+        .main-title-container {
+            background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
+            padding: 3rem;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 90%;
+        }
+        .main-title {
+            color: white;
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 2rem;
+            font-style: italic;
+        }
+
+        /* 기능 섹션 스타일 */
+        .features-section {
             display: flex; align-items: center;
             justify-content: space-around; flex-wrap: wrap;
             white-space: nowrap;
@@ -25,66 +55,41 @@ def display_home_page():
             flex-wrap: wrap;
             padding: 20px 0;
         }
-                
-        .feature-box {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 12px;
-            width: auto;
-            max-width: 350px; /* 박스 크기 제한 */
-            min-width: 250px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            word-wrap: break-word;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease-in-out;
-        }
-
-
-        /* 제목 (h3) 스타일 */
-        .feature-box-title {
-            color: #2874a6 !important;  /* 색상 강제 적용 */
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            white-space: nowrap; /* 제목은 줄바꿈 방지 */
-      
-        }
-
-        /* 본문 (p) 스타일 */
-        .feature-box-text {
-            font-size: 16px;
-            line-height: 1.5;
-            text-align: center;
-        }
-
-
-        .feature-box:hover {
-            transform: scale(1.05);
-        }
-
-        .extra-info {
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            padding: 20px;
+        .feature-card {
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
             border-radius: 15px;
+            padding: 2.5rem;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            border: 1px solid #ffffff;
             color: white;
+            flex: 1 1 30%;
+            min-width: 300px;
         }
-        .stButton>button {
-            background-color: #ff5e62;
-            color: white;
-            font-size: 18px;
-            padding: 12px 24px;
-            border-radius: 10px;
-            border: none;
-        }
-        .stButton>button:hover {
-            background-color: #ff3b42;
+        .feature-card:hover {
             transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
         }
-    </style>
-    """, unsafe_allow_html=True)
+        .feature-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        .feature-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        .feature-description {
+            font-size: 1.3rem;
+            line-height: 1.6;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     # ✅ 메인 타이틀
     st.markdown(
         """
