@@ -190,14 +190,21 @@ def display_home_page():
         }
         </style>
 
-        <div class='main-title-container'>
-            <h1 class='main-title'>💖 "당신의 오늘은 안녕하십니까?" 💖</h1>
-            <h4 class='subtitle'>AI 피트니스 코치: 개인 맞춤형 건강 관리의 혁명 🚀</h4>
-        </div>
         """,
         unsafe_allow_html=True
     )
 
+    # ✅ 메인 타이틀
+    st.markdown(
+        """
+        <div class='main-title-container'>
+            <h1 class='main-title'>🔥 AI 피트니스 코치 - 당신의 건강을 위한 최고의 선택 🔥</h1>
+            <h4 class='subtitle'>AI 기반 맞춤형 건강 관리로 더 나은 삶을 시작하세요!</h4>
+        </div>
+        <h1 class='main-title' style='text-align: center; color: #ff4081;'>💖 "당신의 오늘은 안녕하십니까?" 💖</h1>
+        """,
+        unsafe_allow_html=True
+    )
     # 주요 기능
     st.markdown(
         """
