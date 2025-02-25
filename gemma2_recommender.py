@@ -32,7 +32,7 @@ def get_user_info_with_default(user_data: Dict[str, str]) -> Dict[str, str]:
         "이완기혈압(최저 혈압)": "80",
         "혈압 차이": "40",
         "총콜레스테롤": "190",
-        "고혈당 위험": "낮음",
+        "고혈당 위험": "보통",
         "간 지표": "정상",
         "성별": "남성",
         "연령대": "30대",
@@ -45,6 +45,8 @@ def get_user_info_with_default(user_data: Dict[str, str]) -> Dict[str, str]:
 def get_gemma_recommendation(category: str, user_info: Dict[str, str], additional_info: List[Tuple[str, List[str]]] = []) -> str:
     """
     운동 또는 식단 추천을 위한 프롬프트를 구성하고 API를 호출합니다.
+    모든 응답은 반드시 한국어로 작성해주세요.
+    사용자의 건강 정보를 기반으로 개인화된 추천을 제공하세요
     """
     user_info_text = json.dumps(user_info, ensure_ascii=False)
     prompt = f"사용자 건강 상태: {user_info_text}\n\n"
@@ -58,6 +60,13 @@ def get_gemma_recommendation(category: str, user_info: Dict[str, str], additiona
     elif category == "식단":
         prompt += (
             "당신은 AI 영양사입니다. 사용자의 건강 상태를 고려한 7일 식단 계획을 작성해 주세요.\n"
+            "- 사용자의 체중 감량, 저탄수화물, 다이어트 목표에 맞는 식단을 구성하세요.\n"
+            "- 매일의 식단 계획에는 아침, 점심, 저녁 메뉴와 각 끼니별 칼로리를 포함하세요.\n"
+            "- 다양한 영양소가 균형잡힌 식단을 구성하세요.\n"
+            "- 칼로리 조절과 함께 단백질, 탄수화물, 지방의 적절한 비율을 고려하세요.\n"
+            "- 식사 간 간식이나 야식에 대한 제안도 포함할 수 있습니다.\n"
+            "- 각 음식의 영양적 이점을 간략히 설명하세요.\n"
+            "- 목표 체중 달성을 위한 일일 권장 칼로리를 계산하여 제시하세요.\n"
             "식단 예시:\n"
             "[{'요일': '월', '아침': {'메뉴': '계란 + 오트밀', '칼로리': 300}, '점심': {'메뉴': '닭가슴살 샐러드', '칼로리': 400}, '저녁': {'메뉴': '구운 채소 + 연어', '칼로리': 450}, '설명': '고단백 저탄수화물 식단으로 체지방 감소 도움'}]"
         )
