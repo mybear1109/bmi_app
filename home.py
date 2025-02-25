@@ -120,17 +120,3 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-    # 추가 정보
-st.markdown(
-        """
-        <div class='additional-info'>
-            <h2 class='additional-title'>🏆 AI 피트니스 코치의 특별한 가치</h2>
-            <ul class='additional-list'>
-                <li class='additional-item'>24/7 실시간 건강 모니터링으로 언제나 당신 곁에서 건강을 지켜드립니다.</li>
-                <li class='additional-item'>빅데이터와 AI의 만남으로 탄생한 초개인화 건강 솔루션을 경험하세요.</li>
-                <li class='additional-item'>전문가 수준의 건강 조언을 AI를 통해 언제 어디서나 받아볼 수 있습니다.</li>
-            </ul>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
