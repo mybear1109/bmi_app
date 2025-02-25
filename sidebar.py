@@ -8,19 +8,19 @@ def get_selected_menu():
             menu_title=" 메뉴",
             options=[
                 "홈 화면", 
-                "알면 좋은 정보",
                 "건강 정보 입력", 
                 "예측하기", 
                 "AI 건강 코치", 
                 "데이터 시각화"
+                "개발과정 - 알면 좋은 정보",
             ],
             icons=[
                 "house-heart",  # 집 모양에 하트가 있는 아이콘
-                "lightbulb",    # 전구 아이콘 (아이디어를 나타냄)
                 "pencil-square",  # 연필과 종이 아이콘
                 "graph-up",   # 수정 구슬 아이콘 (예측을 나타냄)
                 "robot",          # 로봇 아이콘
                 "bar-chart-steps" # 단계별 막대 차트 아이콘
+                "lightbulb",    # 전구 아이콘 (아이디어를 나타냄)
             ],
             menu_icon="heart-pulse",  # 심장박동 아이콘
             default_index=0,
