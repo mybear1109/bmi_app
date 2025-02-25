@@ -1,108 +1,127 @@
 import streamlit as st
 
+# ✅ 반응형 디자인 및 스타일 개선
+st.markdown(
+    """
+    <style>
+    body {
+        font-family: 'Helvetica Neue', sans-serif;
+        background-color: #f0f2f5;
+        color: #333;
+    }
+    
+    /* 전체 레이아웃 컨테이너 */
+    .container {
+        max-width: 100%;
+        margin: auto;
+        padding: 20px;
+    }
 
-def display_home_page():
-    """🏠 AI 피트니스 코치 - 홈 화면"""
+    /* 메인 타이틀 영역 */
+    .main-title-container {
+        background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
+        padding: 3rem;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 3rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 90%;
+    }
+    .main-title {
+        color: white;
+        font-size: 3.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .subtitle {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 2rem;
+        font-style: italic;
+    }
 
-    # 페이지 스타일 설정 (CSS)
-    st.markdown(
-        """
-        <style>
-        /* 전체 배경 및 폰트 설정 */
-        body {
-            font-family: 'Helvetica Neue', sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-        }
+    /* 기능 섹션 스타일 */
+    .features-section {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        justify-content: center;
+        padding: 2rem;
+        max-width: 100%;
+    }
+    .feature-card {
+        background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+        border-radius: 15px;
+        padding: 2.5rem;
+        text-align: center;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        border: 1px solid #ffffff;
+        color: white;
+        flex: 1 1 30%;
+        min-width: 300px;
+    }
+    .feature-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+    .feature-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        display: block;
+    }
+    .feature-title {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+    .feature-description {
+        font-size: 1.3rem;
+        line-height: 1.6;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-        /* 메인 타이틀 컨테이너 */
-        .main-title-container {
-            background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
-            padding: 3rem;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 3rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            animation: fadeIn 1.5s ease-in-out;
-        }
+# ✅ 메인 타이틀
+st.markdown(
+    """
+    <div class='main-title-container'>
+        <h1 class='main-title'>🔥 AI 피트니스 코치 - 당신의 건강을 위한 최고의 선택 🔥</h1>
+        <h4 class='subtitle'>AI 기반 맞춤형 건강 관리로 더 나은 삶을 시작하세요!</h4>
+    </div>
+    <h1 class='main-title' style='text-align: center; color: #ff4081;'>💖 "당신의 오늘은 안녕하십니까?" 💖</h1>
+    """,
+    unsafe_allow_html=True
+)
 
-        .main-title {
-            color: white;
-            font-size: 3.8rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .subtitle {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.7rem;
-            font-style: italic;
-        }
-
-        /* 주요 메시지 강조 */
-        .highlight {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #ff4d4d;
-            text-align: center;
-            margin-top: 1rem;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # 메인 타이틀 및 주요 메시지
-    st.markdown(
-        """
-        <div class='main-title-container'>
-            <h1 class='main-title'>🔥 AI 피트니스 코치 - 당신의 건강을 위한 최고의 선택 🔥</h1>
-            <h4 class='subtitle'>AI 기반 맞춤형 건강 관리로 더 나은 삶을 시작하세요!</h4>
+# ✅ 주요 기능 소개
+st.markdown(
+    """
+    <div class='features-section'>
+        <div class='feature-card'>
+            <i class='feature-icon'>🔬</i>
+            <h3 class='feature-title'>AI 기반 건강 분석</h3>
+            <p class='feature-description'>최첨단 AI가 건강 데이터를 분석하여 맞춤형 솔루션을 제공합니다.</p>
         </div>
-        <h1 class='highlight'>💖 "당신의 오늘은 안녕하십니까?" 💖</h1>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # 주요 기능
-    st.markdown(
-        """
-        <div class='features-section'>
-            <div class='feature-card'>
-                <i class='feature-icon'>🔬</i>
-                <h3 class='feature-title'>AI 기반 정밀 건강 분석</h3>
-                <p class='feature-description'>최첨단 AI 기술로 당신의 건강 데이터를 심층 분석하여, <strong>개인화된 건강 인사이트</strong>를 제공합니다.</p>
-            </div>
-            <div class='feature-card'>
-                <i class='feature-icon'>💪</i>
-                <h3 class='feature-title'>맞춤형 운동 설계</h3>
-                <p class='feature-description'>AI가 당신의 체력, 목표, 선호도를 고려하여 <strong>최적화된 운동 루틴</strong>을 설계합니다.</p>
-            </div>
-            <div class='feature-card'>
-                <i class='feature-icon'>🥗</i>
-                <h3 class='feature-title'>스마트 영양 관리</h3>
-                <p class='feature-description'>영양학적 균형과 개인의 건강 목표를 고려한 <strong>맞춤형 식단</strong>을 제안합니다.</p>
-            </div>
+        <div class='feature-card'>
+            <i class='feature-icon'>💪</i>
+            <h3 class='feature-title'>맞춤형 운동 루틴</h3>
+            <p class='feature-description'>당신의 체력과 목표에 최적화된 운동 계획을 세워드립니다.</p>
         </div>
-        """,
-        unsafe_allow_html=True
-    )
-
+        <div class='feature-card'>
+            <i class='feature-icon'>🥗</i>
+            <h3 class='feature-title'>스마트 영양 관리</h3>
+            <p class='feature-description'>균형 잡힌 식단과 영양 분석을 통해 건강한 식습관을 유지하세요.</p>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
     # 추가 정보
-    st.markdown(
+st.markdown(
         """
         <div class='additional-info'>
             <h2 class='additional-title'>🏆 AI 피트니스 코치의 특별한 가치</h2>
