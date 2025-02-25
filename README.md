@@ -237,19 +237,6 @@ return df_food
 <br>
 <br>  
 
-3.  **사용자 입력 데이터**:
-
-<table> <tr> <th>** 코     드 **</th> </tr> <tr> <td>
-
-<br>
-    
-def handle_missing_values(df):<br>
-
-<br>
-    
-</td> </tr> </table>
-<br>
-<br>  
 
 
 # 텍스트 데이터 처리 ("🔍 예측을 실행하세요" -> "미실행"))
@@ -545,6 +532,8 @@ Name: count, dtype: int64
 
 3.  **💡 Gemini Pro 모델 추론**:
 * Hugging Face Transformers 라이브러리를 사용하여 **<span style="color:#0B6121">`Gemini Pro (Gemma-2) 모델 `</span>** 을 로드하고 추론을 수행합니다.
+
+💡 참고  : **[Gemma 모델 사용 시 transformers를 활용하는 이유](https://danmi1109.tistory.com/219)**
 
 <br>
 
