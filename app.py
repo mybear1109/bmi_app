@@ -11,6 +11,7 @@ from model_loader import model_exercise, model_food
 from user_data_utils import save_user_data, load_user_data
 from login import display_auth_page, check_login_status, logout  
 from info import display_info_page
+from login_visualization import display_login_visualization  # ✅ 내 정보 페이지 추가
 
 # ✅ 세션 초기화 함수
 def initialize_session():
@@ -68,6 +69,9 @@ def app():
 
     if menu_option == "홈 화면":
         display_home_page()
+
+    elif menu_option == "내 정보":  # ✅ 로그인한 사용자 전용 메뉴 추가
+        display_login_visualization()
 
     elif menu_option == "건강 정보 입력":
         existing_data = st.session_state.get("user_data", {})
