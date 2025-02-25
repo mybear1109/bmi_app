@@ -25,8 +25,10 @@ st.markdown(
         text-align: center;
         margin-bottom: 3rem;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        width: 100%;
-        max-width: 90%;
+        width: 90%;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
     }
     .main-title {
         color: white;
@@ -48,19 +50,21 @@ st.markdown(
         gap: 2rem;
         justify-content: center;
         padding: 2rem;
-        max-width: 100%;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
     }
     .feature-card {
         background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
         border-radius: 15px;
-        padding: 2.5rem;
+        padding: 2rem;
         text-align: center;
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         transition: all 0.3s ease;
-        border: 1px solid #190707;
+        border: 1px solid #ffffff;
         color: white;
-        flex: 1 1 30%;
-        min-width: 300px;
+        flex: 1 1 300px;
+        max-width: 350px;
     }
     .feature-card:hover {
         transform: scale(1.05);
@@ -116,6 +120,21 @@ st.markdown(
             <h3 class='feature-title'>스마트 영양 관리</h3>
             <p class='feature-description'>균형 잡힌 식단과 영양 분석을 통해 건강한 식습관을 유지하세요.</p>
         </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# 추가 정보
+st.markdown(
+    """
+    <div class='additional-info' style='max-width: 1200px; margin-left: auto; margin-right: auto;'>
+        <h2 class='additional-title'>🏆 AI 피트니스 코치의 특별한 가치</h2>
+        <ul class='additional-list'>
+            <li class='additional-item'>24/7 실시간 건강 모니터링으로 언제나 당신 곁에서 건강을 지켜드립니다.</li>
+            <li class='additional-item'>빅데이터와 AI의 만남으로 탄생한 초개인화 건강 솔루션을 경험하세요.</li>
+            <li class='additional-item'>전문가 수준의 건강 조언을 AI를 통해 언제 어디서나 받아볼 수 있습니다.</li>
+        </ul>
     </div>
     """,
     unsafe_allow_html=True
