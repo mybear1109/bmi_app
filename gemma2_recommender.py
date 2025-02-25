@@ -104,7 +104,7 @@ def get_gemma_recommendation(category: str, user_info: Dict[str, str], additiona
             elif info_type == "선호 운동":
                 prompt += f"- 선호하는 운동 유형: {', '.join(info_value)}\n"
             elif info_type == "운동 제한":
-                prompt += f"- 다음 운동은 제외: {', '.join(info_value)}\n"
+                prompt += f"- 다음 운동은 제외하고 대체 운동을 제안하세요: {', '.join(info_value)}\n"
 
     elif category == "식단":
         prompt += (
@@ -119,15 +119,15 @@ def get_gemma_recommendation(category: str, user_info: Dict[str, str], additiona
             "식단 예시:\n"
             "[{'요일': '월', '아침': {'메뉴': '계란 + 오트밀', '칼로리': 300}, '점심': {'메뉴': '닭가슴살 샐러드', '칼로리': 400}, '저녁': {'메뉴': '구운 채소 + 연어', '칼로리': 450}, '설명': '고단백 저탄수화물 식단으로 체지방 감소 도움'}]"
         )
+        allergen_foods = []
         for info_type, info_value in additional_info:
             if info_type == "알레르기 식품":
-                expanded_allergies = expand_allergies(info_value)
-                prompt += f"- 제외할 음식: {', '.join(expanded_allergies)}\n"
+                allergen_foods.extend(info_value)
             elif info_type == "선호 식품":
                 prompt += f"- 선호하는 음식: {', '.join(info_value)}\n"
             elif info_type == "식이 제한":
                 prompt += f"- 식이 요법: {info_value[0]}\n"
-
+        
         if additional_info:
             expanded_allergies = expand_allergies(additional_info)
             prompt += f"- 주의: 다음 음식은 완전히 제외하고 대체 식품을 사용하세요: {', '.join(expanded_allergies)}\n"
