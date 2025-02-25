@@ -68,8 +68,15 @@ def expand_allergies(allergen_foods: List[str]) -> Set[str]:
         if allergen in allergen_foods_mapping:
             expanded.update(allergen_foods_mapping[allergen])
         else:
-            expanded.add(allergen)
+            # 부분 매칭 처리
+            for key, values in allergen_foods_mapping.items():
+                if allergen in values:
+                    expanded.update(values)
+                    break
+            else:
+                expanded.add(allergen)
     return expanded
+
 
 def get_gemma_recommendation(category: str, user_info: Dict[str, str], additional_info: List[Tuple[str, List[str]]] = []) -> str:
     """
