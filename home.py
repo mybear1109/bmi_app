@@ -85,7 +85,7 @@ col1, col2 = st.columns([1, 1])
 
 with col1:
     if st.button("📊 데이터 시각화", key="btn_visualization"):
-        st.session_state["menu_option"] = "데이터 시각화"
+        st.session_state["menu_option"] = "데이터 시각화" 
         st.experimental_rerun()
 
 with col2:
