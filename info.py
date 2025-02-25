@@ -102,33 +102,38 @@ def display_info_page():
          ```
                         
 
-        ### 🧠 복합적인 접근 방식
+        ### 🧠 건강점수 계산시스템 구현
                 
             ``` 
 
-        "BMI": 10 if 18.5 <= user_info.get("BMI", 0) <= 23 else 6,
-        "허리둘레": 8 if user_info.get("허리둘레", 0) <= 85 else 5,
-        "혈압": 10 if 90 <= user_info.get("수축기혈압(최고 혈압)", 0) <= 120 and 60 <= user_info.get("이완기혈압(최저 혈압)", 0) <= 80 else 7,
-        "총 콜레스테롤": 10 if user_info.get("총콜레스테롤", 0) < 200 else 6,
-        "고혈당 위험": 8 if user_info.get("고혈당 위험", "낮음") == "낮음" else 5,
-        "간 지표": 10 if user_info.get("간 지표", "정상") == "정상" else 7,
-        "흡연/음주": 10 if user_info.get("흡연상태", "비흡연") == "비흡연" and user_info.get("음주여부", "비음주") == "비음주" else 6,
-        "연령/성별": 8        
+            1. 개별 건강 지표 평가:
 
-        최종 건강 점수를 산출합니다.
-        rec_type에 따라 모델 예측 점수와 건강 정보 점수의 가중치를 다르게 적용합니다.
-        - 운동: 모델 예측 30%, 건강 정보 70%
-        - 식단: 모델 예측 20%, 건강 정보 80%
-        또한, calibration_factor(보정 계수)를 적용하여 모델 예측 점수를 보정합니다.
-                          
-        if rec_type == "운동":
-        final = int((calibrated_predicted * 0.3) + (health * 0.7))
-        elif rec_type == "식단":
-        final = int((calibrated_predicted * 0.2) + (health * 0.8))
-        else:
-        final = int((calibrated_predicted * 0.3) + (health * 0.7))
-        return final   
-                    
+            BMI, 허리둘레, 혈압, 콜레스테롤, 고혈당 위험, 간 지표, 흡연/음주 상태, 연령 등 다양한 건강 지표를 평가합니다.
+            각 지표마다 세분화된 기준을 적용하여 4~10점 사이의 점수를 부여합니다.
+
+            2. 성별 특화 평가:
+
+            허리둘레 평가에서 성별에 따라 다른 기준을 적용합니다.
+
+            3. 종합 점수 계산:
+
+            각 지표의 점수를 합산하여 전체 건강 점수를 산출합니다.
+
+            4. AI 모델 통합:
+
+            predict_health_score 함수를 통해 AI 모델의 예측 결과를 반영합니다.
+
+            5. 맞춤형 가중치 적용:
+
+            운동과 식단 추천에 대해 다른 가중치를 적용합니다.
+                
+            운동: AI 모델 30%, 건강 정보 70%
+            식단: AI 모델 20%, 건강 정보 80%
+
+            8. 보정 기능:
+
+            calibration_factor를 통해 모델 예측을 미세 조정할 수 있습니다.
+                
             ```      
 
 
