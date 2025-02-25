@@ -44,12 +44,12 @@ def app():
             if st.button("🔓 로그아웃", key="logout_btn"):
                 logout()
                 initialize_session()  # ✅ 세션 초기화
-                st.experimental_rerun()  # ✅ 로그아웃 후 즉시 새로고침
+                st.rerun()  # ✅ 로그아웃 후 즉시 새로고침
 
         else:
             if st.button("🔐 로그인/회원가입", key="login_btn"):
                 st.session_state["show_auth"] = True
-                st.experimental_rerun()
+                st.rerun()
 
             st.markdown("<br>", unsafe_allow_html=True)
 
@@ -57,7 +57,7 @@ def app():
                 st.session_state["logged_in"] = True
                 st.session_state["nickname"] = "게스트"
                 st.session_state["guest_mode"] = True
-                st.experimental_rerun()
+                st.rerun()
 
     # ✅ 로그인 페이지로 이동 (로그인이 필요할 경우)
     if not st.session_state["logged_in"] and st.session_state.get("show_auth", False):
@@ -74,22 +74,14 @@ def app():
         if not st.session_state["logged_in"]:
             st.warning("⚠️ 로그인 후 접근할 수 있습니다.")
         else:
-            display_login_visualization()  # ✅ 문제 해결
+            display_login_visualization(st.session_state["nickname"])  # ✅ 유저 ID 전달
 
     elif menu_option == "건강 정보 입력":
-        existing_data = st.session_state.get("user_data", {})
-
-        if isinstance(existing_data, str):
-            try:
-                existing_data = json.loads(existing_data)
-            except json.JSONDecodeError:
-                existing_data = {}
-
         user_id = st.session_state["nickname"]
-        user_data = get_user_input(existing_data=existing_data, user_id=user_id)
+        user_data = get_user_input(user_id=user_id)
 
         if user_data:
-            st.session_state["user_data"] = json.dumps(user_data)
+            st.session_state["user_data"] = user_data
             save_user_data(user_id, user_data)
             st.success("✅ 사용자 정보가 저장되었습니다!")
 

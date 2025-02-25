@@ -25,10 +25,8 @@ st.markdown(
         text-align: center;
         margin-bottom: 3rem;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        width: 90%;
-        max-width: 1200px;
-        margin-left: auto;
-        margin-right: auto;
+        width: 100%;
+        max-width: 90%;
     }
     .main-title {
         color: white;
@@ -50,21 +48,19 @@ st.markdown(
         gap: 2rem;
         justify-content: center;
         padding: 2rem;
-        max-width: 1200px;
-        margin-left: auto;
-        margin-right: auto;
+        max-width: 100%;
     }
     .feature-card {
         background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
         border-radius: 15px;
-        padding: 2rem;
+        padding: 2.5rem;
         text-align: center;
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         transition: all 0.3s ease;
         border: 1px solid #ffffff;
         color: white;
-        flex: 1 1 300px;
-        max-width: 350px;
+        flex: 1 1 30%;
+        min-width: 300px;
     }
     .feature-card:hover {
         transform: scale(1.05);
