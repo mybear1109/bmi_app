@@ -74,16 +74,93 @@ def calculate_health_score(user_info):
     건강 정보 기반 점수 계산:
     - 예를 들어, BMI가 18.5~23이면 10점, 그렇지 않으면 6점 등 정상 범위일 경우 높은 점수를 부여합니다.
     """
-    score_components = {
-        "BMI": 10 if 18.5 <= user_info.get("BMI", 0) <= 23 else 6,
-        "허리둘레": 8 if user_info.get("허리둘레", 0) <= 85 else 5,
-        "혈압": 10 if 90 <= user_info.get("수축기혈압(최고 혈압)", 0) <= 120 and 60 <= user_info.get("이완기혈압(최저 혈압)", 0) <= 80 else 7,
-        "총 콜레스테롤": 10 if user_info.get("총콜레스테롤", 0) < 200 else 6,
-        "고혈당 위험": 8 if user_info.get("고혈당 위험", "낮음") == "낮음" else 5,
-        "간 지표": 10 if user_info.get("간 지표", "정상") == "정상" else 7,
-        "흡연/음주": 10 if user_info.get("흡연상태", "비흡연") == "비흡연" and user_info.get("음주여부", "비음주") == "비음주" else 6,
-        "연령/성별": 8
-    }
+    score_components = {}
+
+    # BMI 점수 계산
+    bmi = user_info.get("BMI", 0)
+    if 18.5 <= bmi < 23:
+        score_components["BMI"] = 10
+    elif 23 <= bmi < 25:
+        score_components["BMI"] = 8
+    elif 25 <= bmi < 30:
+        score_components["BMI"] = 6
+    else:
+        score_components["BMI"] = 4
+
+    # 허리둘레 점수 계산 (성별에 따라 다른 기준 적용)
+    waist = user_info.get("허리둘레", 0)
+    gender = user_info.get("성별", "남성")
+    if gender == "남성":
+        if waist < 90:
+            score_components["허리둘레"] = 10
+        elif 90 <= waist < 100:
+            score_components["허리둘레"] = 7
+        else:
+            score_components["허리둘레"] = 4
+    else:  # 여성
+        if waist < 85:
+            score_components["허리둘레"] = 10
+        elif 85 <= waist < 95:
+            score_components["허리둘레"] = 7
+        else:
+            score_components["허리둘레"] = 4
+
+    # 혈압 점수 계산
+    systolic = user_info.get("수축기혈압(최고 혈압)", 0)
+    diastolic = user_info.get("이완기혈압(최저 혈압)", 0)
+    if 90 <= systolic <= 120 and 60 <= diastolic <= 80:
+        score_components["혈압"] = 10
+    elif 120 < systolic <= 140 or 80 < diastolic <= 90:
+        score_components["혈압"] = 7
+    else:
+        score_components["혈압"] = 4
+
+    # 총 콜레스테롤 점수 계산
+    cholesterol = user_info.get("총콜레스테롤", 0)
+    if cholesterol < 200:
+        score_components["총 콜레스테롤"] = 10
+    elif 200 <= cholesterol < 240:
+        score_components["총 콜레스테롤"] = 7
+    else:
+        score_components["총 콜레스테롤"] = 4
+
+    # 고혈당 위험 점수 계산
+    glucose_risk = user_info.get("고혈당 위험", "낮음")
+    if glucose_risk == "낮음":
+        score_components["고혈당 위험"] = 10
+    elif glucose_risk == "보통":
+        score_components["고혈당 위험"] = 7
+    else:
+        score_components["고혈당 위험"] = 4
+
+    # 간 지표 점수 계산
+    liver_index = user_info.get("간 지표", "정상")
+    if liver_index == "정상":
+        score_components["간 지표"] = 10
+    elif liver_index == "경계":
+        score_components["간 지표"] = 7
+    else:
+        score_components["간 지표"] = 4
+
+    # 흡연/음주 점수 계산
+    smoking = user_info.get("흡연상태", "비흡연")
+    drinking = user_info.get("음주여부", "비음주")
+    if smoking == "비흡연" and drinking == "비음주":
+        score_components["흡연/음주"] = 10
+    elif smoking == "비흡연" or drinking == "비음주":
+        score_components["흡연/음주"] = 7
+    else:
+        score_components["흡연/음주"] = 4
+
+    # 연령 점수 계산
+    age = user_info.get("나이", 30)
+    if age < 40:
+        score_components["연령"] = 10
+    elif 40 <= age < 60:
+        score_components["연령"] = 8
+    else:
+        score_components["연령"] = 6
+    
     return sum(score_components.values())
 
 def get_final_health_score(model, user_info, rec_type):

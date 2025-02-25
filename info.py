@@ -100,21 +100,38 @@ def display_info_page():
         ## 기타
         - **`예측 날짜`**: 데이터 생성 또는 예측 날짜        
          ```
-                           
-        ### 💻 모델 아키텍처
+                        
 
-        ```
-        from transformers import AutoModelForCausalLM, AutoTokenizer
+        ### 🧠 복합적인 접근 방식
+                
+            ``` 
 
-        model_name = "google/gemma-2-9b-it"
-        model = AutoModelForCausalLM.from_pretrained(model_name)
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        ```
+        "BMI": 10 if 18.5 <= user_info.get("BMI", 0) <= 23 else 6,
+        "허리둘레": 8 if user_info.get("허리둘레", 0) <= 85 else 5,
+        "혈압": 10 if 90 <= user_info.get("수축기혈압(최고 혈압)", 0) <= 120 and 60 <= user_info.get("이완기혈압(최저 혈압)", 0) <= 80 else 7,
+        "총 콜레스테롤": 10 if user_info.get("총콜레스테롤", 0) < 200 else 6,
+        "고혈당 위험": 8 if user_info.get("고혈당 위험", "낮음") == "낮음" else 5,
+        "간 지표": 10 if user_info.get("간 지표", "정상") == "정상" else 7,
+        "흡연/음주": 10 if user_info.get("흡연상태", "비흡연") == "비흡연" and user_info.get("음주여부", "비음주") == "비음주" else 6,
+        "연령/성별": 8        
 
-        ### 🧠 고급 기술 구현
-        - RoPE (Rotary Positioning Embeddings)
-        - GeGLU 비선형성
-        - GQA (Grouped Query Attention)
+        최종 건강 점수를 산출합니다.
+        rec_type에 따라 모델 예측 점수와 건강 정보 점수의 가중치를 다르게 적용합니다.
+        - 운동: 모델 예측 30%, 건강 정보 70%
+        - 식단: 모델 예측 20%, 건강 정보 80%
+        또한, calibration_factor(보정 계수)를 적용하여 모델 예측 점수를 보정합니다.
+                          
+        if rec_type == "운동":
+        final = int((calibrated_predicted * 0.3) + (health * 0.7))
+        elif rec_type == "식단":
+        final = int((calibrated_predicted * 0.2) + (health * 0.8))
+        else:
+        final = int((calibrated_predicted * 0.3) + (health * 0.7))
+        return final   
+                    
+            ```      
+
+
 
         ### 📊 데이터 활용
         - 건강 관련 대규모 데이터셋으로 사전 학습
