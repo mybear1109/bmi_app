@@ -72,18 +72,24 @@ def display_ai_coach_page():
         "exercise_preference": exercise_preference
     })
     
+# 두 개의 열을 생성하여 버튼을 나란히 배치
     col1, col2 = st.columns(2)
+
     with col1:
-        if st.button("🥗 식단 계획 추천", key="diet_button"):
-            with st.spinner("AI가 식단을 추천하는 중...⏳"):
-                diet_plan = get_gemma_recommendation("식단", user_data, allergen_foods)
-            display_recommendation(diet_plan, "식단")
- 
+        diet_button = st.button("🥗 식단 계획 추천", key="diet_button")
 
     with col2:
-        if st.button("🏋️ 운동 계획 추천", key="workout_button"):
-            with st.spinner("AI가 운동을 추천하는 중...⏳"):
-                exercise_plan = get_gemma_recommendation("운동", user_data)
-            display_recommendation(exercise_plan, "운동")
-        
-  
+        exercise_button = st.button("🏋️ 운동 계획 추천", key="workout_button")
+
+    # 선택된 계획을 표시
+    if diet_button:
+        with st.spinner("AI가 식단을 추천하는 중...⏳"):
+            diet_plan = get_gemma_recommendation("식단", user_data, allergen_foods)
+        st.subheader("🥗 맞춤형 식단 계획")
+        display_recommendation(diet_plan, "식단")
+
+    elif exercise_button:
+        with st.spinner("AI가 운동을 추천하는 중...⏳"):
+            exercise_plan = get_gemma_recommendation("운동", user_data)
+        st.subheader("🏋️ 맞춤형 운동 계획")
+        display_recommendation(exercise_plan, "운동")
