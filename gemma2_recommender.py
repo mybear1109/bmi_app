@@ -41,6 +41,30 @@ def get_user_info_with_default(user_data: Dict[str, str]) -> Dict[str, str]:
         "음주여부": "비음주"
     }
     return {key: user_data.get(key, default_info.get(key, "미측정")) for key in default_info}
+def expand_allergies(allergies: List[str]) -> Set[str]:
+    """
+    입력된 알레르기 목록을 미리 정의된 매핑을 통해 확장하여,
+    관련 모든 식품 목록을 반환합니다.
+    """
+    allergy_mapping = {
+        '계란': ['계란', '계란노른자', '계란흰자', '달걀', '노른자', '흰자'],
+        '생선': ['생선', '연어', '참치', '광어'],
+        '우유': ['우유', '요구르트', '치즈'],
+        '콩': ['콩', '두부', '콩나물'],
+        '밀가루': ['밀가루', '빵', '면'],
+        '아몬드': ['아몬드', '호두', '땅콩'],
+        '닭고기': ['닭고기', '닭가슴살', '닭날개'],
+        '소고기': ['소고기', '소불고기', '소양지'],
+        '돼지고기': ['돼지고기', '삼겹살', '목살'],
+        '새우': ['새우', '게', '랍스터']
+    }
+    expanded = set()
+    for allergy in allergies:
+        if allergy in allergy_mapping:
+            expanded.update(allergy_mapping[allergy])
+        else:
+            expanded.add(allergy)
+    return expanded
 
 def get_gemma_recommendation(category: str, user_info: Dict[str, str], additional_info: List[Tuple[str, List[str]]] = []) -> str:
     """
@@ -57,6 +81,14 @@ def get_gemma_recommendation(category: str, user_info: Dict[str, str], additiona
             "운동 예시:\n"
             "[{'요일': '월', '운동': [{'종류': '달리기', '시간': 30, '칼로리 소모': 300}, {'종류': '스트레칭', '시간': 15, '칼로리 소모': 50}], '설명': '유산소 운동과 스트레칭으로 체지방 감소 및 유연성 향상'}]"
         )
+        for info_type, info_value in additional_info:
+            if info_type == "체력 수준":
+                prompt += f"- 사용자의 체력 수준은 {info_value}입니다.\n"
+            elif info_type == "선호하는 운동 유형":
+                prompt += f"- 선호하는 운동 유형: {', '.join(info_value)}\n"
+            elif info_type == "제한된 운동":
+                prompt += f"- 다음 운동은 제외: {', '.join(info_value)}\n"
+
     elif category == "식단":
         prompt += (
             "당신은 AI 영양사입니다. 사용자의 건강 상태를 고려한 7일 식단 계획을 작성해 주세요.\n"
@@ -70,6 +102,13 @@ def get_gemma_recommendation(category: str, user_info: Dict[str, str], additiona
             "식단 예시:\n"
             "[{'요일': '월', '아침': {'메뉴': '계란 + 오트밀', '칼로리': 300}, '점심': {'메뉴': '닭가슴살 샐러드', '칼로리': 400}, '저녁': {'메뉴': '구운 채소 + 연어', '칼로리': 450}, '설명': '고단백 저탄수화물 식단으로 체지방 감소 도움'}]"
         )
+        for info_type, info_value in additional_info:
+            if info_type == "알레르기 및 기피 음식":
+                prompt += f"- 제외할 음식: {', '.join(info_value)}\n"
+            elif info_type == "선호하는 음식":
+                prompt += f"- 선호하는 음식: {', '.join(info_value)}\n"
+            elif info_type == "식이 요법":
+                prompt += f"- 식이 요법: {info_value}\n"
     else:
         return "🚨 올바른 카테고리를 입력하세요: '운동' 또는 '식단'"
     
