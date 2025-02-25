@@ -91,28 +91,30 @@
 ```
 
 📁 health_app/
-├── app.py                       # Streamlit 메인 실행 파일 (사이드바 포함)
-├── login.py                     # 회원가입&로그인 기능
-├── home.py                      # 홈 화면
-├── sidebar.py                   # 사이드바 설정
-├── info.py                      # 자랑하는 페이지 😼
-├── user_input.py                # 유저 정보 입력 폼
-├── user_data_utils.py           # 유저 데이터 처리 (불러오기, 저장)
-├── model.py                     # 데이터 모듈 (데이터셋 핸들링)
-├── model_manager.py             # 모델 저장 및 불러오기
-├── prediction.py                # 예측 실행 및 결과 반환 로직
-├── visualization.py             # 데이터 시각화 처리
-├── gemma-2_recommender.py       # AI 추천 시스템 및 운동/식단 추천 함수 (Gemma-2 모델 활용)
-├── ai_coach.py                  # AI 건강 코치 (추천 결과 표시)
-├── models/
-│   ├── model_exercise.pth       # 운동 여부 예측 모델
-│   └── model_food.pth           # 음식 섭취 여부 예측 모델
-├── data/
-│   ├── predictions.csv          # 예측 저장 데이터
-│   └── user_data.json           # 유저 저장 데이터
-├── requirements.txt             # 필요한 패키지 목록
-└── .streamlit/                  # Streamlit 설정 폜더
-    └── secrets.toml             # API Key 인증 정보
+├── app.py                       # Streamlit 앱의 메인 실행 파일
+├── login.py                     # 사용자 인증 관리 (회원가입, 로그인)
+├── login_visualization.py       # 로그인 사용자 개인 건강 데이터 시각화
+├── home.py                      # 앱의 홈 화면 구성
+├── sidebar.py                   # 사이드바 메뉴 및 기능 설정
+├── info.py                      # 앱 소개 및 주요 기능 설명 페이지
+├── user_input.py                # 사용자 건강 정보 입력 폼
+├── user_data_utils.py           # 사용자 데이터 처리 유틸리티
+├── model.py                     # 데이터셋 처리 및 모델 관련 기능
+├── model_manager.py             # AI 모델 관리 (저장, 로드)
+├── prediction.py                # 건강 예측 로직 실행
+├── visualization.py             # 전체 사용자 데이터 시각화
+├── gemma-2_recommender.py       # AI 기반 맞춤형 건강 추천 시스템
+├── ai_coach.py                  # AI 건강 코치 인터페이스
+├── models/                      # 훈련된 AI 모델 저장 디렉토리
+│   ├── model_exercise.pth       # 운동 추천 모델
+│   └── model_food.pth           # 식단 추천 모델
+├── data/                        # 데이터 저장 디렉토리
+│   ├── predictions.csv          # 건강 예측 결과 데이터
+│   └── user_data.json           # 사용자 프로필 데이터
+├── requirements.txt             # 프로젝트 의존성 패키지 목록
+└── .streamlit/                  # Streamlit 설정 디렉토리
+    └── secrets.toml             # 보안 키 및 인증 정보
+
 
 ```
 
