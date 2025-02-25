@@ -4,8 +4,8 @@ import streamlit as st
 st.set_page_config(page_title=" AI 피트니스 코치", page_icon="🏠", layout="wide")
 import json
 import os
-from home import display_home_page
 from sidebar import get_selected_menu
+from home import display_home_page
 from prediction import display_prediction_page
 from visualization import display_visualization_page
 from ai_coach import display_ai_coach_page
@@ -14,7 +14,6 @@ from model_loader import model_exercise, model_food
 from user_data_utils import save_user_data, load_user_data
 from login import display_auth_page, check_login_status, logout  
 from info import display_info_page
-from login_visualization import display_login_visualization  
 
 # ✅ 세션 초기화
 def initialize_session():
