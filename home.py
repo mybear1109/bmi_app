@@ -57,7 +57,7 @@ st.markdown(
         text-align: center;
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         transition: all 0.3s ease;
-        border: 1px solid #ffffff;
+        border: 1px solid #190707;
         color: white;
         flex: 1 1 30%;
         min-width: 300px;
