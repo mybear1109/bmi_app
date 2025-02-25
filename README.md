@@ -237,19 +237,6 @@ return df_food
 <br>
 <br>  
 
-3.  **사용자 입력 데이터**:
-
-<table> <tr> <th>** 코     드 **</th> </tr> <tr> <td>
-
-<br>
-    
-def handle_missing_values(df):<br>
-
-<br>
-    
-</td> </tr> </table>
-<br>
-<br>  
 
 
 # 텍스트 데이터 처리 ("🔍 예측을 실행하세요" -> "미실행"))
