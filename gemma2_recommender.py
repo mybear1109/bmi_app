@@ -123,6 +123,7 @@ def get_gemma_recommendation(category: str, user_info: Dict[str, str], additiona
         for info_type, info_value in additional_info:
             if info_type == "알레르기 식품":
                 allergen_foods.extend(info_value)
+                allergen_foods_mapping = [f"{food}({', '.join(expand_allergies([food]))})" for food in info_value]
             elif info_type == "선호 식품":
                 prompt += f"- 선호하는 음식: {', '.join(info_value)}\n"
             elif info_type == "식이 제한":
@@ -131,7 +132,7 @@ def get_gemma_recommendation(category: str, user_info: Dict[str, str], additiona
         if allergen_foods:
             expanded_allergies = expand_allergies(allergen_foods)
             prompt += f"- 주의: 다음 음식은 완전히 제외하고 대체 식품을 사용하세요: {', '.join(expanded_allergies)}\n"
-            prompt += "- 알레르기 식품이 포함된 모든 요리와 재료를 피하고, 교차 오염에 주의하세요.\n"
+            prompt += f"- 알레르기 식품이 포함된 모든 요리와 재료를 피하고, 교차 오염에 주의하세요.{', '.join(allergen_foods_mapping)}\n"
             prompt += "- 각 끼니마다 알레르기 식품이 포함되지 않았는지 다시 한 번 확인하세요.\n"  
             prompt += "- 운동 제한 사항에 대해 다시 한 번 확인하세요\n"   
 
