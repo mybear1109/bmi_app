@@ -134,7 +134,7 @@ def get_gemma_recommendation(category: str, user_info: Dict[str, str], additiona
             prompt += f"- 주의: 다음 음식은 완전히 제외하고 대체 식품을 사용하세요: {', '.join(expanded_allergies)}\n"
             prompt += f"- 알레르기 식품이 포함된 모든 요리와 재료를 피하고, 교차 오염에 주의하세요.{', '.join(allergen_foods_mapping)}\n"
             prompt += "- 각 끼니마다 알레르기 식품이 포함되지 않았는지 다시 한 번 확인하세요.\n"  
-            prompt += "- 운동 제한 사항에 대해 다시 한 번 확인하세요\n"   
+            prompt += f"- 운동 제한 사항에 대해 다시 한 번 확인하세요{', '.join(allergen_foods_mapping)}\n"
 
     else:
         return "🚨 올바른 카테고리를 입력하세요: '운동' 또는 '식단'"
