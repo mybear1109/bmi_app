@@ -41,12 +41,12 @@ def get_user_info_with_default(user_data: Dict[str, str]) -> Dict[str, str]:
         "음주여부": "비음주"
     }
     return {key: user_data.get(key, default_info.get(key, "미측정")) for key in default_info}
-def expand_allergies(allergies: List[str]) -> Set[str]:
+def expand_allergies(allergen_foods: List[str]) -> Set[str]:
     """
     입력된 알레르기 목록을 미리 정의된 매핑을 통해 확장하여,
     관련 모든 식품 목록을 반환합니다.
     """
-    allergy_mapping = {
+    allergen_foods_mapping = {
         '계란': ['계란', '계란노른자', '계란흰자', '달걀', '노른자', '흰자', '마요네즈', '메렝게', '타르타르 소스'],
         '생선': ['생선', '연어', '참치', '광어', '고등어', '멸치', '오징어', '문어', '조개', '굴', '홍합'],
         '우유': ['우유', '유제품', '우유단백질', '우유당', '치즈', '요구르트', '버터', '크림', '아이스크림', '카제인'],
@@ -63,11 +63,11 @@ def expand_allergies(allergies: List[str]) -> Set[str]:
         '기타': ['초콜릿', '카카오', '커피', '알코올', '알콜','인공감미료', '방부제']
     }
     expanded = set()
-    for allergy in allergies:
-        if allergy in allergy_mapping:
-            expanded.update(allergy_mapping[allergy])
+    for allergen_foods in allergen_foods:
+        if allergen_foods in allergen_foods_mapping:
+            expanded.update(allergen_foods_mapping[allergen_foods])
         else:
-            expanded.add(allergy)
+            expanded.add(allergen_foods)
     return expanded
 
 def get_gemma_recommendation(category: str, user_info: Dict[str, str], additional_info: List[Tuple[str, List[str]]] = []) -> str:
