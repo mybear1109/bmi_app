@@ -45,21 +45,22 @@ def display_ai_coach_page():
     
     col1, col2 = st.columns(2)
     with col1:
-        allergen_foods = st.text_input("🚫 식품 알레르기 및 기피 항목 (쉼표로 구분)", "", key="allergen_foods")
+        allergen_foods = st.text_input("🚫 식품 알레르기 및 기피 항목 (쉼표로 구분)", "", key="allergen_foods",placeholder="예: 달걀, 땅콩,오이")
         allergen_foods = [food.strip() for food in allergen_foods.split(',') if food.strip()]
         st.markdown("<br>", unsafe_allow_html=True)
-        preferred_foods = st.text_input("😋 선호하는 음식 (쉼표 구분)", "", key="preferred_foods")
+        preferred_foods = st.text_input("😋 선호하는 음식 (쉼표 구분)", "", key="preferred_foods",placeholder="예: 달걀, 당근, 면")
         preferred_foods = [food.strip() for food in preferred_foods.split(',') if food.strip()]
         st.markdown("<br>", unsafe_allow_html=True)
         diet_restriction = st.selectbox("🍽️ 식이 요법 유형", ["선택 안함", "일반식", "채식", "육류 중심", "저탄수화물", "저지방", "글루텐 프리"])
     with col2:
         fitness_level = st.select_slider("💪 현재 체력 수준", options=["선택 안함", "매우 낮음", "낮음", "보통", "높음", "매우 높음"])
         st.markdown("<br>", unsafe_allow_html=True)
-        restricted_exercises = st.text_input("⚠️ 운동 제한 사항 (쉼표로 구분)", "", key="restricted_exercises")
+        restricted_exercises = st.text_input("⚠️ 운동 제한 사항 (쉼표로 구분)", "", key="restricted_exercises",placeholder="예: 허리, 무릎, 발목")
         restricted_exercises = [exercise.strip() for exercise in restricted_exercises.split(',') if exercise.strip()]
         st.markdown("<br>", unsafe_allow_html=True)
         exercise_preference = st.multiselect("🏃‍♀️ 선호하는 운동 유형", 
-                                             ["유산소 운동", "근력 트레이닝", "유연성 운동", "균형 및 코어", 
+                                             ["유산소 운동", "근력 트레이닝", "유연성 운동", "균형 및 코어", "링피트",
+                                              "피트니스 댄스", "싸이클링", "수영", "러닝",
                                               "고강도 인터벌 트레이닝", "요가", "필라테스"])
         st.markdown("<br>", unsafe_allow_html=True)
     
