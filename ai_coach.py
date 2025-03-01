@@ -87,50 +87,7 @@ def display_ai_coach_page():
         
         workout_location = st.multiselect("🏠 주로 운동하는 장소", ["집", "헬스장", "공원", "수영장", "실외"])
         
-    # 추가 정보
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.subheader("추가 정보")
-    sleep_hours = st.slider("😴 평균 수면 시간", min_value=4, max_value=12, value=7, step=0.5)
-    stress_level = st.select_slider("😰 평소 스트레스 수준", options=["매우 낮음", "낮음", "보통", "높음", "매우 높음"])
-    water_intake = st.slider("💧 하루 평균 물 섭취량 (리터)", min_value=0.5, max_value=5.0, value=2.0, step=0.1)
     
-    user_data.update({
-        "allergen_foods": allergen_foods,
-        "preferred_foods": preferred_foods,
-        "diet_restriction": diet_restriction,
-        "meal_frequency": meal_frequency,
-        "cooking_skill": cooking_skill,
-        "meal_prep_time": meal_prep_time,
-        "restricted_exercises": restricted_exercises,
-        "fitness_level": fitness_level,
-        "exercise_preference": exercise_preference,
-        "workout_frequency": workout_frequency,
-        "workout_duration": workout_duration,
-        "workout_location": workout_location,
-        "sleep_hours": sleep_hours,
-        "stress_level": stress_level,
-        "water_intake": water_intake
-    })
-   
-    additional_info = [
-        ("건강 목표", goals),
-        ("알레르기 식품", allergen_foods),
-        ("선호 식품", preferred_foods),
-        ("식이 제한", [diet_restriction]),
-        ("하루 식사 횟수", [meal_frequency]),
-        ("요리 실력", [cooking_skill]),
-        ("식사 준비 시간", [f"{meal_prep_time}분"]),
-        ("운동 제한", restricted_exercises),
-        ("체력 수준", [fitness_level]),
-        ("선호 운동", exercise_preference),
-        ("주간 운동 횟수", [workout_frequency]),
-        ("운동 시간", [f"{workout_duration}분"]),
-        ("운동 장소", workout_location),
-        ("수면 시간", [f"{sleep_hours}시간"]),
-        ("스트레스 수준", [stress_level]),
-        ("물 섭취량", [f"{water_intake}L"])
-    ]
-
     # 두 개의 열을 생성하여 버튼을 나란히 배치
     col1, col2 = st.columns(2)
 
