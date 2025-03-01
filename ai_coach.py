@@ -1,7 +1,7 @@
 import streamlit as st
 import json
 import pandas as pd
-from google_gemma_2b_it import get_gemma_recommendation
+from gemma2_recommender import get_gemma_recommendation
 
 def load_user_data():
     user_data = st.session_state.get("user_data", {})
