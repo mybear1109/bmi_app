@@ -2,7 +2,15 @@ import streamlit as st
 import json
 import pandas as pd
 from google_gemma_2b_it import get_gemma_recommendation
-from user_data_utils import load_user_data, display_user_info_table
+
+def load_user_data():
+    user_data = st.session_state.get("user_data", {})
+    if isinstance(user_data, str):
+        try:
+            return json.loads(user_data)
+        except json.JSONDecodeError:
+            return {}
+    return user_data
 
 def display_recommendation(recommendation, title):
     if not recommendation:
@@ -74,7 +82,7 @@ def display_ai_coach_page():
         ("선호 운동", exercise_preference)
     ]
 
-    # 두 개의 열을 생성하여 버튼을 나란히 배치
+# 두 개의 열을 생성하여 버튼을 나란히 배치
     col1, col2 = st.columns(2)
 
     with col1:
