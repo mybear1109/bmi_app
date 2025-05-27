@@ -42,12 +42,25 @@ def generate_text_via_api(
         "temperature": 0.1,
         "max_tokens": 512
     }
-    response = requests.post(api_url, headers=headers, json=payload)
-    response.raise_for_status()
-    data = response.json()
 
+    try:
+        response = requests.post(api_url, headers=headers, json=payload)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as http_err:
+        # 사용자에게 에러 표시
+        st.error(f"❌ API 요청 실패 (HTTP {response.status_code})")
+        st.code(response.text, language="json")
+        # 로깅
+        logging.error(f"HuggingFace API HTTP error: {http_err}, response: {response.text}")
+        return "죄송합니다. 요청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
+    except Exception as err:
+        st.error(f"❌ API 요청 중 오류 발생: {err}")
+        logging.error(f"HuggingFace API unexpected error: {err}")
+        return "죄송합니다. 예기치 못한 오류가 발생했습니다."
+
+    data = response.json()
     # 첫 번째 응답 메시지 내용 반환
-    return data["choices"][0]["message"]["content"].strip()
+    return data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
 
 
 def get_user_info_with_default(user_data: Dict[str, str]) -> Dict[str, str]:
