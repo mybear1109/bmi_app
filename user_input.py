@@ -8,9 +8,8 @@ import re
 import hashlib
 import io
 from PIL import Image
-from pyzbar.pyzbar import decode as qr_decode
 import pytesseract
-from pdf2image import convert_from_bytes
+
 
 # 스타일 적용
 st.markdown("""
