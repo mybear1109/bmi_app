@@ -25,3 +25,4 @@ plotly==5.17.0
 # ✅ 추가 라이브러리
 streamlit-option-menu==0.3.2
 requests==2.31.0
+pyzbar
