@@ -8,10 +8,14 @@ from typing import List, Dict, Set, Tuple
 import pandas as pd
 
 
+# Hugging Face API 토큰 가져오기
+
 def get_huggingface_token():
     """환경 변수 또는 Streamlit secrets에서 Hugging Face API 토큰을 가져옵니다."""
     return st.secrets.get("HUGGINGFACE_API_TOKEN")
 
+
+# 텍스트 생성 함수 (HTTP 에러 핸들링 추가)
 
 def generate_text_via_api(
     prompt: str,
@@ -38,7 +42,6 @@ def generate_text_via_api(
         "temperature": 0.1,
         "max_tokens": 512
     }
-
     response = requests.post(api_url, headers=headers, json=payload)
     response.raise_for_status()
     data = response.json()
