@@ -6,8 +6,6 @@ import streamlit as st
 import logging
 from typing import List, Dict, Set, Tuple
 import pandas as pd
-from huggingface_hub import InferenceClient
-
 
 
 def get_huggingface_token():
@@ -48,6 +46,7 @@ def generate_text_via_api(
     # 첫 번째 응답 메시지 내용 반환
     return data["choices"][0]["message"]["content"].strip()
 
+
 def get_user_info_with_default(user_data: Dict[str, str]) -> Dict[str, str]:
     """사용자 정보 중 '미측정' 항목은 기본값으로 채워 반환합니다."""
     default_info = {
@@ -66,13 +65,15 @@ def get_user_info_with_default(user_data: Dict[str, str]) -> Dict[str, str]:
         "음주여부": "비음주"
     }
     return {key: user_data.get(key, default_info.get(key, "미측정")) for key in default_info}
+
+
 def expand_allergies(allergen_foods: List[str]) -> Set[str]:
     """
     입력된 알레르기 목록을 미리 정의된 매핑을 통해 확장하여,
     관련 모든 식품 목록을 반환합니다.
     """
     allergen_foods_mapping = {
-        '계란': ['계란', '계란노른자', '계란흰자', '에그','스크램블 에그','달걀', '노른자', '흰자', '마요네즈', '메렝게', '타르타르 소스'],
+        '계란': ['계란', '계란노른자', '계란흰자', '에그', '스크램블 에그', '달걀', '노른자', '흰자', '마요네즈', '메렝게', '타르타르 소스'],
         '생선': ['생선', '연어', '참치', '광어', '고등어', '멸치', '오징어', '문어', '조개', '굴', '홍합'],
         '우유': ['우유', '유제품', '우유단백질', '우유당', '치즈', '요구르트', '버터', '크림', '아이스크림', '카제인'],
         '밀': ['밀', '밀가루', '글루텐', '파스타', '빵', '과자', '케이크', '시리얼', '맥주'],
@@ -85,17 +86,16 @@ def expand_allergies(allergen_foods: List[str]) -> Set[str]:
         '견과류 및 씨앗': ['참깨', '들깨', '해바라기씨', '호박씨', '아마씨'],
         '채소': ['셀러리', '당근', '토마토', '시금치', '브로콜리'],
         '향신료': ['마늘', '양파', '생강', '고추', '후추'],
-        '기타': ['초콜릿', '카카오', '커피', '알코올', '알콜','인공감미료', '방부제']
+        '기타': ['초콜릿', '카카오', '커피', '알코올', '알콜', '인공감미료', '방부제']
     }
     expanded = set()
     for allergen in allergen_foods:
-        allergen = allergen.lower().strip()
-        if allergen in allergen_foods_mapping:
-            expanded.update(allergen_foods_mapping[allergen])
+        key = allergen.lower().strip()
+        if key in allergen_foods_mapping:
+            expanded.update(allergen_foods_mapping[key])
         else:
-            # 부분 매칭 처리
-            for key, values in allergen_foods_mapping.items():
-                if allergen in values:
+            for k, values in allergen_foods_mapping.items():
+                if key in values:
                     expanded.update(values)
                     break
             else:
@@ -103,7 +103,11 @@ def expand_allergies(allergen_foods: List[str]) -> Set[str]:
     return expanded
 
 
-def get_gemma_recommendation(category: str, user_info: Dict[str, str], additional_info: List[Tuple[str, List[str]]] = []) -> str:
+def get_gemma_recommendation(
+    category: str,
+    user_info: Dict[str, str],
+    additional_info: List[Tuple[str, List[str]]] = []
+) -> str:
     """
     운동 또는 식단 추천을 위한 프롬프트를 구성하고 API를 호출합니다.
     모든 응답은 반드시 한국어로 작성해주세요.
@@ -143,7 +147,7 @@ def get_gemma_recommendation(category: str, user_info: Dict[str, str], additiona
             "- 다양한 영양소가 균형잡힌 식단을 구성하세요.\n"
             "- 요리실력에 맞게 간단하고 쉽게 준비할 수 있는 요리를 포함하세요.\n"
             "- 식사 준비 시간이 짧은 사용자를 위한 레시피를 포함하세요.\n"
-            "- 식사 준비에 할애할 수 있는 시간 을 고려하여 식단을 계획하세요.\n"
+            "- 식사 준비에 할애할 수 있는 시간을 고려하여 식단을 계획하세요.\n"
             "- 칼로리 조절과 함께 단백질, 탄수화물, 지방의 적절한 비율을 고려하세요.\n"
             "- 식사 간 간식이나 야식에 대한 제안도 포함할 수 있습니다.\n"
             "- 각 음식의 영양적 이점을 간략히 설명하세요.\n"
