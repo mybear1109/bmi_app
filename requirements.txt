@@ -6,7 +6,7 @@ pandas==2.0.3
 numpy==1.24.2
 scikit-learn==1.3.0
 
-# ✅ PyTorch (CPU 버전) - PyTorch 공식 홈페이지나 pip에서 설치 (버전은 설치 시 결정)
+# ✅ PyTorch (CPU 버전)
 torch
 torchvision
 torchaudio
@@ -25,4 +25,4 @@ plotly==5.17.0
 # ✅ 추가 라이브러리
 streamlit-option-menu==0.3.2
 requests==2.31.0
-libzbar0
+pyzbar==0.1.8
