@@ -27,4 +27,5 @@ streamlit-option-menu==0.3.2
 requests==2.31.0
 pyzbar==0.1.8
 pytesseract==0.3.10
+pdf2image==1.16.3
 
