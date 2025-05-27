@@ -35,8 +35,8 @@ def generate_text_via_api(
     payload = {
         "model": model_name,
         "messages": messages,
-        "temperature": 0.2,
-        "max_tokens": 400
+        "temperature": 0.1,
+        "max_tokens": 512
     }
 
     response = requests.post(api_url, headers=headers, json=payload)
