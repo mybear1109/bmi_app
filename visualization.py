@@ -19,29 +19,29 @@ def display_visualization_page():
 
         # 🔥 데이터 타입 변환 (오류 방지)
         df["나이"] = pd.to_numeric(df["나이"], errors='coerce').fillna(0).astype(int)
-        df["운동 확률"] = pd.to_numeric(df["운동 확률"], errors='coerce').fillna(0)
-        df["식단 확률"] = pd.to_numeric(df["식단 확률"], errors='coerce').fillna(0)
+        df["운동 점수"] = pd.to_numeric(df["운동 점수"], errors='coerce').fillna(0)
+        df["식단 점수"] = pd.to_numeric(df["식단 점수"], errors='coerce').fillna(0)
 
         # 🔥 결측치 처리 (오류 방지)
         df.fillna(0, inplace=True)  # 모든 NaN 값을 0으로 채움
 
         # ✅ 성별에 따른 운동 가능성 시각화
         st.subheader("🧑‍🤝‍🧑 성별에 따른 운동 가능성")
-        gender_exercise = df.groupby("성별")["운동 확률"].mean().reset_index()
-        fig_gender_exercise = px.bar(gender_exercise, x="성별", y="운동 확률", color="성별",
-                                    title="성별별 평균 운동 확률", labels={"운동 확률": "평균 운동 확률"})
+        gender_exercise = df.groupby("성별")["운동 점수"].mean().reset_index()
+        fig_gender_exercise = px.bar(gender_exercise, x="성별", y="운동 점수", color="성별",
+                                    title="성별별 평균 운동 점수", labels={"운동 점수": "평균 운동 점수"})
         st.plotly_chart(fig_gender_exercise, use_container_width=True)
 
         # ✅ 연령대에 따른 식단 개선 필요성 시각화
         st.subheader("👵👴 연령대에 따른 식단 개선 필요성")
-        age_diet = df.groupby("연령대코드(5세단위)")["식단 확률"].mean().reset_index()
-        fig_age_diet = px.line(age_diet, x="연령대코드(5세단위)", y="식단 확률", title="연령대별 평균 식단 개선 필요성",
-                                labels={"식단 확률": "평균 식단 개선 필요성"})
+        age_diet = df.groupby("연령대코드(5세단위)")["식단 점수"].mean().reset_index()
+        fig_age_diet = px.line(age_diet, x="연령대코드(5세단위)", y="식단 점수", title="연령대별 평균 식단 개선 필요성",
+                                labels={"식단 점수": "평균 식단 개선 필요성"})
         st.plotly_chart(fig_age_diet, use_container_width=True)
 
-        # ✅ BMI에 따른 운동 및 식단 확률 비교
-        st.subheader("💪🥗 BMI에 따른 운동 및 식단 확률 비교")
-        fig_bmi = px.scatter(df, x="BMI", y=["운동 확률", "식단 확률"], title="BMI별 운동 및 식단 확률",
+        # ✅ BMI에 따른 운동 및 식단 점수 비교
+        st.subheader("💪🥗 BMI에 따른 운동 및 식단 점수 비교")
+        fig_bmi = px.scatter(df, x="BMI", y=["운동 점수", "식단 점수"], title="BMI별 운동 및 식단 점수",
                             labels={"value": "확률", "variable": "구분"},
                             color_continuous_scale=px.colors.sequential.Viridis)
         st.plotly_chart(fig_bmi, use_container_width=True)
