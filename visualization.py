@@ -49,14 +49,21 @@ def display_visualization_page():
 
         # ✅ 사용자 지정 시각화: 연령대 선택
         st.subheader("✨ 사용자 지정 시각화")
-        # 연령대 고유값을 카테고리 리스트로 추출 (NaN 제외)
-        age_groups = [g for g in df["연령대"].dropna().unique()]
-        age_groups.sort(key=lambda x: int(x.replace("대 이상","").replace("대","")))  # 10대,20대,…,60대 이상 순 정렬
 
-        selected_age = st.selectbox("연령대 선택", age_groups)
-        filtered = df[df["연령대"] == selected_age]
+        # 1) 연령대 고유값을 숫자형으로 추출, 정렬
+        age_groups = sorted(df["연령대"].dropna().astype(int).unique())
+
+        # 2) selectbox 에서는 숫자형을 그대로 사용하되, 화면에 '20대' 등의 레이블로 보이게 format_func 사용
+        selected_age = st.selectbox(
+            "연령대 선택",
+            age_groups,
+            format_func=lambda x: f"{x}대"
+        )
+
+        # 3) 필터링
+        filtered = df[df["연령대"].astype(int) == selected_age]
         if not filtered.empty:
-            st.write(f"선택한 연령대({selected_age})의 데이터:")
+            st.write(f"선택한 연령대({selected_age}대)의 데이터:")
             st.dataframe(filtered)
         else:
             st.info("선택한 연령대의 데이터가 없습니다.")
