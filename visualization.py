@@ -18,9 +18,10 @@ def display_visualization_page():
             return
 
         # 🔥 데이터 타입 변환 (오류 방지)
-        df["나이"] = pd.to_numeric(df["나이"], errors='coerce').fillna(0).astype(int)
-        df["운동 점수"] = pd.to_numeric(df["운동 점수"], errors='coerce').fillna(0)
-        df["식단 점수"] = pd.to_numeric(df["식단 점수"], errors='coerce').fillna(0)
+        df["나이"]             = pd.to_numeric(df["나이"], errors="coerce").fillna(0).astype(int)
+        df["운동 점수"]       = pd.to_numeric(df["운동 점수"], errors="coerce").fillna(0)
+        df["식단 점수"]       = pd.to_numeric(df["식단 점수"], errors="coerce").fillna(0)
+        df["BMI"]             = pd.to_numeric(df["BMI"], errors="coerce").fillna(0)
 
         # 🔥 결측치 처리 (오류 방지)
         df.fillna(0, inplace=True)  # 모든 NaN 값을 0으로 채움
