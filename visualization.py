@@ -47,19 +47,22 @@ def display_visualization_page():
                             color_continuous_scale=px.colors.sequential.Viridis)
         st.plotly_chart(fig_bmi, use_container_width=True)
 
-        # ✅ 사용자 지정 시각화 (예: 특정 연령대의 운동 습관)
+        # ✅ 사용자 지정 시각화: 연령대 선택
         st.subheader("✨ 사용자 지정 시각화")
-        selected_age = st.slider("연령대 선택", min_value=df["연령대"].min(), max_value=df["연령대"].max(), value=30)
-        filtered_data = df[df["연령대"] == selected_age]
-        if not filtered_data.empty:
-            st.write(f"선택한 연령대({selected_age}대)의 데이터:")
-            st.dataframe(filtered_data)
+        # 연령대 고유값을 카테고리 리스트로 추출 (NaN 제외)
+        age_groups = [g for g in df["연령대"].dropna().unique()]
+        age_groups.sort(key=lambda x: int(x.replace("대 이상","").replace("대","")))  # 10대,20대,…,60대 이상 순 정렬
+
+        selected_age = st.selectbox("연령대 선택", age_groups)
+        filtered = df[df["연령대"] == selected_age]
+        if not filtered.empty:
+            st.write(f"선택한 연령대({selected_age})의 데이터:")
+            st.dataframe(filtered)
         else:
-            st.write("선택한 연령대의 데이터가 없습니다.")
+            st.info("선택한 연령대의 데이터가 없습니다.")
 
     except FileNotFoundError:
         st.error("🚨 예측 데이터 파일이 없습니다. 먼저 예측을 실행해주세요.")
     except Exception as e:
         st.error(f"🚨 시각화 중 오류 발생: {e}")
-
 
