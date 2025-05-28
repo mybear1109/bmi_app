@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
+import re
 
 # 예측 데이터 저장 파일 경로
 PREDICTION_FILE = "data/predictions.csv"
@@ -42,9 +42,8 @@ def display_visualization_page():
         # 2) 연령대별 평균 식단 점수 (Line)
         st.subheader("👵👴 연령대에 따른 식단 개선 필요성")
         age_diet = df.groupby("연령대")["식단 점수"].mean().reset_index()
-        # 연령대 순 정렬
-        import re
-        age_diet["order"] = age_diet["연령대"].apply(lambda x: int(re.search(r"(\d+)", x).group()))
+        # 연령대 순 정렬: 숫자 부분 추출
+        age_diet["order"] = age_diet["연령대"].apply(lambda x: int(re.search(r"(\d+)", str(x)).group()))
         age_diet = age_diet.sort_values("order")
         fig2 = px.line(
             age_diet,
@@ -101,10 +100,10 @@ def display_visualization_page():
             """
         )
 
-        # 사용자 지정 시각화: 연령대 선택 (Selectbox)
+        # 6) 사용자 지정 시각화: 연령대 선택
         st.subheader("✨ 사용자 지정 시각화: 연령대별 데이터 보기")
         unique_ages = df["연령대"].dropna().unique().tolist()
-        unique_ages.sort(key=lambda x: int(re.search(r"(\d+)", x).group()))
+        unique_ages.sort(key=lambda x: int(re.search(r"(\d+)", str(x)).group()))
         selected_age = st.selectbox("연령대 선택", unique_ages)
         filtered = df[df["연령대"] == selected_age]
         if not filtered.empty:
