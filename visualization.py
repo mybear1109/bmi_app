@@ -34,8 +34,8 @@ def display_visualization_page():
 
         # ✅ 연령대에 따른 식단 개선 필요성 시각화
         st.subheader("👵👴 연령대에 따른 식단 개선 필요성")
-        age_diet = df.groupby("연령대코드(5세단위)")["식단 점수"].mean().reset_index()
-        fig_age_diet = px.line(age_diet, x="연령대코드(5세단위)", y="식단 점수", title="연령대별 평균 식단 개선 필요성",
+        age_diet = df.groupby("연령대")["식단 점수"].mean().reset_index()
+        fig_age_diet = px.line(age_diet, x="연령대", y="식단 점수", title="연령대별 평균 식단 개선 필요성",
                                 labels={"식단 점수": "평균 식단 개선 필요성"})
         st.plotly_chart(fig_age_diet, use_container_width=True)
 
@@ -48,8 +48,8 @@ def display_visualization_page():
 
         # ✅ 사용자 지정 시각화 (예: 특정 연령대의 운동 습관)
         st.subheader("✨ 사용자 지정 시각화")
-        selected_age = st.slider("연령대 선택", min_value=df["연령대코드(5세단위)"].min(), max_value=df["연령대코드(5세단위)"].max(), value=30)
-        filtered_data = df[df["연령대코드(5세단위)"] == selected_age]
+        selected_age = st.slider("연령대 선택", min_value=df["연령대"].min(), max_value=df["연령대"].max(), value=30)
+        filtered_data = df[df["연령대"] == selected_age]
         if not filtered_data.empty:
             st.write(f"선택한 연령대({selected_age}대)의 데이터:")
             st.dataframe(filtered_data)
